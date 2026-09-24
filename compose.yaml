@@ -1,0 +1,31 @@
+name: yvnbet-demo
+services:
+  web:
+    build:
+      context: ./yvnbet
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${YVNBET_PORT:-8095}:4173"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "4173"
+      DATA_DIR: /app/data
+      PUBLIC_ORIGIN: "${YVNBET_ORIGIN:-http://62.169.27.185:8095}"
+    volumes:
+      - site-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  site-data:
