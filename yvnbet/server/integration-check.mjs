@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const base=process.env.TEST_URL||'http://localhost:4173';
+const original=await(await fetch(base+'/api/content')).json();
+assert.equal((await fetch(base+'/api/content',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(original)})).status,401);
+const access=await readFile(new URL('../data/admin-access.txt',import.meta.url),'utf8');const password=access.match(/Пароль: (.+)/)[1];
+const login=await fetch(base+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'admin',password})});assert.equal(login.status,200);const cookie=login.headers.get('set-cookie').split(';')[0];const headers={'Content-Type':'application/json',Cookie:cookie};
+const changed=structuredClone(original);changed.ru.intro='Проверка сохранения демо';
+assert.equal((await fetch(base+'/api/content',{method:'PUT',headers,body:JSON.stringify(changed)})).status,200);
+assert.equal((await(await fetch(base+'/api/content')).json()).ru.intro,changed.ru.intro);
+assert.equal((await fetch(base+'/api/content',{method:'PUT',headers,body:JSON.stringify(original)})).status,200);
+const image=await readFile(new URL('../public/images/game-1.jpg',import.meta.url));const uploaded=await fetch(base+'/api/upload',{method:'POST',headers,body:JSON.stringify({data:'data:image/jpeg;base64,'+image.toString('base64')})});assert.equal(uploaded.status,200);const {url}=await uploaded.json();assert.equal((await fetch(base+url)).status,200);
+assert.equal((await fetch(base+'/api/content',{method:'PUT',headers:{...headers,Origin:'https://evil.example'},body:JSON.stringify(original)})).status,403);
+assert.equal((await fetch(base+'/api/logout',{method:'POST',headers,body:'{}'})).status,200);
+assert.equal((await fetch(base+'/api/session',{headers})).status,401);
+console.log('PASS: unauthorized writes, login, persistence, restore, image upload, origin checks, logout.');
