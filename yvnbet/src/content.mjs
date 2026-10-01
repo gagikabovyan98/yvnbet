@@ -1,38 +1,552 @@
-export const initialContent = {
-  brand: 'YvnBet', telegram: 'yvnbet', loginUrl: 'https://ggplus.pro', heroImage: '/images/hero.png',
-  bonus: '+10%', minimum: '1 500 AMD', withdraw: '2 000 AMD', limit: '200 000 AMD',
+export const languages = ["ru", "hy", "en"];
+export const tr = (ru, hy, en) => ({ ru, hy, en });
+const same = (s) => tr(s, s, s);
+export const ui = {
   ru: {
-    nav: ['Преимущества', 'Игры', 'Как начать', 'Вопросы'], login: 'Войти', register: 'Регистрация',
-    eyebrow: 'ВАШ НОВЫЙ УРОВЕНЬ ИГРЫ', title: 'Искусство игры.', accent: 'Ваши правила.',
-    intro: 'Любимые игры, особая атмосфера и внимание к каждой детали. Добро пожаловать в YvnBet.',
-    primary: 'Присоединиться', secondary: 'Открыть игровой зал', note: 'Регистрация через Telegram',
-    telegramText: 'Здравствуйте! Хочу зарегистрироваться в YvnBet. Подскажите, как начать.',
-    benefitTitle: 'Больше, чем просто игра.', benefitSub: 'Всё, что нужно для комфортного старта, в одном месте.',
-    benefits: [
-      {title:'Простой старт', text:'Напишите оператору в Telegram — он поможет с регистрацией и первым входом.'},
-      {title:'На связи с вами', text:'Помощь с доступом, правилами и вопросами по платформе в одном чате.'},
-      {title:'Удобный формат', text:'Открывайте игровой зал прямо на сайте — с компьютера или телефона.'}
-    ],
-    gamesTitle:'Найдите свою игру.', gamesSub:'От классики до новых впечатлений.', allGames:'Весь игровой зал',
-    categories:['Все игры', 'Слоты', 'Настольные', 'Crash'],
-    bonusLabel:'ПРИВИЛЕГИИ КЛУБА', bonusTitle:'Больше возможностей\nс каждым пополнением.', bonusText:'Бонус к депозиту. Условия начисления и использования уточняйте у оператора.', bonusAction:'Узнать условия',
-    stepsTitle:'Три шага. И вы в игре.', stepsSub:'Оператор поможет на каждом этапе.',
-    steps:[{title:'Напишите нам',text:'Перейдите в Telegram. Сообщение для регистрации уже подготовлено.'},{title:'Получите доступ',text:'Уточните условия и получите данные для входа у оператора.'},{title:'Откройте игровой зал',text:'Нажмите «Войти» и используйте полученные данные на платформе.'}],
-    paymentsLabel:'СПОСОБЫ ПОПОЛНЕНИЯ', paymentsTitle:'Выбирайте удобный способ.', paymentsText:'Поддерживаемые валюты и доступные сети уточняйте у оператора перед переводом.',
-    limits:['Минимальный депозит','Минимальный вывод','Вывод в сутки'],
-    faqTitle:'Остались вопросы?', faqSub:'Самое важное — до первого входа.',
-    faq:[{q:'Как зарегистрироваться в YvnBet?',a:'Нажмите «Регистрация». Откроется Telegram с заранее подготовленным сообщением для @yvnbet. Отправьте его самостоятельно — оператор объяснит следующие шаги.'},{q:'Где открыть игровой зал?',a:'Нажмите «Войти» в верхней части сайта. Платформа ggplus.pro откроется внутри страницы. Если браузер ограничивает её работу, воспользуйтесь ссылкой «Открыть отдельно».'},{q:'Как действует бонус +10%?',a:'В демо указано предложение из референса. До пополнения уточните у оператора актуальность, условия начисления, отыгрыша и вывода бонуса.'},{q:'Какие способы пополнения доступны?',a:'В референсе указаны LTC, USDT, SOL и DASH. Доступные сети, реквизиты, комиссии и лимиты необходимо подтвердить у оператора.'}],
-    contactTitle:'Ваш следующий шаг — в Telegram.', contactText:'Поможем с регистрацией и ответим на вопросы.', contactAction:'Связаться с нами',
-    footer:'Искусство игры. Внимание к деталям.', responsible:'Только для совершеннолетних. Играйте ответственно: выигрыш не гарантирован. Не играйте на средства, которые не можете позволить себе потерять.', rights:'Все права защищены.', policy:'Информация', admin:'Управление сайтом',
-    frameTitle:'Игровой зал', frameHelp:'Если вход не работает во встроенном окне, откройте платформу отдельно.', openExternal:'Открыть отдельно', close:'Закрыть', demo:'Демонстрационная версия',
-    info:'Демонстрационная версия сайта YvnBet. Предложения и лимиты взяты из предоставленных примеров и требуют подтверждения владельцем перед запуском. Условия обслуживания, сведения об операторе и политика конфиденциальности будут опубликованы после согласования.'
+    home: "Главная",
+    slots: "Слоты",
+    promotions: "Акции",
+    help: "Поддержка",
+    login: "Войти",
+    register: "Регистрация",
+    all: "Все игры",
+    providers: "Провайдеры",
+    featured: "В центре внимания",
+    collection: "Ваша следующая любимая игра",
+    search: "Найти игру",
+    empty: "Ничего не найдено. Попробуйте другой фильтр.",
+    play: "Играть",
+    details: "Подробнее",
+    random: "Не знаете, во что поиграть?",
+    randomText: "Доверьтесь льву. Один клик — новая подборка.",
+    spin: "Крутить",
+    spinning: "Лев выбирает…",
+    selection: "Выбор льва",
+    again: "Попробовать ещё",
+    telegram: "Написать в Telegram",
+    age: "Вам уже исполнилось 18 лет?",
+    ageText:
+      "Этот сайт предназначен только для совершеннолетних. Играйте ответственно.",
+    yes: "Да, мне есть 18",
+    no: "Мне нет 18",
+    denied: "Доступ доступен только с 18 лет.",
+    back: "Назад",
+    name: "Имя",
+    phone: "Номер телефона",
+    handle: "Telegram",
+    consent:
+      "Согласен с обработкой данных согласно политике конфиденциальности",
+    submit: "Сохранить и перейти в Telegram",
+    saved: "Заявка сохранена",
+    sendHint: "Отправьте подготовленное сообщение оператору в Telegram.",
+    error: "Не удалось выполнить запрос. Попробуйте ещё раз.",
+    close: "Закрыть",
+    external: "Открыть в новой вкладке",
+    frameHelp: "Если платформа не загрузилась, откройте её в новой вкладке.",
+    unavailable:
+      "Ссылка на эту игру скоро появится. Пока можно посмотреть другие игры.",
+    demo: "Превью",
+    about: "О нас",
+    privacy: "Конфиденциальность",
+    terms: "Условия использования",
+    app: "Скачать приложение",
+    download: "Скачать",
+    soon: "Ссылка на приложение скоро появится",
+    rights: "Все права защищены.",
+    responsible:
+      "Игра — развлечение, а не способ заработка. Участвуйте ответственно. 18+",
+    next: "Следующий слайд",
+    prev: "Предыдущий слайд",
+    pause: "Пауза",
+    resume: "Продолжить",
+    slide: "Слайд",
+    catalog: "Каталог игр",
+    offers: "Особые предложения",
+    questions: "Чем можем помочь?",
+    more: "Смотреть все",
+    category: "Категория",
+    notFound: "Страница не найдена",
+    latest: "Новости",
+    bonus: "Бонус",
+    promotion: "Акция",
+    news: "Новость",
+    offer: "Предложение",
+    pending: "Сохраняем…",
   },
   en: {
-    nav:['Benefits','Games','Get started','FAQ'], login:'Log in',register:'Sign up',eyebrow:'YOUR NEXT LEVEL OF PLAY',title:'The art of play.',accent:'Your own way.',intro:'Favourite games, a distinctive atmosphere and attention to every detail. Welcome to YvnBet.',primary:'Join the club',secondary:'Explore the lobby',note:'Registration via Telegram',telegramText:'Hello! I would like to register with YvnBet. How do I get started?',
-    benefitTitle:'More than just a game.',benefitSub:'Everything you need for a comfortable start, in one place.',benefits:[{title:'An easy start',text:'Message our operator on Telegram for help with registration and your first login.'},{title:'Here to help',text:'Get help with access, rules and platform questions in one conversation.'},{title:'Play your way',text:'Open the lobby right here, from your computer or phone.'}],gamesTitle:'Find your game.',gamesSub:'From timeless classics to something new.',allGames:'Explore all games',categories:['All games','Slots','Table games','Crash'],bonusLabel:'CLUB PRIVILEGES',bonusTitle:'More possibilities\nwith every deposit.',bonusText:'A deposit bonus. Ask the operator about eligibility and usage terms.',bonusAction:'Explore the terms',stepsTitle:'Three steps to get started.',stepsSub:'Our operator will guide you along the way.',steps:[{title:'Say hello',text:'Open Telegram with a prepared registration message.'},{title:'Get your access',text:'Confirm the terms and receive your login details from the operator.'},{title:'Open the lobby',text:'Click “Log in” and use your details on the platform.'}],paymentsLabel:'PAYMENT OPTIONS',paymentsTitle:'Choose what works for you.',paymentsText:'Confirm available currencies and networks with the operator before any transfer.',limits:['Minimum deposit','Minimum withdrawal','Daily withdrawal'],faqTitle:'Any questions?',faqSub:'The essentials before you start.',faq:[{q:'How do I register?',a:'Click Sign up to open Telegram with a prepared message for @yvnbet. Send it yourself and the operator will explain the next steps.'},{q:'Where is the game lobby?',a:'Click Log in to open ggplus.pro on this page. If your browser restricts it, use Open separately.'},{q:'How does the +10% bonus work?',a:'This demo displays the offer from the reference. Confirm eligibility, wagering requirements and withdrawal terms with the operator before depositing.'},{q:'Which payment methods are available?',a:'The reference lists LTC, USDT, SOL and DASH. Confirm networks, fees and current limits with the operator.'}],contactTitle:'Your next step is on Telegram.',contactText:'We will help you register and answer your questions.',contactAction:'Contact us',footer:'The art of play. Attention to detail.',responsible:'Adults only. Play responsibly. Winning is not guaranteed. Do not play with money you cannot afford to lose.',rights:'All rights reserved.',policy:'Information',admin:'Site management',frameTitle:'Game lobby',frameHelp:'If login does not work here, open the platform separately.',openExternal:'Open separately',close:'Close',demo:'Demo version',info:'YvnBet demonstration website. Offers and limits come from the supplied references and must be confirmed before launch. Operator details, terms and privacy information will be published after approval.'
+    home: "Home",
+    slots: "Slots",
+    promotions: "Promotions",
+    help: "Support",
+    login: "Log in",
+    register: "Register",
+    all: "All games",
+    providers: "Providers",
+    featured: "In the spotlight",
+    collection: "Your next favourite game",
+    search: "Find a game",
+    empty: "No results. Try a different filter.",
+    play: "Play",
+    details: "Details",
+    random: "Not sure what to play?",
+    randomText: "Let the lion choose. One click, a fresh selection.",
+    spin: "Spin",
+    spinning: "The lion is choosing…",
+    selection: "The lion’s picks",
+    again: "Try again",
+    telegram: "Message on Telegram",
+    age: "Are you 18 or older?",
+    ageText: "This website is for adults only. Please play responsibly.",
+    yes: "Yes, I am 18+",
+    no: "I am under 18",
+    denied: "Access is available to adults aged 18 and over.",
+    back: "Back",
+    name: "Name",
+    phone: "Phone number",
+    handle: "Telegram",
+    consent: "I agree to data processing under the privacy policy",
+    submit: "Save and continue to Telegram",
+    saved: "Request saved",
+    sendHint: "Send the prepared message to the operator in Telegram.",
+    error: "The request failed. Please try again.",
+    close: "Close",
+    external: "Open in a new tab",
+    frameHelp: "If the platform does not load, open it in a new tab.",
+    unavailable:
+      "This game link is coming soon. Explore other games in the meantime.",
+    demo: "Preview",
+    about: "About us",
+    privacy: "Privacy",
+    terms: "Terms of use",
+    app: "Get the app",
+    download: "Download",
+    soon: "The app link is coming soon",
+    rights: "All rights reserved.",
+    responsible: "Gaming is entertainment, not income. Play responsibly. 18+",
+    next: "Next slide",
+    prev: "Previous slide",
+    pause: "Pause",
+    resume: "Resume",
+    slide: "Slide",
+    catalog: "Game library",
+    offers: "Special offers",
+    questions: "How can we help?",
+    more: "View all",
+    category: "Category",
+    notFound: "Page not found",
+    latest: "News",
+    bonus: "Bonus",
+    promotion: "Promotion",
+    news: "News",
+    offer: "Offer",
+    pending: "Saving…",
   },
   hy: {
-    nav:['Առավելություններ','Խաղեր','Ինչպես սկսել','Հարցեր'],login:'Մուտք',register:'Գրանցում',eyebrow:'ԽԱՂԻ ՁԵՐ ՆՈՐ ՄԱԿԱՐԴԱԿԸ',title:'Խաղի արվեստը։',accent:'Ձեր կանոնները։',intro:'Սիրելի խաղեր, յուրահատուկ մթնոլորտ և ուշադրություն յուրաքանչյուր մանրուքի նկատմամբ։ Բարի գալուստ YvnBet։',primary:'Միանալ ակումբին',secondary:'Բացել խաղասրահը',note:'Գրանցում Telegram-ի միջոցով',telegramText:'Բարև ձեզ։ Ցանկանում եմ գրանցվել YvnBet-ում։ Ինչպե՞ս սկսել։',benefitTitle:'Ավելին, քան պարզապես խաղ։',benefitSub:'Հարմար մեկնարկի համար ամեն ինչ՝ մեկ տեղում։',benefits:[{title:'Հեշտ մեկնարկ',text:'Գրեք օպերատորին Telegram-ում՝ գրանցման և առաջին մուտքի համար։'},{title:'Միշտ կապի մեջ',text:'Մուտքի, կանոնների և հարթակի վերաբերյալ օգնություն՝ մեկ զրույցում։'},{title:'Հարմար ձևաչափ',text:'Բացեք խաղասրահը անմիջապես կայքում՝ համակարգչից կամ հեռախոսից։'}],gamesTitle:'Գտեք ձեր խաղը։',gamesSub:'Դասական խաղերից մինչև նոր տպավորություններ։',allGames:'Բոլոր խաղերը',categories:['Բոլորը','Սլոթեր','Սեղանի խաղեր','Crash'],bonusLabel:'ԱԿՈՒՄԲԻ ԱՌԱՎԵԼՈՒԹՅՈՒՆՆԵՐԸ',bonusTitle:'Ավելի շատ հնարավորություններ\nյուրաքանչյուր լիցքավորմամբ։',bonusText:'Բոնուս ավանդին։ Պայմանները ճշտեք օպերատորի հետ։',bonusAction:'Իմանալ պայմանները',stepsTitle:'Երեք քայլ դեպի մեկնարկ։',stepsSub:'Օպերատորը կօգնի յուրաքանչյուր փուլում։',steps:[{title:'Գրեք մեզ',text:'Բացեք Telegram-ը պատրաստված գրանցման հաղորդագրությամբ։'},{title:'Ստացեք մուտք',text:'Ճշտեք պայմանները և օպերատորից ստացեք մուտքի տվյալները։'},{title:'Բացեք խաղասրահը',text:'Սեղմեք «Մուտք» և օգտագործեք ստացված տվյալները հարթակում։'}],paymentsLabel:'ԼԻՑՔԱՎՈՐՄԱՆ ԵՂԱՆԱԿՆԵՐ',paymentsTitle:'Ընտրեք հարմար եղանակը։',paymentsText:'Փոխանցումից առաջ օպերատորի հետ ճշտեք արժույթներն ու ցանցերը։',limits:['Նվազագույն ավանդ','Նվազագույն դուրսբերում','Օրական դուրսբերում'],faqTitle:'Հարցե՞ր կան։',faqSub:'Ամենակարևորը՝ մինչև առաջին մուտքը։',faq:[{q:'Ինչպե՞ս գրանցվել։',a:'Սեղմեք «Գրանցում»։ Կբացվի Telegram-ը՝ @yvnbet-ի համար պատրաստված հաղորդագրությամբ։ Ուղարկեք այն ինքնուրույն, և օպերատորը կբացատրի հաջորդ քայլերը։'},{q:'Ինչպե՞ս բացել խաղասրահը։',a:'Սեղմեք «Մուտք»։ ggplus.pro հարթակը կբացվի այս էջում։ Սահմանափակումների դեպքում օգտագործեք «Բացել առանձին» հղումը։'},{q:'Ինչպե՞ս է գործում +10% բոնուսը։',a:'Դեմոյում ներկայացված է օրինակի առաջարկը։ Լիցքավորումից առաջ օպերատորի հետ ճշտեք բոնուսի պայմանները։'},{q:'Ի՞նչ եղանակներ կան։',a:'Օրինակում նշված են LTC, USDT, SOL և DASH։ Ցանցերը, վճարները և սահմանաչափերը ճշտեք օպերատորի հետ։'}],contactTitle:'Ձեր հաջորդ քայլը՝ Telegram-ում։',contactText:'Կօգնենք գրանցվել և կպատասխանենք հարցերին։',contactAction:'Կապ մեզ հետ',footer:'Խաղի արվեստը։ Ուշադրություն մանրուքներին։',responsible:'Միայն չափահասների համար։ Խաղացեք պատասխանատու։ Շահումը երաշխավորված չէ։ Մի խաղացեք գումարով, որը չեք կարող կորցնել։',rights:'Բոլոր իրավունքները պաշտպանված են։',policy:'Տեղեկություն',admin:'Կայքի կառավարում',frameTitle:'Խաղասրահ',frameHelp:'Եթե մուտքը չի գործում, բացեք հարթակը առանձին։',openExternal:'Բացել առանձին',close:'Փակել',demo:'Դեմո տարբերակ',info:'YvnBet կայքի ցուցադրական տարբերակ։ Առաջարկներն ու սահմանաչափերը վերցված են տրամադրված օրինակներից և ենթակա են հաստատման մինչև գործարկումը։'
+    home: "Գլխավոր",
+    slots: "Սլոթեր",
+    promotions: "Ակցիաներ",
+    help: "Աջակցություն",
+    login: "Մուտք",
+    register: "Գրանցվել",
+    all: "Բոլոր խաղերը",
+    providers: "Մատակարարներ",
+    featured: "Ուշադրության կենտրոնում",
+    collection: "Ձեր հաջորդ սիրելի խաղը",
+    search: "Գտնել խաղը",
+    empty: "Արդյունքներ չկան։ Փորձեք այլ զտիչ։",
+    play: "Խաղալ",
+    details: "Մանրամասն",
+    random: "Չգիտե՞ք՝ ինչ խաղալ",
+    randomText: "Վստահեք առյուծին։ Մեկ սեղմում՝ նոր ընտրանի։",
+    spin: "Պտտել",
+    spinning: "Առյուծն ընտրում է…",
+    selection: "Առյուծի ընտրությունը",
+    again: "Փորձել կրկին",
+    telegram: "Գրել Telegram-ում",
+    age: "Դուք արդեն 18 տարեկան ե՞ք",
+    ageText:
+      "Այս կայքը նախատեսված է միայն չափահասների համար։ Խաղացեք պատասխանատու։",
+    yes: "Այո, ես 18+ եմ",
+    no: "Ես 18-ից փոքր եմ",
+    denied: "Մուտքը հասանելի է միայն 18 տարեկանից։",
+    back: "Հետ",
+    name: "Անուն",
+    phone: "Հեռախոսահամար",
+    handle: "Telegram",
+    consent:
+      "Համաձայն եմ տվյալների մշակմանը՝ գաղտնիության քաղաքականության համաձայն",
+    submit: "Պահպանել և անցնել Telegram",
+    saved: "Հայտը պահպանված է",
+    sendHint: "Ուղարկեք պատրաստված հաղորդագրությունը օպերատորին Telegram-ում։",
+    error: "Հարցումը ձախողվեց։ Փորձեք կրկին։",
+    close: "Փակել",
+    external: "Բացել նոր ներդիրում",
+    frameHelp: "Եթե հարթակը չի բեռնվում, բացեք այն նոր ներդիրում։",
+    unavailable: "Այս խաղի հղումը շուտով կհայտնվի։ Մինչ այդ դիտեք այլ խաղեր։",
+    demo: "Նախադիտում",
+    about: "Մեր մասին",
+    privacy: "Գաղտնիություն",
+    terms: "Օգտագործման պայմաններ",
+    app: "Ներբեռնել հավելվածը",
+    download: "Ներբեռնել",
+    soon: "Հավելվածի հղումը շուտով կհայտնվի",
+    rights: "Բոլոր իրավունքները պաշտպանված են։",
+    responsible:
+      "Խաղը զվարճանք է, ոչ թե եկամտի աղբյուր։ Խաղացեք պատասխանատու։ 18+",
+    next: "Հաջորդ սլայդը",
+    prev: "Նախորդ սլայդը",
+    pause: "Դադար",
+    resume: "Շարունակել",
+    slide: "Սլայդ",
+    catalog: "Խաղերի կատալոգ",
+    offers: "Հատուկ առաջարկներ",
+    questions: "Ինչո՞վ կարող ենք օգնել",
+    more: "Դիտել բոլորը",
+    category: "Կատեգորիա",
+    notFound: "Էջը չի գտնվել",
+    latest: "Նորություններ",
+    bonus: "Բոնուս",
+    promotion: "Ակցիա",
+    news: "Նորություն",
+    offer: "Առաջարկ",
+    pending: "Պահպանվում է…",
   },
-  games:[{name:'Neon Reels',type:1,image:'/images/game-1.jpg'},{name:'Royal Roulette',type:2,image:'/images/game-2.jpg'},{name:'Midnight 21',type:2,image:'/images/game-3.jpg'},{name:'Crown Poker',type:2,image:'/images/game-4.jpg'},{name:'Velocity Crash',type:3,image:'/images/game-5.jpg'}]
 };
+const seo = { title: same(""), description: same(""), keywords: same("") };
+const item = (id, title, extra = {}) => ({
+  id,
+  slug: id,
+  title,
+  description: same(""),
+  seo: structuredClone(seo),
+  enabled: true,
+  ...extra,
+});
+export const initialContent = {
+  version: 2,
+  settings: {
+    brand: "YvnBet",
+    logo: "/images/wordmark.webp",
+    lion: "/images/lion.svg",
+    telegram: "yvnbet",
+    telegramText: tr(
+      "Здравствуйте! Нужна помощь.",
+      "Բարև։ Օգնության կարիք ունեմ։",
+      "Hello! I need help.",
+    ),
+    loginUrl: "https://ggplus.pro",
+    loginMode: "iframe",
+    appUrl: "",
+    siteUrl: "",
+    indexable: false,
+    ogImage: "/images/hero.webp",
+    defaultLanguage: "ru",
+    sliderSeconds: 7,
+  },
+  interface: ui,
+  seo: {
+    home: {
+      title: tr(
+        "YvnBet — ваша территория игры",
+        "YvnBet — ձեր խաղային տարածքը",
+        "YvnBet — your world of play",
+      ),
+      description: tr(
+        "Откройте каталог игр, провайдеров и специальных предложений YvnBet.",
+        "Բացահայտեք YvnBet-ի խաղերը, մատակարարներն ու հատուկ առաջարկները։",
+        "Explore the YvnBet collection of games, providers and special offers.",
+      ),
+      keywords: same("YvnBet, slots, games"),
+    },
+    slots: {
+      title: tr(
+        "Каталог игр — YvnBet",
+        "Խաղերի կատալոգ — YvnBet",
+        "Game library — YvnBet",
+      ),
+      description: tr(
+        "Найдите игру в каталоге YvnBet: поиск, категории и фильтры по провайдерам.",
+        "Գտեք խաղը YvnBet-ում՝ որոնման, կատեգորիաների և մատակարարների զտիչներով։",
+        "Find your game in the YvnBet library using search, categories and provider filters.",
+      ),
+      keywords: same("YvnBet, games, slots"),
+    },
+    promotions: {
+      title: tr(
+        "Акции и новости — YvnBet",
+        "Ակցիաներ և նորություններ — YvnBet",
+        "Promotions and news — YvnBet",
+      ),
+      description: tr(
+        "Новости, действующие акции и специальные предложения YvnBet с подробными условиями.",
+        "YvnBet-ի նորությունները, ընթացիկ ակցիաներն ու հատուկ առաջարկները՝ մանրամասն պայմաններով։",
+        "YvnBet news, current promotions and special offers with detailed terms.",
+      ),
+      keywords: same("YvnBet, promotions, news"),
+    },
+    help: {
+      title: tr(
+        "Поддержка и FAQ — YvnBet",
+        "Աջակցություն և ՀՏՀ — YvnBet",
+        "Support and FAQ — YvnBet",
+      ),
+      description: tr(
+        "Ответы на вопросы о регистрации и запуске игр. Свяжитесь с поддержкой YvnBet в Telegram.",
+        "Գրանցման և խաղերի գործարկման հարցերի պատասխաններ։ Կապվեք YvnBet աջակցության հետ Telegram-ում։",
+        "Answers about registration and game access. Contact YvnBet support on Telegram.",
+      ),
+      keywords: same("YvnBet, support, FAQ"),
+    },
+    app: {
+      title: tr("Приложение YvnBet", "YvnBet հավելված", "YvnBet app"),
+      description: tr(
+        "Информация о мобильном приложении YvnBet и доступных способах скачивания.",
+        "Տեղեկություն YvnBet բջջային հավելվածի և ներբեռնման եղանակների մասին։",
+        "Information about the YvnBet mobile app and available downloads.",
+      ),
+      keywords: same("YvnBet, mobile, app"),
+    },
+  },
+  providers: [
+    item("amusnet", same("Amusnet"), { logo: "", url: "", mode: "external" }),
+    item("pragmatic-play", same("Pragmatic Play"), {
+      logo: "",
+      url: "",
+      mode: "external",
+    }),
+    item("amatic", same("Amatic"), { logo: "", url: "", mode: "external" }),
+  ],
+  categories: [
+    item("slots", tr("Слоты", "Սլոթեր", "Slots")),
+    item("table", tr("Настольные", "Սեղանի խաղեր", "Table games")),
+    item("crash", same("Crash")),
+  ],
+  games: [
+    ["golden-eclipse", "Golden Eclipse", "amusnet", "slots", 1],
+    ["crystal-path", "Crystal Path", "amusnet", "slots", 1],
+    ["midnight-star", "Midnight Star", "pragmatic-play", "table", 2],
+    ["neon-crown", "Neon Crown", "amatic", "table", 3],
+    ["royal-orbit", "Royal Orbit", "pragmatic-play", "table", 4],
+    ["silver-rush", "Silver Rush", "amatic", "crash", 5],
+  ].map(([id, name, provider, category, n]) =>
+    item(id, same(name), {
+      provider,
+      category,
+      image: `/images/game-${n}.webp`,
+      url: "",
+      mode: "iframe",
+      featured: true,
+      description: tr(
+        "Предварительный обзор игры. Запуск станет доступен после подключения ссылки провайдера.",
+        "Խաղի նախադիտում։ Գործարկումը հասանելի կլինի մատակարարի հղումը միացնելուց հետո։",
+        "Game preview. Launch will be available when the provider link is connected.",
+      ),
+    }),
+  ),
+  slides: [
+    item(
+      "welcome",
+      tr(
+        "Ваша территория.\nВаши правила.",
+        "Ձեր տարածքը։\nՁեր կանոնները։",
+        "Your world.\nYour rules.",
+      ),
+      {
+        image: "/images/hero.webp",
+        label: tr(
+          "ДОБРО ПОЖАЛОВАТЬ В YVNBET",
+          "ԲԱՐԻ ԳԱԼՈՒՍՏ YVNBET",
+          "WELCOME TO YVNBET",
+        ),
+        description: tr(
+          "Знакомые игры. Новые впечатления. Всё начинается с вашего выбора.",
+          "Ծանոթ խաղեր։ Նոր տպավորություններ։ Ամեն ինչ սկսվում է ձեր ընտրությունից։",
+          "Familiar games. New experiences. It all starts with your choice.",
+        ),
+        button: tr(
+          "Открыть коллекцию",
+          "Բացել հավաքածուն",
+          "Explore the collection",
+        ),
+        url: "/slots",
+      },
+    ),
+    item(
+      "discovery",
+      tr(
+        "Найдите свою\nновую классику.",
+        "Գտեք ձեր\nնոր դասականը։",
+        "Find your\nnext classic.",
+      ),
+      {
+        image: "/images/game-2.webp",
+        label: tr(
+          "ИГРЫ И ПРОВАЙДЕРЫ",
+          "ԽԱՂԵՐ ԵՎ ՄԱՏԱԿԱՐԱՐՆԵՐ",
+          "GAMES & PROVIDERS",
+        ),
+        description: tr(
+          "Откройте каталог и выберите свой ритм игры.",
+          "Բացեք կատալոգը և ընտրեք ձեր խաղի ռիթմը։",
+          "Explore the library and find your own rhythm.",
+        ),
+        button: tr("Смотреть игры", "Դիտել խաղերը", "View games"),
+        url: "/slots",
+      },
+    ),
+    item(
+      "club",
+      tr(
+        "Всегда\nна вашей стороне.",
+        "Միշտ\nձեր կողքին։",
+        "Always\nby your side.",
+      ),
+      {
+        image: "/images/game-4.webp",
+        label: tr("ПОДДЕРЖКА YVNBET", "YVNBET ԱՋԱԿՑՈՒԹՅՈՒՆ", "YVNBET SUPPORT"),
+        description: tr(
+          "Поможем с регистрацией, доступом и вопросами по платформе.",
+          "Կօգնենք գրանցման, մուտքի և հարթակի հարցերով։",
+          "Here to help with registration, access and platform questions.",
+        ),
+        button: tr("Связаться с нами", "Կապվել մեզ հետ", "Get in touch"),
+        url: "/help",
+      },
+    ),
+  ],
+  promotions: [
+    item(
+      "welcome-guide",
+      tr(
+        "Ваш первый шаг в YvnBet",
+        "Ձեր առաջին քայլը YvnBet-ում",
+        "Your first step into YvnBet",
+      ),
+      {
+        kind: "news",
+        image: "/images/hero.webp",
+        start: "",
+        end: "",
+        description: tr(
+          "Зарегистрируйтесь через форму на сайте. Оператор в Telegram поможет с доступом и расскажет об актуальных предложениях.",
+          "Գրանցվեք կայքի ձևի միջոցով։ Telegram-ի օպերատորը կօգնի մուտքի հարցում և կներկայացնի ընթացիկ առաջարկները։",
+          "Register using the website form. Our Telegram operator will help with access and explain current offers.",
+        ),
+        button: tr("Связаться", "Կապվել", "Contact us"),
+        url: "/help",
+      },
+    ),
+  ],
+  faq: [
+    item(
+      "registration",
+      tr("Как зарегистрироваться?", "Ինչպե՞ս գրանցվել։", "How do I register?"),
+      {
+        description: tr(
+          "Нажмите «Регистрация», заполните форму и перейдите в Telegram. Отправьте подготовленное сообщение оператору.",
+          "Սեղմեք «Գրանցվել», լրացրեք ձևը և անցեք Telegram։ Պատրաստված հաղորդագրությունն ուղարկեք օպերատորին։",
+          "Choose Register, complete the form and continue to Telegram. Send the prepared message to the operator.",
+        ),
+      },
+    ),
+    item(
+      "launch",
+      tr("Как открыть игру?", "Ինչպե՞ս բացել խաղը։", "How do I open a game?"),
+      {
+        description: tr(
+          "Выберите игру в каталоге. На её странице нажмите «Играть». Если встроенное окно не загружается, используйте кнопку открытия в новой вкладке.",
+          "Ընտրեք խաղը կատալոգում և սեղմեք «Խաղալ»։ Եթե ներկառուցված պատուհանը չի բեռնվում, բացեք նոր ներդիրում։",
+          "Select a game and choose Play. If the embedded platform does not load, use Open in a new tab.",
+        ),
+      },
+    ),
+    item(
+      "support",
+      tr(
+        "Как связаться с поддержкой?",
+        "Ինչպե՞ս կապվել աջակցության հետ։",
+        "How can I contact support?",
+      ),
+      {
+        description: tr(
+          "Используйте кнопку Telegram в правом нижнем углу сайта.",
+          "Օգտագործեք կայքի ներքևի աջ անկյունի Telegram կոճակը։",
+          "Use the Telegram button at the bottom right of the website.",
+        ),
+      },
+    ),
+  ],
+  pages: [
+    item("about", tr("О нас", "Մեր մասին", "About us"), {
+      description: tr(
+        "YvnBet — место для знакомства с играми и провайдерами. Выбирайте игру, изучайте предложения и обращайтесь к нашей поддержке.",
+        "YvnBet-ը խաղերին և մատակարարներին ծանոթանալու վայր է։ Ընտրեք խաղը, ուսումնասիրեք առաջարկները և կապվեք աջակցության հետ։",
+        "YvnBet is a place to discover games and providers. Explore the collection and contact our support team.",
+      ),
+    }),
+    item(
+      "privacy",
+      tr(
+        "Политика конфиденциальности",
+        "Գաղտնիության քաղաքականություն",
+        "Privacy policy",
+      ),
+      {
+        description: tr(
+          "Для ответа на заявку сохраняются имя, телефон и Telegram. Доступ к заявкам есть у уполномоченных сотрудников. При переходе в Telegram данные добавляются в черновик сообщения; отправку подтверждаете вы. Для запроса удаления данных обратитесь в поддержку. Это предварительный текст: реквизиты оператора и сроки хранения необходимо указать до запуска.",
+          "Հայտին պատասխանելու համար պահպանվում են անունը, հեռախոսը և Telegram-ը։ Հայտերին հասանելիություն ունեն լիազորված աշխատակիցները։ Telegram անցնելիս տվյալները հայտնվում են հաղորդագրության սևագրում. ուղարկումը հաստատում եք դուք։ Ջնջման համար կապվեք աջակցության հետ։ Նախնական տեքստ. օպերատորի տվյալներն ու պահպանման ժամկետները պետք է լրացվեն մինչև մեկնարկը։",
+          "We save your name, phone number and Telegram handle to respond to your request. Authorised staff can access requests. Continuing to Telegram prepares a message draft; you decide whether to send it. Contact support to request deletion. This is draft copy: operator details and retention periods must be added before launch.",
+        ),
+      },
+    ),
+    item(
+      "terms",
+      tr("Условия использования", "Օգտագործման պայմաններ", "Terms of use"),
+      {
+        description: tr(
+          "Сайт доступен лицам старше 18 лет. Условия отдельных игр и предложений определяются соответствующим провайдером. Перед использованием ознакомьтесь с его правилами. Текст для предварительного просмотра; финальные условия предоставляет оператор.",
+          "Կայքը հասանելի է 18 տարեկանից բարձր անձանց։ Խաղերի և առաջարկների պայմանները սահմանում է համապատասխան մատակարարը։ Օգտագործելուց առաջ ծանոթացեք նրա կանոններին։ Նախնական տեքստ. վերջնական պայմանները տրամադրում է օպերատորը։",
+          "This website is for adults aged 18 and over. Individual game and offer terms are set by the relevant provider. Read their rules before use. Preview copy; final terms must be supplied by the operator.",
+        ),
+      },
+    ),
+    item(
+      "app",
+      tr("YvnBet всегда рядом", "YvnBet-ը միշտ մոտ է", "Take YvnBet with you"),
+      {
+        description: tr(
+          "Ваша коллекция игр в удобном мобильном формате.",
+          "Ձեր խաղերի հավաքածուն՝ հարմար բջջային ձևաչափով։",
+          "Your game collection in a convenient mobile format.",
+        ),
+      },
+    ),
+  ],
+};
+export function activePromotion(p, now = Date.now()) {
+  return (
+    p.enabled &&
+    (!p.start || Date.parse(p.start) <= now) &&
+    (!p.end || Date.parse(p.end + "T23:59:59Z") >= now)
+  );
+}
+export function publicContent(c) {
+  const out = structuredClone(c);
+  for (const key of [
+    "providers",
+    "categories",
+    "games",
+    "slides",
+    "promotions",
+    "faq",
+    "pages",
+  ])
+    out[key] = out[key].filter((x) => x.enabled);
+  out.games = out.games.filter(
+    (g) =>
+      out.providers.some((p) => p.id === g.provider) &&
+      out.categories.some((p) => p.id === g.category),
+  );
+  out.promotions = out.promotions.filter((p) => activePromotion(p));
+  return out;
+}

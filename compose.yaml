@@ -12,7 +12,9 @@ services:
       HOST: 0.0.0.0
       PORT: "4173"
       DATA_DIR: /app/data
-      PUBLIC_ORIGIN: "${YVNBET_ORIGIN:-http://62.169.27.185:8095}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY:-}"
+      PUBLIC_ORIGIN: "${YVNBET_ORIGIN:-http://localhost:8095}"
     volumes:
       - site-data:/app/data
     read_only: true
