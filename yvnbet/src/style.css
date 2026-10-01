@@ -2773,3 +2773,203 @@ footer {
     padding-inline: 9px;
   }
 }
+
+/* Lion's pick: a horizontal reel settles on one centered game. */
+.random-reel-section .random-main {
+  grid-template-columns: minmax(0, 1fr) 170px;
+  min-height: 210px;
+  padding: 28px 36px 20px;
+}
+.random-reel-section .lion-orbit {
+  height: 155px;
+  transform: none;
+}
+.random-reel-section .lion-button {
+  width: 112px;
+  height: 112px;
+  padding: 18px;
+}
+.random-reel-section .orbit {
+  width: 150px;
+  height: 150px;
+}
+.random-reel-section .orbit-two {
+  width: 166px;
+  height: 118px;
+}
+.random-reel-section .spinning .lion-button {
+  animation: lion-spin 4s cubic-bezier(0.12, 0.72, 0.12, 1);
+}
+.reel-machine {
+  --reel-card: clamp(116px, 26vw, 220px);
+  position: relative;
+  margin: 28px 30px 0;
+  padding: 10px 0;
+  border: 1px solid #b9905d;
+  border-radius: 20px;
+  background: #130b1a;
+  box-shadow: inset 0 0 20px #dfab6520;
+}
+.reel-pointer {
+  position: absolute;
+  left: 50%;
+  top: -29px;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 44px;
+  z-index: 3;
+  filter: drop-shadow(0 3px 9px #d844a970);
+}
+.reel-lights {
+  height: 20px;
+  margin-inline: 12px;
+  background:
+    radial-gradient(circle, #edc685 0 2px, #edc68535 3px, transparent 6px) 0
+      center / 40px 20px repeat-x,
+    radial-gradient(circle, #ed68b7 0 2px, #ed68b735 3px, transparent 6px) 20px
+      center / 40px 20px repeat-x;
+}
+.reel-window {
+  position: relative;
+  overflow: hidden;
+  padding-block: 22px;
+}
+.reel-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #130b1ab0,
+    transparent 20%,
+    transparent 80%,
+    #130b1ab0
+  );
+  pointer-events: none;
+}
+.reel-track {
+  display: flex;
+  gap: 16px;
+  margin-left: 50%;
+  width: max-content;
+  transform: translateX(
+    calc(
+      -1 * var(--reel-position) * (var(--reel-card) + 16px) - var(--reel-card) /
+        2
+    )
+  );
+}
+.is-spinning .reel-track {
+  will-change: transform;
+}
+.reel-card {
+  position: relative;
+  display: block;
+  flex: 0 0 var(--reel-card);
+  width: var(--reel-card);
+  aspect-ratio: 1.38;
+  border-radius: 14px;
+  overflow: hidden;
+  opacity: 0.55;
+  border: 2px solid transparent;
+  background: #25152f;
+  transition: opacity 0.3s;
+}
+.reel-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reel-card > span {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 24px 8px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 750;
+  color: #fff;
+  background: linear-gradient(transparent, #0e0715ef);
+}
+.reel-card.selected {
+  opacity: 1;
+  border-color: #f5d58c;
+  box-shadow: 0 0 18px #e9bb7060;
+}
+.reel-card.selected:focus-visible {
+  outline-offset: -5px;
+}
+.reel-center {
+  position: absolute;
+  width: var(--reel-card);
+  top: 22px;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid #e9bb7050;
+  border-radius: 14px;
+  pointer-events: none;
+}
+.has-winner .reel-center {
+  border-color: #f5d58c;
+  box-shadow: 0 0 22px #f5d58c40;
+}
+.reel-result {
+  min-height: 72px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  text-align: center;
+}
+.reel-result p {
+  font-size: 13px;
+}
+.reel-result a {
+  color: var(--gold);
+  font-size: 17px;
+}
+@media (max-width: 620px) {
+  .random-reel-section .random-main {
+    grid-template-columns: minmax(0, 1fr) 90px;
+    padding: 24px 18px 14px;
+    gap: 10px;
+  }
+  .random-reel-section .random-main h2 {
+    font-size: 25px;
+    margin-top: 12px;
+  }
+  .random-reel-section .random-main p {
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+  .random-reel-section .lion-orbit {
+    height: 100px;
+  }
+  .random-reel-section .lion-button {
+    width: 78px;
+    height: 78px;
+    padding: 13px;
+  }
+  .random-reel-section .orbit {
+    width: 90px;
+    height: 90px;
+  }
+  .random-reel-section .orbit-two {
+    width: 96px;
+    height: 70px;
+  }
+  .reel-machine {
+    margin: 28px 12px 0;
+    border-radius: 16px;
+  }
+  .reel-card > span {
+    font-size: 10px;
+    padding-bottom: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-track,
+  .reel-card {
+    transition: none !important;
+  }
+}

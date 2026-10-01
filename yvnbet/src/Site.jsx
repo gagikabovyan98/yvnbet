@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Home,
-  Gamepad2,
   Gift,
   Headphones,
   ArrowUpRight,
@@ -16,11 +15,12 @@ import {
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
+import { createReel } from "./reel.mjs";
 import Modal from "./components/Modal.jsx";
 import { routeFor } from "./routes.mjs";
 const icons = {
   home: Home,
-  slots: Gamepad2,
+  slots: SlotsIcon,
   promotions: Gift,
   help: Headphones,
 };
@@ -252,10 +252,6 @@ export default function Site({ content: c, path }) {
                                 <span className="count">{c.games.length}</span>
                               </h2>
                             </div>
-                            <a className="text-link" href={href("slots")}>
-                              {t.more}
-                              <ArrowRight size={17} />
-                            </a>
                           </div>
                           <div className="game-grid">
                             {c.games
@@ -264,7 +260,7 @@ export default function Site({ content: c, path }) {
                               .map(card)}
                           </div>
                         </section>
-                        <Random c={c} t={t} L={L} card={card} />
+                        <Random c={c} t={t} L={L} href={href} />
                         {c.promotions.length > 0 && (
                           <section className="section">
                             <div className="section-heading">
@@ -408,7 +404,6 @@ export default function Site({ content: c, path }) {
                 )}
               </main>
               <footer>
-                {nav("footer-nav")}
                 <div className="footer-top">
                   <a className="brand" href={href("home")}>
                     <img src={c.settings.logo} alt={c.settings.brand} />
@@ -598,33 +593,68 @@ function Catalog({ c, t, L, provider, card }) {
     </section>
   );
 }
-function Random({ c, t, L, card }) {
-  const [busy, setBusy] = useState(false),
-    [result, setResult] = useState([]),
-    timer = useRef();
-  useEffect(() => () => clearTimeout(timer.current), []);
+function Random({ c, t, L, href }) {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
+  const [reel, setReel] = useState(() => createReel(c.games, 0));
+  const [position, setPosition] = useState(1);
+  const [moving, setMoving] = useState(false);
+  const timer = useRef(),
+    frames = useRef([]),
+    pending = useRef(null);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+      frames.current.forEach(cancelAnimationFrame);
+    },
+    [],
+  );
+  const finish = () => {
+    const run = pending.current;
+    if (!run) return;
+    pending.current = null;
+    clearTimeout(timer.current);
+    frames.current.forEach(cancelAnimationFrame);
+    frames.current = [];
+    setPosition(run.target);
+    setMoving(false);
+    setResult(run.winner);
+    setBusy(false);
+  };
   const spin = () => {
-    if (busy || !c.games.length) return;
-    setBusy(true);
-    timer.current = setTimeout(
-      () => {
-        const pool = [...c.games],
-          selected = [];
-        while (pool.length && selected.length < 3) {
-          const n = new Uint32Array(1);
-          crypto.getRandomValues(n);
-          selected.push(
-            pool.splice(Math.floor((n[0] / 4294967296) * pool.length), 1)[0],
-          );
-        }
-        setResult(selected);
-        setBusy(false);
-      },
-      matchMedia("(prefers-reduced-motion: reduce)").matches ? 10 : 1600,
+    if (pending.current || !c.games.length) return;
+    const n = new Uint32Array(1);
+    crypto.getRandomValues(n);
+    const run = createReel(
+      c.games,
+      Math.floor((n[0] / 4294967296) * c.games.length),
+      result?.id,
     );
+    pending.current = run;
+    setReel(run);
+    setResult(null);
+    setBusy(true);
+    setMoving(false);
+    setPosition(1);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      finish();
+      return;
+    }
+    // Commit the reset strip before starting the next animation, including repeat spins.
+    frames.current = [
+      requestAnimationFrame(() => {
+        frames.current.push(
+          requestAnimationFrame(() => {
+            setMoving(true);
+            setPosition(run.target);
+            timer.current = setTimeout(finish, 4400);
+          }),
+        );
+      }),
+    ];
   };
   return (
-    <section className="random-section">
+    <section className="random-section random-reel-section">
       <div className="random-main">
         <div>
           <span className="eyebrow">
@@ -638,14 +668,12 @@ function Random({ c, t, L, card }) {
             onClick={spin}
           >
             <Shuffle size={18} />
-            {busy ? t.spinning : result.length ? t.again : t.spin}
+            {busy ? t.spinning : result ? t.again : t.spin}
           </button>
         </div>
         <div className={"lion-orbit " + (busy ? "spinning" : "")}>
           <div className="orbit orbit-one" />
           <div className="orbit orbit-two" />
-          <span className="orbit-star one">✦</span>
-          <span className="orbit-star two">✦</span>
           <button
             className="lion-button"
             aria-label={t.spin}
@@ -654,18 +682,134 @@ function Random({ c, t, L, card }) {
           >
             <img src={c.settings.lion} alt="" />
           </button>
-          <span className="orbit-caption">YVNBET</span>
         </div>
       </div>
-      <div aria-live="polite">
-        {result.length > 0 && !busy && (
-          <div className="random-results">
-            <h3>{t.selection}</h3>
-            <div className="game-grid">{result.map(card)}</div>
+      {c.games.length ? (
+        <>
+          <div
+            className={
+              "reel-machine " +
+              (busy ? "is-spinning" : result ? "has-winner" : "")
+            }
+          >
+            <svg
+              className="reel-pointer"
+              viewBox="0 0 42 46"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 3h36L21 41Z"
+                fill="#c739a5"
+                stroke="#efce85"
+                strokeWidth="5"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div className="reel-lights" aria-hidden="true" />
+            <div
+              className="reel-window"
+              aria-busy={busy}
+              aria-label={t.selection}
+            >
+              <div
+                className="reel-track"
+                style={{
+                  "--reel-position": position,
+                  transition: moving
+                    ? "transform 4s cubic-bezier(.12,.72,.12,1)"
+                    : "none",
+                }}
+                onTransitionEnd={(e) => {
+                  if (
+                    e.target === e.currentTarget &&
+                    e.propertyName === "transform"
+                  )
+                    finish();
+                }}
+              >
+                {reel.entries.map((g, i) => {
+                  const selected = result && i === reel.target;
+                  const art = (
+                    <>
+                      <img src={g.image} alt="" draggable="false" />
+                      <span>{L(g.title)}</span>
+                    </>
+                  );
+                  return selected ? (
+                    <a
+                      key={i}
+                      className="reel-card selected"
+                      href={href("games/" + g.slug)}
+                      aria-label={`${t.play}: ${L(g.title)}`}
+                    >
+                      {art}
+                    </a>
+                  ) : (
+                    <div key={i} className="reel-card" aria-hidden="true">
+                      {art}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="reel-center" aria-hidden="true" />
+            </div>
+            <div className="reel-lights" aria-hidden="true" />
           </div>
-        )}
-      </div>
+          <div className="reel-result" aria-live="polite" aria-atomic="true">
+            {busy ? (
+              <p>{t.spinning}</p>
+            ) : result ? (
+              <a className="text-link" href={href("games/" + result.slug)}>
+                {L(result.title)}
+                <ArrowUpRight size={18} />
+              </a>
+            ) : (
+              <p>{t.randomText}</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <p className="empty">{t.empty}</p>
+      )}
     </section>
+  );
+}
+function SlotsIcon({ size = 24 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 28 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="1.5"
+        y="4"
+        width="22"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M9 7v10m7-10v10M24 14h2V5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <circle cx="26" cy="3" r="1.7" fill="currentColor" />
+      <text
+        x="3"
+        y="15.5"
+        fill="currentColor"
+        fontFamily="Arial, sans-serif"
+        fontSize="10"
+        fontWeight="800"
+        letterSpacing="1"
+      >
+        777
+      </text>
+    </svg>
   );
 }
 function Registration({ c, lang, t, onClose }) {

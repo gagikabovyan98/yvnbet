@@ -119,6 +119,9 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(loginHtml, /<footer|class="bottom-nav"/);
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
+    assert.doesNotMatch(homeHtml, /class="footer-nav"/);
+    assert.match(homeHtml, /Թոփ խաղեր/);
+    assert.match(homeHtml, /class="reel-machine /);
     assert.match(homeHtml, /class="hero-actions"/);
     assert.match(homeHtml, /class="provider-rail"/);
     assert.match(homeHtml, /class="language-flag"/);

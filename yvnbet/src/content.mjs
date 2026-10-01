@@ -11,7 +11,7 @@ export const ui = {
     register: "Регистрация",
     all: "Все игры",
     providers: "Провайдеры",
-    featured: "В центре внимания",
+    featured: "Топ игры",
     collection: "Ваша следующая любимая игра",
     search: "Найти игру",
     empty: "Ничего не найдено. Попробуйте другой фильтр.",
@@ -89,7 +89,7 @@ export const ui = {
     register: "Register",
     all: "All games",
     providers: "Providers",
-    featured: "In the spotlight",
+    featured: "Top games",
     collection: "Your next favourite game",
     search: "Find a game",
     empty: "No results. Try a different filter.",
@@ -164,7 +164,7 @@ export const ui = {
     register: "Գրանցվել",
     all: "Բոլոր խաղերը",
     providers: "Մատակարարներ",
-    featured: "Ուշադրության կենտրոնում",
+    featured: "Թոփ խաղեր",
     collection: "Ձեր հաջորդ սիրելի խաղը",
     search: "Գտնել խաղը",
     empty: "Արդյունքներ չկան։ Փորձեք այլ զտիչ։",
@@ -624,5 +624,18 @@ export function upgradeContent(input) {
       !["table", "crash"].includes(x.id) ||
       c.games.some((g) => g.category === x.id),
   );
+  return c;
+}
+
+export function upgradePresentation(input) {
+  const c = structuredClone(input);
+  const previous = {
+    ru: "В центре внимания",
+    hy: "Ուշադրության կենտրոնում",
+    en: "In the spotlight",
+  };
+  for (const lang of languages)
+    if (c.interface[lang].featured === previous[lang])
+      c.interface[lang].featured = ui[lang].featured;
   return c;
 }
