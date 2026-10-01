@@ -180,7 +180,9 @@ export default function Admin() {
   }
   function add() {
     const template = structuredClone(initialContent[section][0]);
-    template.id = section + "-" + crypto.randomUUID().slice(0, 8);
+    // getRandomValues also works on a temporary HTTP demo opened by server IP.
+    const suffix = Array.from(crypto.getRandomValues(new Uint8Array(8)), byte => byte.toString(16).padStart(2, '0')).join('');
+    template.id = section + "-" + suffix;
     template.slug = template.id;
     template.title = { ru: "Новая запись", hy: "Նոր գրառում", en: "New item" };
     template.description = { ru: "", hy: "", en: "" };
