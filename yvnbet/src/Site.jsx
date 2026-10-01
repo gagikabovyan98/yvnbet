@@ -472,6 +472,10 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
   const [index, setIndex] = useState(0),
     [paused, setPaused] = useState(false),
     [hover, setHover] = useState(false);
+  const gesture = useRef(null),
+    swiped = useRef(false);
+  const change = (step) =>
+    setIndex((i) => (i + step + slides.length) % slides.length);
   useEffect(() => {
     if (
       paused ||
@@ -489,7 +493,7 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
   const s = slides[index % slides.length];
   return (
     <section
-      className="hero"
+      className="hero banner-slider"
       aria-roledescription="carousel"
       aria-label={t.offers}
       onMouseEnter={() => setHover(true)}
@@ -499,21 +503,73 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
         if (!e.currentTarget.contains(e.relatedTarget)) setHover(false);
       }}
     >
-      <img className="hero-art" src={s.image} alt="" fetchPriority="high" />
-      <div className="hero-overlay" />
-      <div className="hero-copy" key={s.id}>
-        <span className="eyebrow">
-          <span className="gold-dot" />
-          {L(s.label)}
-        </span>
-        <h1>{L(s.title)}</h1>
-        <p>{L(s.description)}</p>
-        {s.url && (
-          <a className="button hero-cta" href={localizedUrl(s.url)}>
-            {L(s.button)}
-            <ArrowUpRight size={18} />
-          </a>
-        )}
+      <h1 className="visually-hidden">{L(s.title)}</h1>
+      <div
+        className="banner-viewport"
+        onTouchStart={(e) => {
+          const touch = e.touches[0];
+          gesture.current = { x: touch.clientX, y: touch.clientY };
+          swiped.current = false;
+        }}
+        onTouchEnd={(e) => {
+          if (!gesture.current) return;
+          const touch = e.changedTouches[0],
+            dx = touch.clientX - gesture.current.x,
+            dy = touch.clientY - gesture.current.y;
+          gesture.current = null;
+          if (
+            Math.abs(dx) > 45 &&
+            Math.abs(dx) > Math.abs(dy) * 1.4 &&
+            slides.length > 1
+          ) {
+            swiped.current = true;
+            change(dx < 0 ? 1 : -1);
+          }
+        }}
+        onTouchCancel={() => {
+          gesture.current = null;
+        }}
+        onClickCapture={(e) => {
+          if (swiped.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            swiped.current = false;
+          }
+        }}
+      >
+        {slides.map((slide, i) => {
+          const active = i === index % slides.length;
+          const art = (
+            <img
+              className="banner-image"
+              src={slide.image}
+              alt={L(slide.description) || L(slide.title)}
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : "auto"}
+              draggable="false"
+            />
+          );
+          return (
+            <div
+              key={slide.id}
+              className={"banner-slide" + (active ? " active" : "")}
+              aria-hidden={!active}
+              inert={!active ? true : undefined}
+            >
+              {slide.url ? (
+                <a
+                  className="banner-link"
+                  href={localizedUrl(slide.url)}
+                  aria-label={L(slide.title)}
+                >
+                  {art}
+                </a>
+              ) : (
+                art
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="hero-controls">
         <div className="slide-dots">
@@ -521,25 +577,24 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
             <button
               key={s.id}
               aria-label={`${t.slide} ${i + 1}`}
-              aria-current={i === index ? "true" : undefined}
+              aria-current={i === index % slides.length ? "true" : undefined}
               onClick={() => setIndex(i)}
             />
           ))}
         </div>
-        <span className="slide-counter">
-          0{index + 1} <span>/ 0{slides.length}</span>
-        </span>
         <button
           className="icon-button"
           aria-label={t.prev}
-          onClick={() => setIndex((index - 1 + slides.length) % slides.length)}
+          disabled={slides.length < 2}
+          onClick={() => change(-1)}
         >
           <ChevronLeft size={18} />
         </button>
         <button
           className="icon-button"
           aria-label={t.next}
-          onClick={() => setIndex((index + 1) % slides.length)}
+          disabled={slides.length < 2}
+          onClick={() => change(1)}
         >
           <ChevronRight size={18} />
         </button>

@@ -2973,3 +2973,165 @@ footer {
     transition: none !important;
   }
 }
+
+/* Image-first promotional carousel, matching the supplied mobile references. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.public-site .hero.banner-slider {
+  height: auto;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid #44314e;
+  border-bottom: 0;
+  background: #170f20;
+}
+.banner-viewport {
+  width: 100%;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 500px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.banner-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    visibility 0.35s ease;
+}
+.banner-slide.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.banner-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.banner-link:focus-visible {
+  outline-offset: -4px;
+}
+.banner-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.public-site .banner-slider .hero-controls {
+  position: relative;
+  inset: auto;
+  min-height: 42px;
+  padding: 3px 12px;
+  justify-content: center;
+  gap: 4px;
+  background: #170f20;
+}
+.banner-slider .slide-dots {
+  gap: 0;
+  margin: 0 8px 0 0;
+}
+.banner-slider .slide-dots button {
+  position: relative;
+  width: 30px;
+  height: 32px;
+  background: transparent;
+  border-radius: 0;
+}
+.banner-slider .slide-dots button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px;
+  height: 7px;
+  background: #78677f;
+  border-radius: 20px;
+  transition:
+    width 0.2s,
+    background 0.2s;
+}
+.banner-slider .slide-dots button[aria-current] {
+  width: 30px;
+  background: transparent;
+}
+.banner-slider .slide-dots button[aria-current]::after {
+  width: 19px;
+  background: #f7edf9;
+}
+.banner-slider .hero-controls .icon-button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #bbaac6;
+}
+.public-site .hero-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  background: #170f20;
+  border: 1px solid #44314e;
+  border-top: 0;
+  border-radius: 0 0 16px 16px;
+}
+.public-site .hero-actions .button {
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  font-size: 16px;
+  border-radius: 11px;
+  box-shadow: none;
+}
+.public-site .hero-actions .button.quiet {
+  background: #382d40;
+  border-color: #51405c;
+}
+.hero-actions .button > svg {
+  display: none;
+}
+.cms-banner-help {
+  color: #62516d;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+@media (max-width: 620px) {
+  .public-site .hero.banner-slider {
+    border-radius: 12px 12px 0 0;
+  }
+  .public-site .hero-actions {
+    gap: 9px;
+    padding: 10px;
+    border-radius: 0 0 12px 12px;
+  }
+  .public-site .hero-actions .button {
+    min-height: 50px;
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+  .public-site .banner-slider .hero-controls {
+    min-height: 36px;
+    padding-block: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner-slide {
+    transition: none;
+  }
+}

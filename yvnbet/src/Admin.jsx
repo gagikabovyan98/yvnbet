@@ -621,9 +621,23 @@ export default function Admin() {
                         <h2>{current.title[lang]}</h2>
                         <Language value={lang} onChange={setLang} />
                       </div>
-                      {Object.entries(current).map(([k, v]) =>
-                        field(v, [section, index, k], k),
+                      {section === "slides" && (
+                        <p className="cms-banner-help">
+                          Загрузите готовый рекламный баннер с текстом внутри
+                          изображения. Рекомендуемый размер — 1600 × 900 px; все
+                          баннеры лучше делать одного формата. Картинка
+                          показывается целиком. Заголовок и описание
+                          используются для доступности, ссылка открывается по
+                          нажатию на баннер.
+                        </p>
                       )}
+                      {Object.entries(current)
+                        .filter(
+                          ([k]) =>
+                            section !== "slides" ||
+                            !["label", "button"].includes(k),
+                        )
+                        .map(([k, v]) => field(v, [section, index, k], k))}
                     </>
                   ) : (
                     <div className="cms-placeholder">
