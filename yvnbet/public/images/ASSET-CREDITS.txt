@@ -10,6 +10,6 @@ Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
 Brand marks remain the property of their respective owners.
 
 Client-supplied Flaticon icons:
-nav-slots.png — https://cdn-icons-png.flaticon.com/512/3410/3410843.png
+nav-slots.png — https://cdn-icons-png.flaticon.com/512/8586/8586374.png (Jackpot)
 providers-all.png — https://cdn-icons-png.flaticon.com/512/12415/12415058.png
 Displayed in white using CSS for contrast on the dark background.

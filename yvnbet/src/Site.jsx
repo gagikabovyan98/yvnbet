@@ -1027,7 +1027,7 @@ function Random({ c, t, L, href }) {
 function SlotsIcon({ size = 24 }) {
   return (
     <img
-      src="/images/nav-slots.png"
+      src="/images/nav-slots.png?v=8586374"
       width={size}
       height={size}
       alt=""

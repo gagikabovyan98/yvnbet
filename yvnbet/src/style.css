@@ -3206,9 +3206,21 @@ footer {
   border-radius: 8px;
   box-shadow: none;
 }
+.public-site .hero-actions .button:not(.quiet) {
+  background: #009c5b;
+  border-color: #009c5b;
+}
+.public-site .hero-actions .button:not(.quiet):hover {
+  background: #00ad65;
+  border-color: #00ad65;
+}
 .public-site .hero-actions .button.quiet {
-  background: #382d40;
-  border-color: #51405c;
+  background: #353b3d;
+  border-color: #353b3d;
+}
+.public-site .hero-actions .button.quiet:hover {
+  background: #444c4e;
+  border-color: #444c4e;
 }
 .hero-actions .button > svg {
   display: none;
