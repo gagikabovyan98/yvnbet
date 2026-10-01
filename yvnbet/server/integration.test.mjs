@@ -82,6 +82,23 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
   }
   try {
     await start();
+    const automaticLanguage = await fetch(origin + "/?campaign=test", {
+      redirect: "manual",
+      headers: {
+        "Accept-Language": "ru-RU,hy;q=0.5",
+        "X-Forwarded-For": "37.157.216.1",
+      },
+    });
+    assert.equal(
+      automaticLanguage.headers.get("location"),
+      "/ru?campaign=test",
+    );
+    assert.match(automaticLanguage.headers.get("cache-control"), /no-store/);
+    const manualLanguage = await fetch(origin + "/", {
+      redirect: "manual",
+      headers: { Cookie: "yvn_language=en", "Accept-Language": "hy" },
+    });
+    assert.equal(manualLanguage.headers.get("location"), "/en");
     assert.equal((await call("/api/admin/content")).status, 401);
     assert.equal((await call("/data/cms.sqlite")).status, 404);
     await login("admin", "Isolated-Test-Password-2026");

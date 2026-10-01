@@ -32,3 +32,9 @@ docker compose stop
 ```
 
 `docker compose down` удаляет контейнер и сеть, сохраняя том. `docker compose down -v` безвозвратно удаляет том с контентом, сотрудниками, изображениями и заявками. Последняя команда здесь не выполнялась.
+
+### Automatic language selection
+
+The `/` entry URL chooses the saved manual language first, then the visitor's IP country (AM → hy, RU → ru), then the browser's supported language, then the CMS default. Explicit `/hy`, `/ru`, and `/en` links keep their language. Country lookup runs locally using the bundled geoip-country database; no external IP lookup request or browser location permission is used. VPN addresses can change the detected country. Keep the country database current with reviewed `npm update geoip-country` updates and rebuild the image. The package includes MaxMind GeoLite2 data and its license/EULA in node_modules/geoip-country.
+
+When adding a reverse proxy, configure `TRUST_PROXY_HOPS` only for the actual trusted topology; do not blindly trust client-supplied forwarding or country headers. Direct Docker access by IP requires no additional setting.

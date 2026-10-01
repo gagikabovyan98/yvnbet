@@ -15,6 +15,7 @@ import {
   upgradePresentation,
   upgradeRegistrationUi,
   upgradeTelegramLinks,
+  upgradeLionPresentation,
 } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
 export function passwordHash(password) {
@@ -49,6 +50,7 @@ export async function openStore(dir) {
     ["2026-10-top-games-reel", upgradePresentation],
     ["2026-10-phone-provider-ui", upgradeRegistrationUi],
     ["2026-10-telegram-links", upgradeTelegramLinks],
+    ["2026-10-lion-paw", upgradeLionPresentation],
   ]) {
     if (db.prepare("SELECT name FROM migrations WHERE name=?").get(name))
       continue;

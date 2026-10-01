@@ -948,8 +948,12 @@ footer {
   text-align: center;
 }
 .age-content > img {
-  width: 100px;
-  margin: 10px auto 25px;
+  display: block;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 18px;
+  margin: 0 auto 20px;
 }
 .age-content p {
   font-size: 14px;
@@ -3190,8 +3194,8 @@ footer {
 .public-site .hero-actions {
   display: flex;
   justify-content: center;
-  width: 100%;
-  max-width: 640px;
+  width: calc(100% - 16px);
+  max-width: 624px;
   margin-inline: auto;
   gap: 10px;
   margin-top: 16px;
@@ -3736,5 +3740,128 @@ footer {
   }
   .winner-cover::before {
     animation: none;
+  }
+}
+
+/* The mascot stays still until the reel selects a game. */
+.lion-heading {
+  text-align: center;
+  padding: 28px 16px 0;
+}
+.lion-heading h2 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.25;
+}
+.lion-heading p {
+  margin: 0;
+  color: #e8a4d8;
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 600;
+}
+.lion-stage {
+  position: relative;
+  width: min(100%, 380px);
+  height: 300px;
+  margin: 10px auto 0;
+  isolation: isolate;
+}
+.lion-portrait,
+.lion-celebration {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.lion-portrait {
+  object-fit: contain;
+  object-position: center bottom;
+  mask-image: linear-gradient(#000 92%, transparent);
+}
+.lion-celebration {
+  object-fit: cover;
+  opacity: 0;
+  mask-image: radial-gradient(
+    ellipse 64% 70% at 50% 48%,
+    #000 52%,
+    transparent 78%
+  );
+}
+.lion-stage.is-celebrating .lion-portrait {
+  opacity: 0;
+}
+.lion-stage.is-celebrating .lion-celebration {
+  opacity: 1;
+}
+.random-reel-section .reel-machine {
+  max-width: 800px;
+  margin: 12px auto 0;
+  width: calc(100% - 40px);
+}
+.paw-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 14px auto 0;
+  padding: 4px 16px 8px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: #f2d697;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+.paw-button img {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 13px #daa85240);
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease;
+}
+.paw-button:hover:not(:disabled) img {
+  transform: translateY(-3px) rotate(-4deg);
+  filter: drop-shadow(0 0 18px #daa85280);
+}
+.paw-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.paw-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.random-reel-section .reel-result:empty {
+  display: none;
+}
+.random-reel-section {
+  padding-bottom: 12px;
+}
+@media (max-width: 620px) {
+  .lion-heading {
+    padding-top: 24px;
+  }
+  .lion-stage {
+    height: 250px;
+    width: min(100%, 310px);
+  }
+  .random-reel-section .reel-machine {
+    width: calc(100% - 24px);
+  }
+  .paw-button img {
+    width: 90px;
+    height: 90px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lion-portrait,
+  .lion-celebration,
+  .paw-button,
+  .paw-button img {
+    transition: none;
   }
 }

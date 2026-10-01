@@ -13,3 +13,12 @@ Client-supplied Flaticon icons:
 nav-slots.png — https://cdn-icons-png.flaticon.com/512/8586/8586374.png (Jackpot)
 providers-all.png — https://cdn-icons-png.flaticon.com/512/12415/12415058.png
 Displayed in white using CSS for contrast on the dark background.
+
+Lion presentation assets (client-provided references, 2026-10-02):
+lion-standing.webp — source photo_5906986007184216101_y.jpg.
+lion-paw.webp — source photo_5906986007184216108_y.jpg.
+Prepared with built-in imagegen, preserving transparent alpha; resized to WebP for delivery.
+Lion edit prompt: Preserve the crowned purple-maned lion, glasses, tuxedo and crossed-arm pose; remove the background and chair; genuine transparent background.
+Paw edit prompt: Preserve the front-facing paw, pads, fur and proportions; remove the purple background; genuine transparent background; no extra symbols or frame.
+../media/lion-celebration.mp4 — client-provided IMG_6864.MP4, used as supplied.
+lion-age.webp — client-provided photo_5906986007184216112_w (1).jpg, resized for the 18+ dialog.

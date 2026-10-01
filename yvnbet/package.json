@@ -12,6 +12,7 @@
   "dependencies": {
     "embla-carousel-react": "^8.6.0",
     "express": "^5.1.0",
+    "geoip-country": "^5.0.202609300220",
     "libphonenumber-js": "^1.13.14",
     "lucide-react": "^0.468.0",
     "react": "^19.1.0",
@@ -25,5 +26,10 @@
   },
   "devDependencies": {
     "country-flag-icons": "^1.6.20"
+  },
+  "overrides": {
+    "geoip-country": {
+      "ip-address": "^10.7.2"
+    }
   }
 }

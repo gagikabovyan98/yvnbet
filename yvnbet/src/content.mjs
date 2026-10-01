@@ -32,7 +32,7 @@ export const ui = {
     play: "Играть",
     details: "Подробнее",
     random: "Не знаете, во что поиграть?",
-    randomText: "Доверьтесь льву. Один клик — новая подборка.",
+    randomText: "Лев поможет вам.",
     spin: "Крутить",
     spinning: "Лев выбирает…",
     selection: "Выбор льва",
@@ -124,7 +124,7 @@ export const ui = {
     play: "Play",
     details: "Details",
     random: "Not sure what to play?",
-    randomText: "Let the lion choose. One click, a fresh selection.",
+    randomText: "The lion will help you.",
     spin: "Spin",
     spinning: "The lion is choosing…",
     selection: "The lion’s picks",
@@ -212,8 +212,8 @@ export const ui = {
     empty: "Արդյունքներ չկան։ Փորձեք այլ զտիչ։",
     play: "Խաղալ",
     details: "Մանրամասն",
-    random: "Չգիտե՞ք՝ ինչ խաղալ",
-    randomText: "Վստահեք առյուծին։ Մեկ սեղմում՝ նոր ընտրանի։",
+    random: "Չգիտե՞ս՝ ինչ խաղալ",
+    randomText: "Առյուծը կօգնի քեզ։",
     spin: "Պտտել",
     spinning: "Առյուծն ընտրում է…",
     selection: "Առյուծի ընտրությունը",
@@ -290,7 +290,7 @@ export const initialContent = {
   settings: {
     brand: "YvnBet",
     logo: "/images/wordmark.webp",
-    lion: "/images/lion.svg",
+    lion: "/images/lion-standing.webp",
     telegram: "yvnbet",
     registrationTelegramUrl: "",
     supportTelegramUrl: "",
@@ -710,6 +710,23 @@ export function upgradeTelegramLinks(input) {
   const c = structuredClone(input);
   c.settings.registrationTelegramUrl ??= "";
   c.settings.supportTelegramUrl ??= "";
+  return c;
+}
+
+export function upgradeLionPresentation(input) {
+  const c = structuredClone(input);
+  if (c.settings.lion === "/images/lion.svg")
+    c.settings.lion = initialContent.settings.lion;
+  const previous = {
+    ru: "Доверьтесь льву. Один клик — новая подборка.",
+    hy: "Վստահեք առյուծին։ Մեկ սեղմում՝ նոր ընտրանի։",
+    en: "Let the lion choose. One click, a fresh selection.",
+  };
+  for (const lang of languages)
+    if (c.interface[lang].randomText === previous[lang])
+      c.interface[lang].randomText = ui[lang].randomText;
+  if (c.interface.hy.random === "Չգիտե՞ք՝ ինչ խաղալ")
+    c.interface.hy.random = ui.hy.random;
   return c;
 }
 

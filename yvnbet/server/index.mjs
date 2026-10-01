@@ -12,6 +12,7 @@ import {
 import { validateContent, parseImage, leadSchema } from "./validation.mjs";
 import { publicContent, telegramContact } from "../src/content.mjs";
 import { headFor, metaFor, jsonSafe, sitemap } from "./seo.mjs";
+import { requestLanguage } from "./language.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = process.env.DATA_DIR || path.join(root, "data");
 const port = Number(process.env.PORT || 4173),
@@ -364,11 +365,17 @@ if (prod) {
 }
 app.get("/{*path}", async (req, res, next) => {
   try {
-    if (req.path === "/")
+    if (req.path === "/") {
+      res.set("Cache-Control", "private, no-store");
+      res.vary("Cookie");
+      res.vary("Accept-Language");
       return res.redirect(
         302,
-        "/" + getContent().content.settings.defaultLanguage,
+        "/" +
+          requestLanguage(req, getContent().content.settings.defaultLanguage) +
+          req.originalUrl.slice(1),
       );
+    }
     const c = publicContent(getContent().content),
       isAdmin = req.path === "/admin",
       m = metaFor(c, req.path);

@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Search,
   Play,
-  Shuffle,
   Smartphone,
   Sparkles,
   CheckCircle2,
@@ -502,7 +501,7 @@ export default function Site({ content: c, path }) {
       {age && (
         <Modal title={denied ? "18+" : t.age}>
           <div className="age-content">
-            <img src={c.settings.lion} alt="" />
+            <img className="age-lion" src="/images/lion-age.webp" alt="" />
             <p>{denied ? t.denied : t.ageText}</p>
             {denied ? (
               <button className="button quiet" onClick={() => setDenied(false)}>
@@ -798,12 +797,49 @@ function Random({ c, t, L, href }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
+  const video = useRef(null);
   const [reel, setReel] = useState(() => createReel(c.games, 0));
   const [position, setPosition] = useState(1);
   const [moving, setMoving] = useState(false);
   const timer = useRef(),
     frames = useRef([]),
     pending = useRef(null);
+  const reveal = () => {
+    setCelebrating(false);
+    setShowResult(true);
+  };
+  useEffect(() => {
+    if (!celebrating) return;
+    const clip = video.current;
+    let cancelled = false;
+    let fallback = setTimeout(reveal, 15000);
+    // The clip is decorative: a playback failure must never block the selected game.
+    if (clip) {
+      const bounds = clip.getBoundingClientRect();
+      if (bounds.top < 72 || bounds.bottom > window.innerHeight - 80)
+        clip.scrollIntoView({ block: "center", behavior: "smooth" });
+      clip.currentTime = 0;
+      clip
+        .play()
+        ?.then(() => {
+          if (cancelled) return;
+          clearTimeout(fallback);
+          fallback = setTimeout(
+            reveal,
+            Math.max(6, (clip.duration || 4) + 2) * 1000,
+          );
+        })
+        .catch(() => {
+          if (!cancelled) reveal();
+        });
+    }
+    return () => {
+      cancelled = true;
+      clearTimeout(fallback);
+      clip?.pause();
+    };
+  }, [celebrating]);
   useEffect(
     () => () => {
       clearTimeout(timer.current);
@@ -821,11 +857,17 @@ function Random({ c, t, L, href }) {
     setPosition(run.target);
     setMoving(false);
     setResult(run.winner);
-    setShowResult(true);
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setCelebrating(!reduced);
+    setShowResult(reduced);
     setBusy(false);
   };
   const spin = () => {
-    if (pending.current || !c.games.length) return;
+    if (pending.current || celebrating || !c.games.length) return;
+    if (video.current && video.current.readyState < 2) {
+      video.current.preload = "auto";
+      video.current.load();
+    }
     const n = new Uint32Array(1);
     crypto.getRandomValues(n);
     const run = createReel(
@@ -859,34 +901,33 @@ function Random({ c, t, L, href }) {
   };
   return (
     <section className="random-section random-reel-section">
-      <div className="random-main">
-        <div>
-          <span className="eyebrow">
-            <Sparkles size={14} /> {t.selection}
-          </span>
-          <h2>{t.random}</h2>
-          <p>{t.randomText}</p>
-          <button
-            className="button gold"
-            disabled={busy || !c.games.length}
-            onClick={spin}
-          >
-            <Shuffle size={18} />
-            {busy ? t.spinning : result ? t.again : t.spin}
-          </button>
-        </div>
-        <div className={"lion-orbit " + (busy ? "spinning" : "")}>
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <button
-            className="lion-button"
-            aria-label={t.spin}
-            onClick={spin}
-            disabled={busy || !c.games.length}
-          >
-            <img src={c.settings.lion} alt="" />
-          </button>
-        </div>
+      <div className="lion-heading">
+        <h2>{t.random}</h2>
+        <p>{t.randomText}</p>
+      </div>
+      <div
+        className={"lion-stage" + (celebrating ? " is-celebrating" : "")}
+        aria-hidden="true"
+      >
+        <img
+          className="lion-portrait"
+          src={c.settings.lion}
+          alt=""
+          loading="lazy"
+        />
+        <video
+          ref={video}
+          className="lion-celebration"
+          src="/media/lion-celebration.mp4"
+          muted
+          playsInline
+          preload="none"
+          onEnded={reveal}
+          onError={() => {
+            if (celebrating) reveal();
+          }}
+          tabIndex={-1}
+        />
       </div>
       {c.games.length ? (
         <>
@@ -959,21 +1000,32 @@ function Random({ c, t, L, href }) {
             </div>
             <div className="reel-lights" aria-hidden="true" />
           </div>
+          <button
+            type="button"
+            className="paw-button"
+            disabled={busy || celebrating}
+            onClick={spin}
+            aria-label={busy ? t.spinning : result ? t.again : t.spin}
+          >
+            <img src="/images/lion-paw.webp" alt="" draggable="false" />
+            <span>{busy ? t.spinning : result ? t.again : t.spin}</span>
+          </button>
           <div className="reel-result" aria-live="polite" aria-atomic="true">
             {busy ? (
               <p>{t.spinning}</p>
             ) : result ? (
               <button
                 className="winner-summary"
-                onClick={() => setShowResult(true)}
+                onClick={() => {
+                  setCelebrating(false);
+                  setShowResult(true);
+                }}
               >
                 <img src={result.image} alt="" />
                 <span>{L(result.title)}</span>
                 <Play size={18} />
               </button>
-            ) : (
-              <p>{t.randomText}</p>
-            )}
+            ) : null}
           </div>
           {showResult && result && (
             <Modal
@@ -1361,6 +1413,9 @@ function LanguageMenu({ lang, path }) {
             href={path.replace(/^\/(ru|hy|en)/, "/" + code)}
             lang={code}
             hrefLang={code}
+            onClick={() => {
+              document.cookie = `yvn_language=${code}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+            }}
             aria-current={code === lang ? "true" : undefined}
           >
             <Flag lang={code} />
