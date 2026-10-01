@@ -2988,9 +2988,8 @@ footer {
 }
 .public-site .hero.banner-slider {
   height: auto;
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
   border: 1px solid #44314e;
-  border-bottom: 0;
   background: #170f20;
 }
 .banner-viewport {
@@ -3084,11 +3083,10 @@ footer {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  padding: 12px;
-  background: #170f20;
-  border: 1px solid #44314e;
-  border-top: 0;
-  border-radius: 0 0 16px 16px;
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 .public-site .hero-actions .button {
   width: 100%;
@@ -3113,12 +3111,11 @@ footer {
 }
 @media (max-width: 620px) {
   .public-site .hero.banner-slider {
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
   }
   .public-site .hero-actions {
     gap: 9px;
-    padding: 10px;
-    border-radius: 0 0 12px 12px;
+    margin-top: 14px;
   }
   .public-site .hero-actions .button {
     min-height: 50px;
@@ -3372,14 +3369,16 @@ footer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 66px;
-  height: 42px;
-  border: 2px solid #b887b8;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #796682;
   border-radius: 50%;
   padding: 0;
-  font-size: 17px;
-  font-weight: 750;
-  color: #eed8ee;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #cdbed5;
   flex-shrink: 0;
 }
 .footer-currencies {
