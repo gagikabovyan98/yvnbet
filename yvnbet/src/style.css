@@ -2988,6 +2988,9 @@ footer {
 }
 .public-site .hero.banner-slider {
   height: auto;
+  width: min(1920px, calc(100vw - 48px));
+  left: 50%;
+  transform: translateX(-50%);
   border-radius: 16px;
   border: 1px solid #44314e;
   background: #170f20;
@@ -2995,8 +2998,7 @@ footer {
 .banner-viewport {
   width: 100%;
   position: relative;
-  aspect-ratio: 16 / 9;
-  max-height: 500px;
+  aspect-ratio: 3.05 / 1;
   overflow: hidden;
   touch-action: pan-y;
   cursor: grab;
@@ -3054,7 +3056,7 @@ footer {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
 }
 .public-site .banner-slider .hero-controls {
@@ -3141,6 +3143,10 @@ footer {
 @media (max-width: 620px) {
   .public-site .hero.banner-slider {
     border-radius: 12px;
+    width: calc(100vw - 28px);
+  }
+  .banner-viewport {
+    aspect-ratio: 16 / 9;
   }
   .public-site .hero-actions {
     gap: 9px;
