@@ -747,6 +747,7 @@ function Leads({ api, admin, onError }) {
                   {x.telegram && <span>{x.telegram}</span>}
                   {x.city && <span>{x.city}</span>}
                   {x.adult && <small>18+ подтверждено</small>}
+                  {x.termsAccepted && <small>Условия приняты</small>}
                   <small>{x.language.toUpperCase()} · согласие получено</small>
                 </td>
                 <td>

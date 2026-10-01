@@ -1,0 +1,10 @@
+Country flags: country-flag-icons, https://github.com/catamphetamine/country-flag-icons
+MIT license: see flags-LICENSE.txt in this directory.
+
+Cryptocurrency brand marks: DASH, Litecoin (LTC), Tether (USDT), Solana (SOL).
+Source: the client-supplied visual reference at
+https://yvnbet-review.vladislavzhivoi.chatgpt.site/wp-content/themes/yvnbet/assets/images/crypto/
+Files dash.svg, ltc.svg, usdt.svg and sol.svg were resized and converted to WebP.
+Dash logo: Dash, https://www.dash.org/brand-assets/
+Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
+Brand marks remain the property of their respective owners.

@@ -245,6 +245,7 @@ export const leadSchema = z.strictObject({
     .regex(/^(?:@?[a-zA-Z][a-zA-Z0-9_]{4,31})?$/)
     .default(""),
   consent: z.literal(true),
+  termsAccepted: z.literal(true),
   language: z.enum(["ru", "hy", "en"]),
   website: z.string().max(0),
 });

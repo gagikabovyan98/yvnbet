@@ -10,6 +10,7 @@ import {
 import {
   initialContent,
   upgradeContent,
+  upgradeRegistrationUi,
   publicContent,
   activePromotion,
 } from "../src/content.mjs";
@@ -116,12 +117,15 @@ test("registration requires consent, valid contacts and an empty honeypot", () =
     city: "Yerevan",
     adult: true,
     consent: true,
+    termsAccepted: true,
     language: "en",
     website: "",
   };
   assert.equal(leadSchema.safeParse(v).success, true);
   for (const change of [
     { consent: false },
+    { termsAccepted: false },
+    { termsAccepted: undefined },
     { adult: false },
     { adult: undefined },
     { city: "" },
@@ -135,6 +139,28 @@ test("registration requires consent, valid contacts and an empty honeypot", () =
   const { telegram, ...withoutTelegram } = v;
   assert.equal(leadSchema.safeParse(withoutTelegram).success, true);
   assert.equal(safeUrl("https://user:pass@example.com"), false);
+});
+
+test("registration UI migration preserves edited content and adds a routable partner page once", () => {
+  const c = clone();
+  c.pages = c.pages.filter((p) => p.slug !== "partners");
+  c.interface.ru.countrySearch = "Custom search";
+  delete c.interface.hy.countrySearch;
+  const upgraded = upgradeRegistrationUi(c);
+  assert.equal(
+    validateContent(upgraded).interface.ru.countrySearch,
+    "Custom search",
+  );
+  assert.ok(upgraded.interface.hy.countrySearch);
+  for (const lang of ["ru", "hy", "en"])
+    assert.equal(routeFor(`/${lang}/partners`, upgraded).valid, true);
+  upgraded.pages.find((p) => p.slug === "partners").description.en =
+    "Custom partnership terms";
+  assert.deepEqual(upgradeRegistrationUi(upgraded), upgraded);
+  assert.equal(
+    c.pages.some((p) => p.slug === "partners"),
+    false,
+  );
 });
 
 test("existing content gains registration fields and slot previews without losing custom CMS values", () => {

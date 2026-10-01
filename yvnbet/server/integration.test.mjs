@@ -164,6 +164,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
       city: "Երևան",
       adult: true,
       consent: true,
+      termsAccepted: true,
       language: "hy",
       website: "",
     };

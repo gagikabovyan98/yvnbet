@@ -16,6 +16,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
+import PhoneInput from "./components/PhoneInput.jsx";
+import { normalizePhone } from "./phone.mjs";
 import Modal from "./components/Modal.jsx";
 import { routeFor } from "./routes.mjs";
 const icons = {
@@ -231,7 +233,6 @@ export default function Site({ content: c, path }) {
                             onClick={() => setModal({ type: "register" })}
                           >
                             {t.register}
-                            <ArrowUpRight size={18} />
                           </button>
                           <a className="button quiet" href={href("login")}>
                             {t.login}
@@ -249,7 +250,9 @@ export default function Site({ content: c, path }) {
                               <span className="eyebrow">{t.catalog}</span>
                               <h2>
                                 {t.featured}
-                                <span className="count">{c.games.length}</span>
+                                <span className="count">
+                                  {c.games.filter((g) => g.featured).length}
+                                </span>
                               </h2>
                             </div>
                           </div>
@@ -260,6 +263,19 @@ export default function Site({ content: c, path }) {
                               .map(card)}
                           </div>
                         </section>
+                        {c.providers.map((provider) => (
+                          <ProviderGames
+                            key={provider.id}
+                            provider={provider}
+                            games={c.games.filter(
+                              (g) => g.provider === provider.id,
+                            )}
+                            card={card}
+                            L={L}
+                            t={t}
+                            href={href}
+                          />
+                        ))}
                         <Random c={c} t={t} L={L} href={href} />
                         {c.promotions.length > 0 && (
                           <section className="section">
@@ -372,6 +388,17 @@ export default function Site({ content: c, path }) {
                         <span className="eyebrow">{c.settings.brand}</span>
                         <h1>{L(item.title)}</h1>
                         <p className="prose">{L(item.description)}</p>
+                        {item.slug === "partners" && (
+                          <a
+                            className="button partner-contact"
+                            href={`https://t.me/${c.settings.telegram}?text=${encodeURIComponent(t.partnerMessage)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <TelegramIcon size={20} />
+                            {t.contactOperator}
+                          </a>
+                        )}
                       </article>
                     )}
                     {section === "app" && item && (
@@ -409,13 +436,37 @@ export default function Site({ content: c, path }) {
                     <img src={c.settings.logo} alt={c.settings.brand} />
                   </a>
                   <div className="footer-links">
-                    {["about", "privacy", "terms", "help", "app"].map((k) => (
+                    {[
+                      "about",
+                      "partners",
+                      "privacy",
+                      "terms",
+                      "help",
+                      "app",
+                    ].map((k) => (
                       <a href={href(k)} key={k}>
                         {t[k]}
                       </a>
                     ))}
                   </div>
                   <span className="age-seal">18+</span>
+                </div>
+                <div
+                  className="footer-currencies"
+                  aria-label="DASH, LTC, USDT, SOL"
+                >
+                  {["dash", "ltc", "usdt", "sol"].map((currency) => (
+                    <span key={currency}>
+                      <img
+                        src={`/images/crypto-${currency}.webp`}
+                        width="32"
+                        height="32"
+                        alt=""
+                        loading="lazy"
+                      />
+                      <strong>{currency.toUpperCase()}</strong>
+                    </span>
+                  ))}
                 </div>
                 <div className="footer-bottom">
                   <span>
@@ -651,6 +702,7 @@ function Catalog({ c, t, L, provider, card }) {
 function Random({ c, t, L, href }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
   const [reel, setReel] = useState(() => createReel(c.games, 0));
   const [position, setPosition] = useState(1);
   const [moving, setMoving] = useState(false);
@@ -674,6 +726,7 @@ function Random({ c, t, L, href }) {
     setPosition(run.target);
     setMoving(false);
     setResult(run.winner);
+    setShowResult(true);
     setBusy(false);
   };
   const spin = () => {
@@ -688,6 +741,7 @@ function Random({ c, t, L, href }) {
     pending.current = run;
     setReel(run);
     setResult(null);
+    setShowResult(false);
     setBusy(true);
     setMoving(false);
     setPosition(1);
@@ -814,14 +868,60 @@ function Random({ c, t, L, href }) {
             {busy ? (
               <p>{t.spinning}</p>
             ) : result ? (
-              <a className="text-link" href={href("games/" + result.slug)}>
-                {L(result.title)}
-                <ArrowUpRight size={18} />
-              </a>
+              <button
+                className="winner-summary"
+                onClick={() => setShowResult(true)}
+              >
+                <img src={result.image} alt="" />
+                <span>{L(result.title)}</span>
+                <Play size={18} />
+              </button>
             ) : (
               <p>{t.randomText}</p>
             )}
           </div>
+          {showResult && result && (
+            <Modal
+              title={t.winner}
+              closeLabel={t.close}
+              onClose={() => setShowResult(false)}
+            >
+              <div className="winner-reveal">
+                <div className="winner-cover">
+                  <div className="winner-sparks" aria-hidden="true">
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <i
+                        key={i}
+                        style={{
+                          "--spark-angle": `${i * 45}deg`,
+                          "--spark-delay": `${i * 35}ms`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <img src={result.image} alt={L(result.title)} />
+                  <span>
+                    <Sparkles size={16} />
+                    {t.selection}
+                  </span>
+                </div>
+                <p>
+                  {L(c.providers.find((p) => p.id === result.provider)?.title)}
+                </p>
+                <h3>{L(result.title)}</h3>
+                <a className="button gold" href={href("games/" + result.slug)}>
+                  <Play size={19} fill="currentColor" />
+                  {t.play}
+                </a>
+                <button
+                  className="text-button"
+                  onClick={() => setShowResult(false)}
+                >
+                  {t.back}
+                </button>
+              </div>
+            </Modal>
+          )}
         </>
       ) : (
         <p className="empty">{t.empty}</p>
@@ -871,10 +971,16 @@ function Registration({ c, lang, t, onClose }) {
   const [state, setState] = useState(""),
     [error, setError] = useState(""),
     [url, setUrl] = useState("");
+  const [phone, setPhone] = useState({ country: "AM", number: "" });
   async function submit(e) {
     e.preventDefault();
-    setState("pending");
     setError("");
+    const internationalPhone = normalizePhone(phone.number, phone.country);
+    if (!internationalPhone) {
+      setError(t.phoneInvalid);
+      return;
+    }
+    setState("pending");
     const f = new FormData(e.currentTarget);
     try {
       const response = await fetch("/api/registrations", {
@@ -882,12 +988,13 @@ function Registration({ c, lang, t, onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: f.get("name"),
-          phone: f.get("phone"),
+          phone: internationalPhone,
           city: f.get("city"),
           adult: f.get("adult") === "on",
           telegram: f.get("telegram"),
           website: f.get("website"),
           consent: f.get("consent") === "on",
+          termsAccepted: f.get("termsAccepted") === "on",
           language: lang,
         }),
       });
@@ -928,18 +1035,7 @@ function Registration({ c, lang, t, onClose }) {
               maxLength={100}
             />
           </label>
-          <label>
-            {t.phone}
-            <input
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              required
-              minLength={7}
-              maxLength={25}
-              placeholder="+374 …"
-            />
-          </label>
+          <PhoneInput value={phone} onChange={setPhone} t={t} lang={lang} />
           <label>
             {t.city}
             <input
@@ -967,15 +1063,34 @@ function Registration({ c, lang, t, onClose }) {
             <input name="adult" type="checkbox" required />
             <span>{t.adultConfirmation}</span>
           </label>
-          <label className="check">
-            <input name="consent" type="checkbox" required />
-            <span>
-              {t.consent}{" "}
-              <a href={`/${lang}/privacy`} target="_blank" rel="noreferrer">
-                ↗
+          <div className="check legal-consent">
+            <input
+              id="registration-terms"
+              name="termsAccepted"
+              type="checkbox"
+              required
+            />
+            <div>
+              <label htmlFor="registration-terms">{t.acceptTerms}</label>
+              <a href={`/${lang}/terms`} target="_blank" rel="noreferrer">
+                {t.terms}
               </a>
-            </span>
-          </label>
+            </div>
+          </div>
+          <div className="check legal-consent">
+            <input
+              id="registration-consent"
+              name="consent"
+              type="checkbox"
+              required
+            />
+            <div>
+              <label htmlFor="registration-consent">{t.consent}</label>
+              <a href={`/${lang}/privacy`} target="_blank" rel="noreferrer">
+                {t.privacy}
+              </a>
+            </div>
+          </div>
           {error && (
             <p className="error" role="alert">
               {error}
@@ -1058,14 +1173,24 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
           }
         }}
       >
-        {onSelect && (
+        {onSelect ? (
           <button
             className={"provider-all " + (!selected ? "active" : "")}
             aria-pressed={!selected}
             onClick={() => onSelect("")}
           >
-            {t.all}
+            <span className="provider-tile">
+              <SlotsIcon size={35} />
+            </span>
+            <span className="provider-caption">{t.allProviders}</span>
           </button>
+        ) : (
+          <a className="provider-all" href={href("slots")}>
+            <span className="provider-tile">
+              <SlotsIcon size={35} />
+            </span>
+            <span className="provider-caption">{t.allProviders}</span>
+          </a>
         )}
         {providers.map((p) => {
           const label = L(p.title);
@@ -1083,7 +1208,8 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
               aria-pressed={selected === p.id}
               onClick={() => onSelect(p.id)}
             >
-              {logo}
+              <span className="provider-tile">{logo}</span>
+              <span className="provider-caption">{label}</span>
             </button>
           ) : (
             <a
@@ -1094,7 +1220,8 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
               aria-label={label}
               draggable="false"
             >
-              {logo}
+              <span className="provider-tile">{logo}</span>
+              <span className="provider-caption">{label}</span>
             </a>
           );
         })}
@@ -1180,5 +1307,89 @@ function LanguageMenu({ lang, path }) {
         ))}
       </nav>
     </details>
+  );
+}
+
+function ProviderGames({ provider, games, card, L, t, href }) {
+  const ref = useRef(null),
+    drag = useRef(null),
+    moved = useRef(false);
+  if (!games.length) return null;
+  const scroll = (direction) =>
+    ref.current?.scrollBy({
+      left: direction * ref.current.clientWidth * 0.8,
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  return (
+    <section className="section provider-games">
+      <div className="section-heading">
+        <h2>
+          {L(provider.title)}
+          <span className="count">{games.length}</span>
+        </h2>
+        <div className="game-row-actions">
+          <a
+            className="provider-view-all"
+            href={href("providers/" + provider.slug)}
+          >
+            {t.allProviders}
+            <ChevronRight size={16} />
+          </a>
+          <button
+            className="icon-button"
+            aria-label={`${t.previousGames}: ${L(provider.title)}`}
+            onClick={() => scroll(-1)}
+          >
+            <ChevronLeft size={17} />
+          </button>
+          <button
+            className="icon-button"
+            aria-label={`${t.nextGames}: ${L(provider.title)}`}
+            onClick={() => scroll(1)}
+          >
+            <ChevronRight size={17} />
+          </button>
+        </div>
+      </div>
+      <div
+        className="provider-games-track"
+        ref={ref}
+        aria-label={L(provider.title)}
+        onDragStart={(e) => e.preventDefault()}
+        onPointerDown={(e) => {
+          moved.current = false;
+          if (e.pointerType === "mouse" && e.button === 0)
+            drag.current = { x: e.clientX, scroll: e.currentTarget.scrollLeft };
+        }}
+        onPointerMove={(e) => {
+          if (!drag.current) return;
+          const dx = e.clientX - drag.current.x;
+          if (Math.abs(dx) > 5) {
+            moved.current = true;
+            e.currentTarget.scrollLeft = drag.current.scroll - dx;
+          }
+        }}
+        onPointerUp={() => {
+          drag.current = null;
+        }}
+        onPointerLeave={() => {
+          drag.current = null;
+        }}
+        onPointerCancel={() => {
+          drag.current = null;
+        }}
+        onClickCapture={(e) => {
+          if (moved.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            moved.current = false;
+          }
+        }}
+      >
+        {games.map(card)}
+      </div>
+    </section>
   );
 }

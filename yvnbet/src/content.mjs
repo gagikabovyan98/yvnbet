@@ -3,6 +3,20 @@ export const tr = (ru, hy, en) => ({ ru, hy, en });
 const same = (s) => tr(s, s, s);
 export const ui = {
   ru: {
+    countrySearch: "Страна или код телефона",
+    partners: "Партнёрская программа",
+    contactOperator: "Связаться с оператором",
+    partnerMessage:
+      "Здравствуйте, YvnBet! Хочу узнать об условиях партнёрской программы.",
+    country: "Страна",
+    phoneInvalid: "Проверьте номер телефона и код страны.",
+    acceptTerms: "Принимаю условия использования",
+    countryEmpty: "Страна не найдена",
+    allProviders: "Все",
+    previousGames: "Предыдущие игры",
+    nextGames: "Следующие игры",
+    winner: "Лев выбрал для вас",
+
     home: "Главная",
     slots: "Слоты",
     promotions: "Акции",
@@ -81,6 +95,20 @@ export const ui = {
     pending: "Сохраняем…",
   },
   en: {
+    countrySearch: "Country or calling code",
+    partners: "Partner programme",
+    contactOperator: "Contact the operator",
+    partnerMessage:
+      "Hello, YvnBet! I would like to learn about your partner programme.",
+    country: "Country",
+    phoneInvalid: "Check your phone number and country code.",
+    acceptTerms: "I accept the terms of use",
+    countryEmpty: "No countries found",
+    allProviders: "All",
+    previousGames: "Previous games",
+    nextGames: "Next games",
+    winner: "The lion picked for you",
+
     home: "Home",
     slots: "Slots",
     promotions: "Promotions",
@@ -156,6 +184,20 @@ export const ui = {
     pending: "Saving…",
   },
   hy: {
+    countrySearch: "Երկիր կամ հեռախոսային կոդ",
+    partners: "Գործընկերային ծրագիր",
+    contactOperator: "Կապվել օպերատորի հետ",
+    partnerMessage:
+      "Բարև, YvnBet։ Ցանկանում եմ իմանալ գործընկերային ծրագրի պայմանները։",
+    country: "Երկիր",
+    phoneInvalid: "Ստուգեք հեռախոսահամարը և երկրի կոդը։",
+    acceptTerms: "Ընդունում եմ օգտագործման պայմանները",
+    countryEmpty: "Երկիրը չի գտնվել",
+    allProviders: "Բոլորը",
+    previousGames: "Նախորդ խաղերը",
+    nextGames: "Հաջորդ խաղերը",
+    winner: "Առյուծն ընտրել է ձեզ համար",
+
     home: "Գլխավոր",
     slots: "Սլոթեր",
     promotions: "Ակցիաներ",
@@ -502,6 +544,17 @@ export const initialContent = {
     ),
   ],
   pages: [
+    item(
+      "partners",
+      tr("Партнёрская программа", "Գործընկերային ծրագիր", "Partner programme"),
+      {
+        description: tr(
+          "Хотите сотрудничать с YvnBet? Свяжитесь с оператором, чтобы обсудить формат партнёрства, условия и дальнейшие шаги.",
+          "Ցանկանո՞ւմ եք համագործակցել YvnBet-ի հետ։ Կապվեք օպերատորի հետ՝ քննարկելու համագործակցության ձևաչափը, պայմանները և հետագա քայլերը։",
+          "Interested in working with YvnBet? Contact our operator to discuss partnership options, terms and next steps.",
+        ),
+      },
+    ),
     item("about", tr("О нас", "Մեր մասին", "About us"), {
       description: tr(
         "YvnBet — место для знакомства с играми и провайдерами. Выбирайте игру, изучайте предложения и обращайтесь к нашей поддержке.",
@@ -637,5 +690,16 @@ export function upgradePresentation(input) {
   for (const lang of languages)
     if (c.interface[lang].featured === previous[lang])
       c.interface[lang].featured = ui[lang].featured;
+  return c;
+}
+
+export function upgradeRegistrationUi(input) {
+  const c = structuredClone(input);
+  for (const lang of languages)
+    c.interface[lang] = { ...ui[lang], ...c.interface[lang] };
+  if (!c.pages.some((p) => p.slug === "partners"))
+    c.pages.push(
+      structuredClone(initialContent.pages.find((p) => p.slug === "partners")),
+    );
   return c;
 }
