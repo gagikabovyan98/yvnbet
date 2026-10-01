@@ -101,6 +101,9 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     );
     state.content.settings.siteUrl = "https://example.com";
     state.content.settings.indexable = true;
+    state.content.settings.registrationTelegramUrl =
+      "https://t.me/registration_test";
+    state.content.settings.supportTelegramUrl = "https://t.me/support_test";
     state.content.games[0].title.ru = "Проверка сохранения";
     state.content.games[0].url = "https://provider.example/game/42";
     state.content.games[0].seo.title.ru = "Уникальный заголовок игры";
@@ -123,6 +126,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /Թոփ խաղեր/);
     assert.match(homeHtml, /class="reel-machine /);
     assert.match(homeHtml, /class="hero-actions"/);
+    assert.doesNotMatch(homeHtml, /class="hero-controls"/);
+    assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(homeHtml, /class="provider-rail"/);
     assert.match(homeHtml, /class="language-flag"/);
     assert.doesNotMatch(homeHtml, /class="quick-strip"|class="side-nav"/);
@@ -174,7 +179,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const telegramLink = new URL(result.telegramUrl);
     const message = telegramLink.searchParams.get("text");
     assert.equal(telegramLink.origin, "https://t.me");
-    assert.equal(telegramLink.pathname, "/yvnbet");
+    assert.equal(telegramLink.pathname, "/registration_test");
     assert.ok(message.includes(lead.phone));
     assert.ok(message.includes(lead.city));
     assert.ok(message.includes(lead.name));

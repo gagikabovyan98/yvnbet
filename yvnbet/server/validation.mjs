@@ -32,6 +32,19 @@ const external = z
   .string()
   .max(2000)
   .refine((s) => safeUrl(s, false), "Нужен HTTPS-адрес");
+const telegramUrl = z
+  .string()
+  .max(2000)
+  .refine((s) => {
+    if (!s) return true;
+    if (!safeUrl(s, false)) return false;
+    const u = new URL(s);
+    return (
+      u.hostname === "t.me" &&
+      !u.port &&
+      /^\/(?:[a-zA-Z][a-zA-Z0-9_]{4,31}|\+\d{7,15})\/?$/.test(u.pathname)
+    );
+  }, "Укажите ссылку оператора: https://t.me/username");
 const image = z
   .string()
   .max(2000)
@@ -74,6 +87,8 @@ export const contentSchema = z.strictObject({
     logo: image,
     lion: image,
     telegram: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{4,31}$/),
+    registrationTelegramUrl: telegramUrl,
+    supportTelegramUrl: telegramUrl,
     telegramText: local,
     loginUrl: external,
     loginMode: mode,

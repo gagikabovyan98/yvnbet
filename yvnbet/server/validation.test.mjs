@@ -11,6 +11,8 @@ import {
   initialContent,
   upgradeContent,
   upgradeRegistrationUi,
+  upgradeTelegramLinks,
+  telegramContact,
   publicContent,
   activePromotion,
 } from "../src/content.mjs";
@@ -47,6 +49,8 @@ test("CMS rejects missing translations, duplicate slugs, unknown properties and 
     (c) => (c.settings.logo = "data:image/svg+xml,<svg/>"),
     (c) => (c.slides[0].url = "//evil.test"),
     (c) => (c.settings.telegram = "foo/bar"),
+    (c) => (c.settings.registrationTelegramUrl = "https://evil.test/operator"),
+    (c) => (c.settings.supportTelegramUrl = "javascript:alert(1)"),
     (c) => (c.promotions[0].end = "yesterday"),
     (c) => {
       c.promotions[0].start = "2026-12-31";
@@ -57,6 +61,36 @@ test("CMS rejects missing translations, duplicate slugs, unknown properties and 
     change(c);
     assert.throws(() => validateContent(c));
   }
+});
+
+test("Telegram settings migrate without changing operators and keep registration and support independent", () => {
+  const c = clone();
+  delete c.settings.registrationTelegramUrl;
+  delete c.settings.supportTelegramUrl;
+  c.settings.telegram = "existing_operator";
+  const next = upgradeTelegramLinks(c);
+  assert.equal(validateContent(next).settings.telegram, "existing_operator");
+  assert.equal(
+    new URL(telegramContact(next.settings, "registration", "Name & +374"))
+      .pathname,
+    "/existing_operator",
+  );
+  next.settings.registrationTelegramUrl = "https://t.me/new_operator";
+  assert.equal(
+    new URL(
+      telegramContact(next.settings, "registration", "Name & +374"),
+    ).searchParams.get("text"),
+    "Name & +374",
+  );
+  assert.equal(
+    new URL(telegramContact(next.settings, "registration", "")).pathname,
+    "/new_operator",
+  );
+  assert.equal(
+    new URL(telegramContact(next.settings, "support", "")).pathname,
+    "/existing_operator",
+  );
+  assert.deepEqual(upgradeTelegramLinks(next), next);
 });
 test("uploads re-encode valid images, reject scripts, SVG, corrupted and oversized files", async () => {
   const source = await sharp({

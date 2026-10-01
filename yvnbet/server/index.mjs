@@ -10,7 +10,7 @@ import {
   passwordMatches,
 } from "./store.mjs";
 import { validateContent, parseImage, leadSchema } from "./validation.mjs";
-import { publicContent } from "../src/content.mjs";
+import { publicContent, telegramContact } from "../src/content.mjs";
 import { headFor, metaFor, jsonSafe, sitemap } from "./seo.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = process.env.DATA_DIR || path.join(root, "data");
@@ -195,7 +195,7 @@ app.post("/api/registrations", (req, res) => {
   ].join("\n");
   res.status(201).json({
     id: Number(result.lastInsertRowid),
-    telegramUrl: `https://t.me/${c.settings.telegram}?text=${encodeURIComponent(text)}`,
+    telegramUrl: telegramContact(c.settings, "registration", text),
   });
 });
 app.get("/api/leads", support, (req, res) => {

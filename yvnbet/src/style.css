@@ -2999,6 +2999,33 @@ footer {
   max-height: 500px;
   overflow: hidden;
   touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.banner-viewport:active {
+  cursor: grabbing;
+}
+.banner-pagination {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #160d2266;
+  pointer-events: none;
+}
+.banner-pagination span {
+  width: 5px;
+  height: 5px;
+  border-radius: 10px;
+  background: #ffffff70;
+}
+.banner-pagination .active {
+  width: 15px;
+  background: #fff;
 }
 .banner-slide {
   position: absolute;
@@ -3080,20 +3107,22 @@ footer {
   color: #bbaac6;
 }
 .public-site .hero-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
   margin-top: 16px;
   padding: 0;
   background: transparent;
   border: 0;
 }
 .public-site .hero-actions .button {
-  width: 100%;
-  min-width: 0;
-  min-height: 56px;
-  font-size: 16px;
-  border-radius: 11px;
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 130px;
+  min-height: 42px;
+  padding: 10px 22px;
+  font-size: 13px;
+  border-radius: 8px;
   box-shadow: none;
 }
 .public-site .hero-actions .button.quiet {
@@ -3118,9 +3147,10 @@ footer {
     margin-top: 14px;
   }
   .public-site .hero-actions .button {
-    min-height: 50px;
-    padding: 12px 8px;
-    font-size: 14px;
+    min-height: 40px;
+    min-width: 124px;
+    padding: 10px 18px;
+    font-size: 12px;
   }
   .public-site .banner-slider .hero-controls {
     min-height: 36px;

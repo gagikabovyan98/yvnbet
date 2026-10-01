@@ -63,6 +63,8 @@ const labels = {
   end: "Дата окончания (UTC)",
   brand: "Название бренда",
   telegram: "Telegram username без @",
+  registrationTelegramUrl: "Telegram для регистрации — полная ссылка",
+  supportTelegramUrl: "Telegram для поддержки и партнёрства — полная ссылка",
   telegramText: "Сообщение для поддержки",
   loginUrl: "Платформа для входа и игр без отдельной ссылки",
   loginMode: "Открывать вход",
@@ -367,6 +369,12 @@ export default function Admin() {
         {["url", "loginUrl", "appUrl"].includes(key) && (
           <small>
             Для игры укажите прямой HTTPS-адрес. Пустое поле отключает запуск.
+          </small>
+        )}
+        {["registrationTelegramUrl", "supportTelegramUrl"].includes(key) && (
+          <small>
+            Например, https://t.me/your_operator. Если поле пустое, используется
+            Telegram username выше. Текст сообщения добавляется автоматически.
           </small>
         )}
       </label>

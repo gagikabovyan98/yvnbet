@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Search,
   Play,
-  Pause,
   Shuffle,
   Smartphone,
   Sparkles,
@@ -18,6 +17,7 @@ import {
 import { createReel } from "./reel.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
 import { normalizePhone } from "./phone.mjs";
+import { telegramContact } from "./content.mjs";
 import Modal from "./components/Modal.jsx";
 import { routeFor } from "./routes.mjs";
 const icons = {
@@ -64,7 +64,11 @@ export default function Site({ content: c, path }) {
     if (mode === "external") window.open(url, "_blank", "noopener,noreferrer");
     else setModal({ type: "frame", url, title });
   };
-  const telegram = `https://t.me/${c.settings.telegram}?text=${encodeURIComponent(L(c.settings.telegramText))}`;
+  const telegram = telegramContact(
+    c.settings,
+    "support",
+    L(c.settings.telegramText),
+  );
   const nav = (where) => (
     <nav
       className={where}
@@ -391,7 +395,11 @@ export default function Site({ content: c, path }) {
                         {item.slug === "partners" && (
                           <a
                             className="button partner-contact"
-                            href={`https://t.me/${c.settings.telegram}?text=${encodeURIComponent(t.partnerMessage)}`}
+                            href={telegramContact(
+                              c.settings,
+                              "support",
+                              t.partnerMessage,
+                            )}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -547,6 +555,18 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
       className="hero banner-slider"
       aria-roledescription="carousel"
       aria-label={t.offers}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          change(e.key === "ArrowLeft" ? -1 : 1);
+        }
+        if (e.key === " ") {
+          e.preventDefault();
+          setPaused((p) => !p);
+        }
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onFocusCapture={() => setHover(true)}
@@ -557,16 +577,21 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
       <h1 className="visually-hidden">{L(s.title)}</h1>
       <div
         className="banner-viewport"
-        onTouchStart={(e) => {
-          const touch = e.touches[0];
-          gesture.current = { x: touch.clientX, y: touch.clientY };
+        onDragStart={(e) => e.preventDefault()}
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          gesture.current = { x: e.clientX, y: e.clientY };
           swiped.current = false;
         }}
-        onTouchEnd={(e) => {
+        onPointerMove={(e) => {
           if (!gesture.current) return;
-          const touch = e.changedTouches[0],
-            dx = touch.clientX - gesture.current.x,
-            dy = touch.clientY - gesture.current.y;
+          if (Math.abs(e.clientX - gesture.current.x) > 10)
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerUp={(e) => {
+          if (!gesture.current) return;
+          const dx = e.clientX - gesture.current.x,
+            dy = e.clientY - gesture.current.y;
           gesture.current = null;
           if (
             Math.abs(dx) > 45 &&
@@ -577,8 +602,12 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
             change(dx < 0 ? 1 : -1);
           }
         }}
-        onTouchCancel={() => {
+        onPointerCancel={() => {
           gesture.current = null;
+        }}
+        onPointerLeave={(e) => {
+          if (!e.currentTarget.hasPointerCapture(e.pointerId))
+            gesture.current = null;
         }}
         onClickCapture={(e) => {
           if (swiped.current) {
@@ -622,41 +651,16 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
           );
         })}
       </div>
-      <div className="hero-controls">
-        <div className="slide-dots">
-          {slides.map((s, i) => (
-            <button
-              key={s.id}
-              aria-label={`${t.slide} ${i + 1}`}
-              aria-current={i === index % slides.length ? "true" : undefined}
-              onClick={() => setIndex(i)}
+      {slides.length > 1 && (
+        <div className="banner-pagination" aria-hidden="true">
+          {slides.map((slide, i) => (
+            <span
+              key={slide.id}
+              className={i === index % slides.length ? "active" : ""}
             />
           ))}
         </div>
-        <button
-          className="icon-button"
-          aria-label={t.prev}
-          disabled={slides.length < 2}
-          onClick={() => change(-1)}
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <button
-          className="icon-button"
-          aria-label={t.next}
-          disabled={slides.length < 2}
-          onClick={() => change(1)}
-        >
-          <ChevronRight size={18} />
-        </button>
-        <button
-          className="icon-button"
-          aria-label={paused ? t.resume : t.pause}
-          onClick={() => setPaused(!paused)}
-        >
-          {paused ? <Play size={15} /> : <Pause size={15} />}
-        </button>
-      </div>
+      )}
     </section>
   );
 }
@@ -934,39 +938,25 @@ function SlotsIcon({ size = 24 }) {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 28 24"
+      viewBox="0 0 24 24"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden="true"
     >
-      <rect
-        x="1.5"
-        y="4"
-        width="22"
-        height="16"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
+      <rect x="2" y="4" width="17" height="15" rx="3" />
+      <path d="M19 13h3V7M5 8h11v7H5zM8.7 8v7m3.6-7v7M7 21h7" />
       <path
-        d="M9 7v10m7-10v10M24 14h2V5"
-        stroke="currentColor"
-        strokeWidth="1.2"
+        d="m6.5 10.5 1 1-1 1m3.7-2 1 1-1 1m3.7-2 1 1-1 1"
+        strokeWidth="1.1"
       />
-      <circle cx="26" cy="3" r="1.7" fill="currentColor" />
-      <text
-        x="3"
-        y="15.5"
-        fill="currentColor"
-        fontFamily="Arial, sans-serif"
-        fontSize="10"
-        fontWeight="800"
-        letterSpacing="1"
-      >
-        777
-      </text>
+      <circle cx="22" cy="5" r="1.25" fill="currentColor" stroke="none" />
     </svg>
   );
 }
+
 function Registration({ c, lang, t, onClose }) {
   const [state, setState] = useState(""),
     [error, setError] = useState(""),
@@ -1123,24 +1113,11 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
   const ref = useRef(null),
     drag = useRef(null),
     moved = useRef(false);
-  const scroll = (direction) =>
-    ref.current?.scrollBy({
-      left: direction * 250,
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
   return (
     <div className="provider-rail-wrap">
-      <button
-        className="icon-button"
-        aria-label={t.previousProviders}
-        onClick={() => scroll(-1)}
-      >
-        <ChevronLeft size={18} />
-      </button>
       <div
         className="provider-rail"
+        onDragStart={(e) => e.preventDefault()}
         ref={ref}
         aria-label={t.providers}
         onPointerDown={(e) => {
@@ -1226,13 +1203,6 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
           );
         })}
       </div>
-      <button
-        className="icon-button"
-        aria-label={t.nextProviders}
-        onClick={() => scroll(1)}
-      >
-        <ChevronRight size={18} />
-      </button>
     </div>
   );
 }

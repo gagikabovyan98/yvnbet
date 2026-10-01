@@ -292,6 +292,8 @@ export const initialContent = {
     logo: "/images/wordmark.webp",
     lion: "/images/lion.svg",
     telegram: "yvnbet",
+    registrationTelegramUrl: "",
+    supportTelegramUrl: "",
     telegramText: tr(
       "Здравствуйте! Нужна помощь.",
       "Բարև։ Օգնության կարիք ունեմ։",
@@ -702,4 +704,21 @@ export function upgradeRegistrationUi(input) {
       structuredClone(initialContent.pages.find((p) => p.slug === "partners")),
     );
   return c;
+}
+
+export function upgradeTelegramLinks(input) {
+  const c = structuredClone(input);
+  c.settings.registrationTelegramUrl ??= "";
+  c.settings.supportTelegramUrl ??= "";
+  return c;
+}
+
+export function telegramContact(settings, purpose, text) {
+  const target =
+    purpose === "registration"
+      ? settings.registrationTelegramUrl
+      : settings.supportTelegramUrl;
+  const url = new URL(target || `https://t.me/${settings.telegram}`);
+  url.searchParams.set("text", text);
+  return url.href;
 }
