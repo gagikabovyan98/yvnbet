@@ -9,12 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  Send,
   Play,
   Pause,
   Shuffle,
   Smartphone,
-  ShieldCheck,
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
@@ -35,6 +33,19 @@ export default function Site({ content: c, path }) {
   const [modal, setModal] = useState(null),
     [age, setAge] = useState(true),
     [denied, setDenied] = useState(false);
+  const gamePage = valid && section === "games" && item;
+  const platformPage = gamePage || (valid && section === "login");
+  const frame = platformPage
+    ? {
+        url:
+          item?.url ||
+          c.providers.find((p) => p.id === item?.provider)?.url ||
+          c.settings.loginUrl,
+        title: gamePage ? L(item.title) : t.login,
+      }
+    : modal?.type === "frame"
+      ? modal
+      : null;
   useEffect(() => {
     try {
       setAge(localStorage.getItem("yvn-age") !== "18");
@@ -88,7 +99,6 @@ export default function Site({ content: c, path }) {
         <span className="game-play">
           <Play size={25} fill="currentColor" />
         </span>
-        {!g.url && <span className="preview-badge">{t.demo}</span>}
       </div>
       <div className="game-meta">
         <h3>{L(g.title)}</h3>
@@ -124,7 +134,10 @@ export default function Site({ content: c, path }) {
       <a className="skip" href="#main">
         {t.catalog}
       </a>
-      <div className="public-site" inert={age ? true : undefined}>
+      <div
+        className={"public-site" + (frame ? " platform-view" : "")}
+        inert={age ? true : undefined}
+      >
         <header className="header">
           <a
             className="brand"
@@ -133,338 +146,303 @@ export default function Site({ content: c, path }) {
           >
             <img src={c.settings.logo} alt={c.settings.brand} />
           </a>
-          <div className="header-note">
-            <span /> {t.catalog}
-          </div>
+          {!frame && nav("header-nav")}
           <div className="header-actions">
-            <select
-              aria-label="Language"
-              value={lang}
-              onChange={(e) =>
-                location.assign(
-                  route.path.replace(/^\/(ru|hy|en)/, "/" + e.target.value),
-                )
-              }
-            >
-              <option value="ru">RU</option>
-              <option value="hy">HY</option>
-              <option value="en">EN</option>
-            </select>
-            <button
-              className="button quiet"
-              disabled={!c.settings.loginUrl}
-              onClick={() =>
-                launch(c.settings.loginUrl, c.settings.loginMode, t.login)
-              }
-            >
-              {t.login}
-            </button>
-            <button
-              className="button"
-              onClick={() => setModal({ type: "register" })}
-            >
-              {t.register}
-              <ArrowUpRight size={16} />
-            </button>
-          </div>
-        </header>
-        {nav("side-nav")}
-        <div className="site-body">
-          <main id="main">
-            {!valid ? (
-              <section className="page-heading">
-                <p className="eyebrow">404</p>
-                <h1>{t.notFound}</h1>
-                <a className="button" href={href("home")}>
-                  {t.home}
-                </a>
-              </section>
-            ) : (
+            <LanguageMenu lang={lang} path={route.path} />
+            {frame ? (
               <>
-                {section === "home" && (
-                  <>
-                    {!c.slides.length && (
-                      <section className="page-heading">
-                        <h1>{t.collection}</h1>
-                      </section>
-                    )}
-                    <Slider
-                      slides={c.slides}
-                      L={L}
-                      t={t}
-                      seconds={c.settings.sliderSeconds}
-                      localizedUrl={localizedUrl}
-                    />
-                    <div className="quick-strip">
-                      <span>
-                        <ShieldCheck size={18} />
-                        {t.responsible}
-                      </span>
-                      <a href={telegram} target="_blank" rel="noreferrer">
-                        {t.help}
-                        <ArrowUpRight size={16} />
-                      </a>
-                    </div>
-                    <section className="section">
-                      <div className="section-heading">
-                        <div>
-                          <span className="eyebrow">{t.catalog}</span>
-                          <h2>
-                            {t.featured}
-                            <span className="count">{c.games.length}</span>
-                          </h2>
-                        </div>
-                        <a className="text-link" href={href("slots")}>
-                          {t.more}
-                          <ArrowRight size={17} />
-                        </a>
-                      </div>
-                      <div className="game-grid">
-                        {c.games
-                          .filter((g) => g.featured)
-                          .slice(0, 6)
-                          .map(card)}
-                      </div>
-                    </section>
-                    <Random c={c} t={t} L={L} card={card} />
-                    <section className="section">
-                      <div className="section-heading">
-                        <div>
-                          <span className="eyebrow">{t.providers}</span>
-                          <h2>{t.providers}</h2>
-                        </div>
-                      </div>
-                      <div className="provider-grid">
-                        {c.providers.map((p) => (
-                          <a href={href("providers/" + p.slug)} key={p.id}>
-                            {p.logo ? (
-                              <img
-                                src={p.logo}
-                                alt={L(p.title)}
-                                loading="lazy"
-                              />
-                            ) : (
-                              <strong>{L(p.title)}</strong>
-                            )}
-                            <ArrowUpRight size={16} />
-                          </a>
-                        ))}
-                      </div>
-                    </section>
-                    {c.promotions.length > 0 && (
-                      <section className="section">
-                        <div className="section-heading">
-                          <h2>{t.offers}</h2>
-                          <a className="text-link" href={href("promotions")}>
-                            {t.more}
-                            <ArrowRight size={17} />
-                          </a>
-                        </div>
-                        {offers(c.promotions.slice(0, 3))}
-                      </section>
-                    )}
-                  </>
+                {platformPage ? (
+                  <a className="button quiet" href={href("slots")}>
+                    {t.back}
+                  </a>
+                ) : (
+                  <button
+                    className="button quiet"
+                    onClick={() => setModal(null)}
+                  >
+                    {t.back}
+                  </button>
                 )}
-                {(section === "slots" || section === "providers") && (
-                  <>
-                    <section className="page-heading">
-                      <span className="eyebrow">{t.catalog}</span>
-                      <h1>{item ? L(item.title) : t.collection}</h1>
-                      {item && <p>{L(item.description)}</p>}
-                    </section>
-                    <Catalog
-                      c={c}
-                      t={t}
-                      L={L}
-                      provider={item?.id}
-                      card={card}
-                    />
-                    {item?.url && (
-                      <button
-                        className="button"
-                        onClick={() =>
-                          launch(item.url, item.mode, L(item.title))
-                        }
-                      >
-                        {t.play}
-                        <ArrowUpRight size={17} />
-                      </button>
-                    )}
-                  </>
-                )}
-                {section === "promotions" && !item && (
-                  <>
-                    <section className="page-heading">
-                      <span className="eyebrow">{t.promotions}</span>
-                      <h1>{t.offers}</h1>
-                    </section>
-                    {offers(c.promotions)}
-                    {!c.promotions.length && <p className="empty">{t.empty}</p>}
-                  </>
-                )}
-                {section === "games" && item && (
-                  <section className="detail">
-                    <img
-                      className="detail-art"
-                      src={item.image}
-                      alt={L(item.title)}
-                    />
-                    <div>
-                      <a
-                        className="eyebrow"
-                        href={href(
-                          "providers/" +
-                            c.providers.find((p) => p.id === item.provider)
-                              ?.slug,
-                        )}
-                      >
-                        {L(
-                          c.providers.find((p) => p.id === item.provider)
-                            ?.title,
-                        )}
-                      </a>
-                      <h1>{L(item.title)}</h1>
-                      <p>{L(item.description)}</p>
-                      {item.url ? (
-                        <button
-                          className="button"
-                          onClick={() =>
-                            launch(item.url, item.mode, L(item.title))
-                          }
-                        >
-                          <Play size={19} />
-                          {t.play}
-                        </button>
-                      ) : (
-                        <div className="notice">{t.unavailable}</div>
-                      )}
-                      <a className="text-link" href={href("slots")}>
-                        {t.all}
-                        <ArrowRight size={17} />
-                      </a>
-                    </div>
-                  </section>
-                )}
-                {section === "promotions" && item && (
-                  <article className="detail">
-                    <img className="detail-art" src={item.image} alt="" />
-                    <div>
-                      <span className="eyebrow">{t[item.kind]}</span>
-                      <h1>{L(item.title)}</h1>
-                      {(item.start || item.end) && (
-                        <small>
-                          {item.start} — {item.end}
-                        </small>
-                      )}
-                      <p className="prose">{L(item.description)}</p>
-                      {item.url && (
-                        <a className="button" href={localizedUrl(item.url)}>
-                          {L(item.button)}
-                          <ArrowUpRight size={17} />
-                        </a>
-                      )}
-                    </div>
-                  </article>
-                )}
-                {section === "help" && (
-                  <section className="help-layout">
-                    <div className="page-heading">
-                      <span className="eyebrow">{t.help}</span>
-                      <h1>{t.questions}</h1>
-                      <a
-                        className="button"
-                        href={telegram}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Send size={18} />
-                        {t.telegram}
-                      </a>
-                    </div>
-                    <div className="faq-list">
-                      {c.faq.map((q, i) => (
-                        <details key={q.id}>
-                          <summary>
-                            <span className="faq-number">0{i + 1}</span>
-                            {L(q.title)}
-                            <span>+</span>
-                          </summary>
-                          <p>{L(q.description)}</p>
-                        </details>
-                      ))}
-                    </div>
-                  </section>
-                )}
-                {c.pages.includes(item) && section !== "app" && item && (
-                  <article className="text-page">
-                    <span className="eyebrow">{c.settings.brand}</span>
-                    <h1>{L(item.title)}</h1>
-                    <p className="prose">{L(item.description)}</p>
-                  </article>
-                )}
-                {section === "app" && item && (
-                  <section className="app-page">
-                    <div className="app-symbol">
-                      <Smartphone size={130} />
-                      <img src={c.settings.lion} alt="" />
-                    </div>
-                    <div>
-                      <span className="eyebrow">{t.app}</span>
-                      <h1>{L(item.title)}</h1>
-                      <p>{L(item.description)}</p>
-                      {c.settings.appUrl ? (
-                        <a
-                          className="button"
-                          href={c.settings.appUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {t.download}
-                          <ArrowUpRight size={18} />
-                        </a>
-                      ) : (
-                        <p className="notice">{t.soon}</p>
-                      )}
-                    </div>
-                  </section>
+                {frame.url && (
+                  <a
+                    className="icon-button"
+                    href={frame.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={t.external}
+                    title={t.external}
+                  >
+                    <ArrowUpRight size={18} />
+                  </a>
                 )}
               </>
+            ) : (
+              <a className="button quiet" href={href("login")}>
+                {t.login}
+              </a>
+            )}
+          </div>
+        </header>
+        {frame ? (
+          <main id="main" className="platform-main">
+            {frame.url ? (
+              <iframe
+                title={frame.title}
+                src={age ? undefined : frame.url}
+                referrerPolicy="strict-origin-when-cross-origin"
+                sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                allow="fullscreen"
+              />
+            ) : (
+              <p className="notice">{t.unavailable}</p>
             )}
           </main>
-          <footer>
-            {nav("footer-nav")}
-            <div className="footer-top">
-              <a className="brand" href={href("home")}>
-                <img src={c.settings.logo} alt={c.settings.brand} />
-              </a>
-              <div className="footer-links">
-                {["about", "privacy", "terms", "help", "app"].map((k) => (
-                  <a href={href(k)} key={k}>
-                    {t[k]}
+        ) : (
+          <>
+            <div className="site-body">
+              <main id="main">
+                {!valid ? (
+                  <section className="page-heading">
+                    <p className="eyebrow">404</p>
+                    <h1>{t.notFound}</h1>
+                    <a className="button" href={href("home")}>
+                      {t.home}
+                    </a>
+                  </section>
+                ) : (
+                  <>
+                    {section === "home" && (
+                      <>
+                        {!c.slides.length && (
+                          <section className="page-heading">
+                            <h1>{t.collection}</h1>
+                          </section>
+                        )}
+                        <Slider
+                          slides={c.slides}
+                          L={L}
+                          t={t}
+                          seconds={c.settings.sliderSeconds}
+                          localizedUrl={localizedUrl}
+                        />
+                        <div className="hero-actions">
+                          <button
+                            className="button"
+                            onClick={() => setModal({ type: "register" })}
+                          >
+                            {t.register}
+                            <ArrowUpRight size={18} />
+                          </button>
+                          <a className="button quiet" href={href("login")}>
+                            {t.login}
+                          </a>
+                        </div>
+                        <ProviderRail
+                          providers={c.providers}
+                          L={L}
+                          t={t}
+                          href={href}
+                        />
+                        <section className="section">
+                          <div className="section-heading">
+                            <div>
+                              <span className="eyebrow">{t.catalog}</span>
+                              <h2>
+                                {t.featured}
+                                <span className="count">{c.games.length}</span>
+                              </h2>
+                            </div>
+                            <a className="text-link" href={href("slots")}>
+                              {t.more}
+                              <ArrowRight size={17} />
+                            </a>
+                          </div>
+                          <div className="game-grid">
+                            {c.games
+                              .filter((g) => g.featured)
+                              .slice(0, 6)
+                              .map(card)}
+                          </div>
+                        </section>
+                        <Random c={c} t={t} L={L} card={card} />
+                        {c.promotions.length > 0 && (
+                          <section className="section">
+                            <div className="section-heading">
+                              <h2>{t.offers}</h2>
+                              <a
+                                className="text-link"
+                                href={href("promotions")}
+                              >
+                                {t.more}
+                                <ArrowRight size={17} />
+                              </a>
+                            </div>
+                            {offers(c.promotions.slice(0, 3))}
+                          </section>
+                        )}
+                      </>
+                    )}
+                    {(section === "slots" || section === "providers") && (
+                      <>
+                        <section className="page-heading">
+                          <span className="eyebrow">{t.catalog}</span>
+                          <h1>{item ? L(item.title) : t.collection}</h1>
+                          {item && <p>{L(item.description)}</p>}
+                        </section>
+                        <Catalog
+                          c={c}
+                          t={t}
+                          L={L}
+                          provider={item?.id}
+                          card={card}
+                        />
+                        {item?.url && (
+                          <button
+                            className="button"
+                            onClick={() =>
+                              launch(item.url, item.mode, L(item.title))
+                            }
+                          >
+                            {t.play}
+                            <ArrowUpRight size={17} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {section === "promotions" && !item && (
+                      <>
+                        <section className="page-heading">
+                          <span className="eyebrow">{t.promotions}</span>
+                          <h1>{t.offers}</h1>
+                        </section>
+                        {offers(c.promotions)}
+                        {!c.promotions.length && (
+                          <p className="empty">{t.empty}</p>
+                        )}
+                      </>
+                    )}
+                    {section === "promotions" && item && (
+                      <article className="detail">
+                        <img className="detail-art" src={item.image} alt="" />
+                        <div>
+                          <span className="eyebrow">{t[item.kind]}</span>
+                          <h1>{L(item.title)}</h1>
+                          {(item.start || item.end) && (
+                            <small>
+                              {item.start} — {item.end}
+                            </small>
+                          )}
+                          <p className="prose">{L(item.description)}</p>
+                          {item.url && (
+                            <a className="button" href={localizedUrl(item.url)}>
+                              {L(item.button)}
+                              <ArrowUpRight size={17} />
+                            </a>
+                          )}
+                        </div>
+                      </article>
+                    )}
+                    {section === "help" && (
+                      <section className="help-layout">
+                        <div className="page-heading">
+                          <span className="eyebrow">{t.help}</span>
+                          <h1>{t.questions}</h1>
+                          <a
+                            className="button"
+                            href={telegram}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <TelegramIcon size={18} />
+                            {t.telegram}
+                          </a>
+                        </div>
+                        <div className="faq-list">
+                          {c.faq.map((q, i) => (
+                            <details key={q.id}>
+                              <summary>
+                                <span className="faq-number">0{i + 1}</span>
+                                {L(q.title)}
+                                <span>+</span>
+                              </summary>
+                              <p>{L(q.description)}</p>
+                            </details>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                    {c.pages.includes(item) && section !== "app" && item && (
+                      <article className="text-page">
+                        <span className="eyebrow">{c.settings.brand}</span>
+                        <h1>{L(item.title)}</h1>
+                        <p className="prose">{L(item.description)}</p>
+                      </article>
+                    )}
+                    {section === "app" && item && (
+                      <section className="app-page">
+                        <div className="app-symbol">
+                          <Smartphone size={130} />
+                          <img src={c.settings.lion} alt="" />
+                        </div>
+                        <div>
+                          <span className="eyebrow">{t.app}</span>
+                          <h1>{L(item.title)}</h1>
+                          <p>{L(item.description)}</p>
+                          {c.settings.appUrl ? (
+                            <a
+                              className="button"
+                              href={c.settings.appUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {t.download}
+                              <ArrowUpRight size={18} />
+                            </a>
+                          ) : (
+                            <p className="notice">{t.soon}</p>
+                          )}
+                        </div>
+                      </section>
+                    )}
+                  </>
+                )}
+              </main>
+              <footer>
+                {nav("footer-nav")}
+                <div className="footer-top">
+                  <a className="brand" href={href("home")}>
+                    <img src={c.settings.logo} alt={c.settings.brand} />
                   </a>
-                ))}
-              </div>
-              <span className="age-seal">18+</span>
+                  <div className="footer-links">
+                    {["about", "privacy", "terms", "help", "app"].map((k) => (
+                      <a href={href(k)} key={k}>
+                        {t[k]}
+                      </a>
+                    ))}
+                  </div>
+                  <span className="age-seal">18+</span>
+                </div>
+                <div className="footer-bottom">
+                  <span>
+                    © {new Date().getFullYear()} {c.settings.brand}. {t.rights}
+                  </span>
+                  <span>{t.responsible}</span>
+                </div>
+              </footer>
             </div>
-            <div className="footer-bottom">
-              <span>
-                © {new Date().getFullYear()} {c.settings.brand}. {t.rights}
-              </span>
-              <span>{t.responsible}</span>
-            </div>
-          </footer>
-        </div>
-        {nav("bottom-nav")}
-        <a
-          className="telegram-float"
-          href={telegram}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={t.telegram}
-        >
-          <Send size={26} />
-          <span className="online-dot" />
-        </a>
+            {nav("bottom-nav")}
+            <a
+              className="telegram-float"
+              href={telegram}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={t.telegram}
+            >
+              <TelegramIcon size={30} />
+              <span className="online-dot" />
+            </a>
+          </>
+        )}
       </div>
       {age && (
         <Modal title={denied ? "18+" : t.age}>
@@ -491,34 +469,6 @@ export default function Site({ content: c, path }) {
       )}
       {!age && modal?.type === "register" && (
         <Registration c={c} lang={lang} t={t} onClose={() => setModal(null)} />
-      )}
-      {!age && modal?.type === "frame" && (
-        <Modal
-          title={modal.title}
-          onClose={() => setModal(null)}
-          closeLabel={t.close}
-          wide
-        >
-          <div className="frame-tools">
-            <p>{t.frameHelp}</p>
-            <a
-              className="button quiet"
-              href={modal.url}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t.external}
-              <ArrowUpRight size={16} />
-            </a>
-          </div>
-          <iframe
-            title={modal.title}
-            src={modal.url}
-            referrerPolicy="strict-origin-when-cross-origin"
-            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-            allow="fullscreen"
-          />
-        </Modal>
       )}
     </>
   );
@@ -611,34 +561,19 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
 }
 function Catalog({ c, t, L, provider, card }) {
   const [filter, setFilter] = useState(provider || ""),
-    [category, setCategory] = useState(""),
     [search, setSearch] = useState("");
   const games = c.games.filter(
     (g) =>
       (!filter || g.provider === filter) &&
-      (!category || g.category === category) &&
       L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
   );
   return (
     <section className="catalog">
       <div className="catalog-controls">
-        <div className="filter-chips">
-          <button
-            className={!category ? "active" : ""}
-            onClick={() => setCategory("")}
-          >
-            {t.all}
-          </button>
-          {c.categories.map((x) => (
-            <button
-              key={x.id}
-              className={category === x.id ? "active" : ""}
-              onClick={() => setCategory(x.id)}
-            >
-              {L(x.title)}
-            </button>
-          ))}
-        </div>
+        <span className="catalog-label">
+          {t.slots}
+          <span className="count">{games.length}</span>
+        </span>
         <label className="search">
           <Search size={18} />
           <input
@@ -650,24 +585,13 @@ function Catalog({ c, t, L, provider, card }) {
         </label>
       </div>
       {!provider && (
-        <div className="provider-chips">
-          <button
-            className={!filter ? "active" : ""}
-            onClick={() => setFilter("")}
-          >
-            {t.providers}
-          </button>
-          {c.providers.map((p) => (
-            <button
-              key={p.id}
-              className={filter === p.id ? "active" : ""}
-              onClick={() => setFilter(p.id)}
-            >
-              {p.logo && <img src={p.logo} alt="" />}
-              {L(p.title)}
-            </button>
-          ))}
-        </div>
+        <ProviderRail
+          providers={c.providers}
+          L={L}
+          t={t}
+          selected={filter}
+          onSelect={setFilter}
+        />
       )}
       <div className="game-grid">{games.map(card)}</div>
       {!games.length && <p className="empty">{t.empty}</p>}
@@ -760,6 +684,8 @@ function Registration({ c, lang, t, onClose }) {
         body: JSON.stringify({
           name: f.get("name"),
           phone: f.get("phone"),
+          city: f.get("city"),
+          adult: f.get("adult") === "on",
           telegram: f.get("telegram"),
           website: f.get("website"),
           consent: f.get("consent") === "on",
@@ -788,7 +714,7 @@ function Registration({ c, lang, t, onClose }) {
           <p>{t.sendHint}</p>
           <a className="button" href={url}>
             {t.telegram}
-            <Send size={18} />
+            <TelegramIcon size={18} />
           </a>
         </div>
       ) : (
@@ -816,10 +742,19 @@ function Registration({ c, lang, t, onClose }) {
             />
           </label>
           <label>
-            {t.handle}
+            {t.city}
+            <input
+              name="city"
+              autoComplete="address-level2"
+              required
+              minLength={2}
+              maxLength={100}
+            />
+          </label>
+          <label>
+            {t.handle} <small>{t.optional}</small>
             <input
               name="telegram"
-              required
               pattern="@?[A-Za-z][A-Za-z0-9_]{4,31}"
               placeholder="@username"
               autoComplete="off"
@@ -828,6 +763,10 @@ function Registration({ c, lang, t, onClose }) {
           <label className="honeypot" aria-hidden="true">
             Website
             <input name="website" tabIndex={-1} autoComplete="off" />
+          </label>
+          <label className="check">
+            <input name="adult" type="checkbox" required />
+            <span>{t.adultConfirmation}</span>
           </label>
           <label className="check">
             <input name="consent" type="checkbox" required />
@@ -845,10 +784,202 @@ function Registration({ c, lang, t, onClose }) {
           )}
           <button className="button" disabled={state === "pending"}>
             {state === "pending" ? t.pending : t.submit}
-            <Send size={17} />
+            <TelegramIcon size={17} />
           </button>
         </form>
       )}
     </Modal>
+  );
+}
+
+function TelegramIcon({ size = 24 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="currentColor"
+    >
+      <path d="M21.5 3.4 2.6 10.7c-.9.4-.9 1.2 0 1.5l4.8 1.5 1.8 5.7c.2.7.7.9 1.2.3l2.7-2.9 4.9 3.6c.8.6 1.5.3 1.7-.7l3.2-15c.2-1.1-.4-1.6-1.4-1.3ZM9.2 13.3l9.7-7-7.6 8.5-.3 2.7-1.8-4.2Z" />
+    </svg>
+  );
+}
+function ProviderRail({ providers, L, t, href, selected, onSelect }) {
+  const ref = useRef(null),
+    drag = useRef(null),
+    moved = useRef(false);
+  const scroll = (direction) =>
+    ref.current?.scrollBy({
+      left: direction * 250,
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  return (
+    <div className="provider-rail-wrap">
+      <button
+        className="icon-button"
+        aria-label={t.previousProviders}
+        onClick={() => scroll(-1)}
+      >
+        <ChevronLeft size={18} />
+      </button>
+      <div
+        className="provider-rail"
+        ref={ref}
+        aria-label={t.providers}
+        onPointerDown={(e) => {
+          moved.current = false;
+          if (e.pointerType === "mouse" && e.button === 0)
+            drag.current = { x: e.clientX, scroll: e.currentTarget.scrollLeft };
+        }}
+        onPointerMove={(e) => {
+          if (!drag.current) return;
+          const dx = e.clientX - drag.current.x;
+          if (Math.abs(dx) > 5) {
+            moved.current = true;
+            e.currentTarget.scrollLeft = drag.current.scroll - dx;
+          }
+        }}
+        onPointerUp={() => {
+          drag.current = null;
+        }}
+        onPointerCancel={() => {
+          drag.current = null;
+        }}
+        onPointerLeave={() => {
+          drag.current = null;
+        }}
+        onClickCapture={(e) => {
+          if (moved.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            moved.current = false;
+          }
+        }}
+      >
+        {onSelect && (
+          <button
+            className={"provider-all " + (!selected ? "active" : "")}
+            aria-pressed={!selected}
+            onClick={() => onSelect("")}
+          >
+            {t.all}
+          </button>
+        )}
+        {providers.map((p) => {
+          const label = L(p.title);
+          const logo = p.logo ? (
+            <img src={p.logo} alt={label} loading="lazy" draggable="false" />
+          ) : (
+            <span className="provider-wordmark">{label}</span>
+          );
+          return onSelect ? (
+            <button
+              key={p.id}
+              className={"provider-logo " + (selected === p.id ? "active" : "")}
+              title={label}
+              aria-label={label}
+              aria-pressed={selected === p.id}
+              onClick={() => onSelect(p.id)}
+            >
+              {logo}
+            </button>
+          ) : (
+            <a
+              key={p.id}
+              className="provider-logo"
+              href={href("providers/" + p.slug)}
+              title={label}
+              aria-label={label}
+              draggable="false"
+            >
+              {logo}
+            </a>
+          );
+        })}
+      </div>
+      <button
+        className="icon-button"
+        aria-label={t.nextProviders}
+        onClick={() => scroll(1)}
+      >
+        <ChevronRight size={18} />
+      </button>
+    </div>
+  );
+}
+
+function Flag({ lang }) {
+  return (
+    <svg className="language-flag" viewBox="0 0 30 30" aria-hidden="true">
+      {lang === "en" ? (
+        <>
+          <path fill="#21468b" d="M0 0h30v30H0z" />
+          <path stroke="#fff" strokeWidth="7" d="m0 0 30 30M30 0 0 30" />
+          <path stroke="#ce263c" strokeWidth="3" d="m0 0 30 30M30 0 0 30" />
+          <path stroke="#fff" strokeWidth="11" d="M15 0v30M0 15h30" />
+          <path stroke="#ce263c" strokeWidth="6" d="M15 0v30M0 15h30" />
+        </>
+      ) : (
+        <>
+          <path fill={lang === "hy" ? "#d90012" : "#fff"} d="M0 0h30v10H0z" />
+          <path
+            fill={lang === "hy" ? "#0033a0" : "#1846ba"}
+            d="M0 10h30v10H0z"
+          />
+          <path
+            fill={lang === "hy" ? "#f2a800" : "#d52b30"}
+            d="M0 20h30v10H0z"
+          />
+        </>
+      )}
+    </svg>
+  );
+}
+function LanguageMenu({ lang, path }) {
+  const names = { ru: "Русский", hy: "Հայերեն", en: "English" };
+  const ref = useRef(null);
+  useEffect(() => {
+    const close = (e) => {
+      if (!ref.current?.contains(e.target))
+        ref.current?.removeAttribute("open");
+    };
+    const escape = (e) => {
+      if (e.key === "Escape" && ref.current?.open) {
+        ref.current.removeAttribute("open");
+        ref.current.querySelector("summary").focus();
+      }
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
+  return (
+    <details className="language-menu" ref={ref}>
+      <summary aria-label={names[lang]}>
+        <Flag lang={lang} />
+        <span>{lang.toUpperCase()}</span>
+        <ChevronRight size={12} />
+      </summary>
+      <nav className="language-options" aria-label="Language">
+        {Object.entries(names).map(([code, name]) => (
+          <a
+            key={code}
+            href={path.replace(/^\/(ru|hy|en)/, "/" + code)}
+            lang={code}
+            hrefLang={code}
+            aria-current={code === lang ? "true" : undefined}
+          >
+            <Flag lang={code} />
+            <span>{name}</span>
+          </a>
+        ))}
+      </nav>
+    </details>
   );
 }

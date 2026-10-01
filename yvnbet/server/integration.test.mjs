@@ -108,7 +108,24 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.equal((await call("/api/content", "PUT", state)).status, 409);
     const html = await (await call("/ru/games/golden-eclipse")).text();
     assert.ok(html.includes("<title>Уникальный заголовок игры</title>"));
-    assert.ok(html.includes("<h1>Проверка сохранения</h1>"));
+    assert.match(html, /class="platform-main"/);
+    assert.match(html, /<iframe title="Проверка сохранения"/);
+    assert.doesNotMatch(
+      html,
+      /<footer|class="bottom-nav"|class="detail-art"|class="telegram-float"/,
+    );
+    const loginHtml = await (await call("/hy/login")).text();
+    assert.match(loginHtml, /class="platform-main"/);
+    assert.doesNotMatch(loginHtml, /<footer|class="bottom-nav"/);
+    const homeHtml = await (await call("/hy")).text();
+    assert.match(homeHtml, /class="bottom-nav"/);
+    assert.match(homeHtml, /class="hero-actions"/);
+    assert.match(homeHtml, /class="provider-rail"/);
+    assert.match(homeHtml, /class="language-flag"/);
+    assert.doesNotMatch(homeHtml, /class="quick-strip"|class="side-nav"/);
+    const header = homeHtml.match(/<header[\s\S]*?<\/header>/)[0];
+    assert.doesNotMatch(header, /Գրանցվել/);
+    assert.match(header, /Մուտք/);
     assert.ok(html.includes('hreflang="hy"'));
     assert.ok(html.includes("https://provider.example/game/42"));
     assert.equal((await call("/ru/unknown")).status, 404);
@@ -140,15 +157,26 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const lead = {
       name: "Synthetic Test Applicant",
       phone: "+374 00 111222",
-      telegram: "test_fixture",
+      telegram: "",
+      city: "Երևան",
+      adult: true,
       consent: true,
-      language: "ru",
+      language: "hy",
       website: "",
     };
     const r = await call("/api/registrations", "POST", lead);
     assert.equal(r.status, 201);
     const result = await r.json();
-    assert.ok(decodeURIComponent(result.telegramUrl).includes(lead.phone));
+    const telegramLink = new URL(result.telegramUrl);
+    const message = telegramLink.searchParams.get("text");
+    assert.equal(telegramLink.origin, "https://t.me");
+    assert.equal(telegramLink.pathname, "/yvnbet");
+    assert.ok(message.includes(lead.phone));
+    assert.ok(message.includes(lead.city));
+    assert.ok(message.includes(lead.name));
+    assert.match(message, /18\+/);
+    assert.match(message, /Բարև, YvnBet ջան/);
+    assert.doesNotMatch(message, /Telegram:/);
     const sql = new DatabaseSync(path.join(dir, "cms.sqlite"));
     const raw = sql.prepare("SELECT payload FROM leads").get().payload;
     assert.ok(!raw.includes(lead.name));
@@ -163,6 +191,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.equal((await call("/api/upload", "POST", { data: "" })).status, 403);
     let leads = await (await call("/api/leads")).json();
     assert.equal(leads.items[0].name, lead.name);
+    assert.equal(leads.items[0].city, lead.city);
+    assert.equal(leads.items[0].adult, true);
     assert.equal(
       (await call("/api/leads/" + result.id, "PATCH", { status: "contacted" }))
         .status,

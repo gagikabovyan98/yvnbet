@@ -64,7 +64,7 @@ const labels = {
   brand: "Название бренда",
   telegram: "Telegram username без @",
   telegramText: "Сообщение для поддержки",
-  loginUrl: "Адрес входа на платформу",
+  loginUrl: "Платформа для входа и игр без отдельной ссылки",
   loginMode: "Открывать вход",
   appUrl: "Ссылка на приложение",
   siteUrl: "Основной домен (https://example.com)",
@@ -181,7 +181,10 @@ export default function Admin() {
   function add() {
     const template = structuredClone(initialContent[section][0]);
     // getRandomValues also works on a temporary HTTP demo opened by server IP.
-    const suffix = Array.from(crypto.getRandomValues(new Uint8Array(8)), byte => byte.toString(16).padStart(2, '0')).join('');
+    const suffix = Array.from(
+      crypto.getRandomValues(new Uint8Array(8)),
+      (byte) => byte.toString(16).padStart(2, "0"),
+    ).join("");
     template.id = section + "-" + suffix;
     template.slug = template.id;
     template.title = { ru: "Новая запись", hy: "Նոր գրառում", en: "New item" };
@@ -727,7 +730,9 @@ function Leads({ api, admin, onError }) {
                 </td>
                 <td>
                   <span>{x.phone}</span>
-                  <span>{x.telegram}</span>
+                  {x.telegram && <span>{x.telegram}</span>}
+                  {x.city && <span>{x.city}</span>}
+                  {x.adult && <small>18+ подтверждено</small>}
                   <small>{x.language.toUpperCase()} · согласие получено</small>
                 </td>
                 <td>

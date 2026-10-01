@@ -9,7 +9,7 @@ import {
   createHash,
 } from "node:crypto";
 import path from "node:path";
-import { initialContent } from "../src/content.mjs";
+import { initialContent, upgradeContent } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
 export function passwordHash(password) {
   const salt = randomBytes(16).toString("hex");
@@ -37,6 +37,31 @@ export async function openStore(dir) {
     db.prepare("INSERT INTO content(id,body) VALUES(1,?)").run(
       JSON.stringify(initialContent),
     );
+  db.exec("CREATE TABLE IF NOT EXISTS migrations(name TEXT PRIMARY KEY)");
+  if (
+    !db
+      .prepare("SELECT name FROM migrations WHERE name=?")
+      .get("2026-10-slots-registration")
+  ) {
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      const existing = db.prepare("SELECT body FROM content WHERE id=1").get();
+      const upgraded = JSON.stringify(
+        upgradeContent(JSON.parse(existing.body)),
+      );
+      if (upgraded !== existing.body)
+        db.prepare(
+          "UPDATE content SET body=?, revision=revision+1 WHERE id=1",
+        ).run(upgraded);
+      db.prepare("INSERT INTO migrations(name) VALUES(?)").run(
+        "2026-10-slots-registration",
+      );
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+  }
   if (!db.prepare("SELECT id FROM users LIMIT 1").get()) {
     let auth;
     try {

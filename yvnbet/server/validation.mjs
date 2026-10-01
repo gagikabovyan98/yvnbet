@@ -138,6 +138,7 @@ export function validateContent(input) {
   const c = parsed.data;
   const reservedPages = new Set([
     "home",
+    "login",
     "slots",
     "games",
     "providers",
@@ -236,10 +237,13 @@ export const leadSchema = z.strictObject({
     .trim()
     .regex(/^\+?[\d ()-]{7,25}$/)
     .refine((s) => s.replace(/\D/g, "").length >= 7),
+  city: z.string().trim().min(2).max(100),
+  adult: z.literal(true),
   telegram: z
     .string()
     .trim()
-    .regex(/^@?[a-zA-Z][a-zA-Z0-9_]{4,31}$/),
+    .regex(/^(?:@?[a-zA-Z][a-zA-Z0-9_]{4,31})?$/)
+    .default(""),
   consent: z.literal(true),
   language: z.enum(["ru", "hy", "en"]),
   website: z.string().max(0),

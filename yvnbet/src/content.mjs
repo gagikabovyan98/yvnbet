@@ -33,6 +33,13 @@ export const ui = {
     back: "Назад",
     name: "Имя",
     phone: "Номер телефона",
+    city: "Город",
+    optional: "необязательно",
+    adultConfirmation: "Подтверждаю, что мне исполнилось 18 лет",
+    previousProviders: "Предыдущие провайдеры",
+    nextProviders: "Следующие провайдеры",
+    registrationIntro:
+      "Здравствуйте, YvnBet! Хочу зарегистрироваться на сайте. Подтверждаю, что мне исполнилось 18 лет. Мои данные для регистрации:",
     handle: "Telegram",
     consent:
       "Согласен с обработкой данных согласно политике конфиденциальности",
@@ -103,6 +110,13 @@ export const ui = {
     back: "Back",
     name: "Name",
     phone: "Phone number",
+    city: "City",
+    optional: "optional",
+    adultConfirmation: "I confirm that I am 18 or older",
+    previousProviders: "Previous providers",
+    nextProviders: "Next providers",
+    registrationIntro:
+      "Hello, YvnBet! I would like to register on the website. I confirm that I am 18 or older. My registration details:",
     handle: "Telegram",
     consent: "I agree to data processing under the privacy policy",
     submit: "Save and continue to Telegram",
@@ -172,6 +186,13 @@ export const ui = {
     back: "Հետ",
     name: "Անուն",
     phone: "Հեռախոսահամար",
+    city: "Քաղաք",
+    optional: "ոչ պարտադիր",
+    adultConfirmation: "Հաստատում եմ, որ 18+ տարեկան եմ",
+    previousProviders: "Նախորդ մատակարարները",
+    nextProviders: "Հաջորդ մատակարարները",
+    registrationIntro:
+      "Բարև, YvnBet ջան։ Ուզում եմ գրանցվել կայքում։ Հաստատում եմ, որ 18+ տարեկան եմ։ Իմ տվյալները գրանցման համար՝",
     handle: "Telegram",
     consent:
       "Համաձայն եմ տվյալների մշակմանը՝ գաղտնիության քաղաքականության համաձայն",
@@ -308,26 +329,30 @@ export const initialContent = {
     },
   },
   providers: [
-    item("amusnet", same("Amusnet"), { logo: "", url: "", mode: "external" }),
-    item("pragmatic-play", same("Pragmatic Play"), {
-      logo: "",
+    item("amusnet", same("Amusnet"), {
+      logo: "/images/provider-amusnet.webp",
       url: "",
       mode: "external",
     }),
-    item("amatic", same("Amatic"), { logo: "", url: "", mode: "external" }),
+    item("pragmatic-play", same("Pragmatic Play"), {
+      logo: "/images/provider-pragmatic-play.webp",
+      url: "",
+      mode: "external",
+    }),
+    item("amatic", same("Amatic"), {
+      logo: "/images/provider-amatic.webp",
+      url: "",
+      mode: "external",
+    }),
   ],
-  categories: [
-    item("slots", tr("Слоты", "Սլոթեր", "Slots")),
-    item("table", tr("Настольные", "Սեղանի խաղեր", "Table games")),
-    item("crash", same("Crash")),
-  ],
+  categories: [item("slots", tr("Слоты", "Սլոթեր", "Slots"))],
   games: [
     ["golden-eclipse", "Golden Eclipse", "amusnet", "slots", 1],
     ["crystal-path", "Crystal Path", "amusnet", "slots", 1],
-    ["midnight-star", "Midnight Star", "pragmatic-play", "table", 2],
-    ["neon-crown", "Neon Crown", "amatic", "table", 3],
-    ["royal-orbit", "Royal Orbit", "pragmatic-play", "table", 4],
-    ["silver-rush", "Silver Rush", "amatic", "crash", 5],
+    ["midnight-star", "Midnight Star", "pragmatic-play", "slots", 2],
+    ["neon-crown", "Neon Crown", "amatic", "slots", 3],
+    ["royal-orbit", "Royal Orbit", "pragmatic-play", "slots", 4],
+    ["silver-rush", "Silver Rush", "amatic", "slots", 5],
   ].map(([id, name, provider, category, n]) =>
     item(id, same(name), {
       provider,
@@ -454,9 +479,9 @@ export const initialContent = {
       tr("Как открыть игру?", "Ինչպե՞ս բացել խաղը։", "How do I open a game?"),
       {
         description: tr(
-          "Выберите игру в каталоге. На её странице нажмите «Играть». Если встроенное окно не загружается, используйте кнопку открытия в новой вкладке.",
-          "Ընտրեք խաղը կատալոգում և սեղմեք «Խաղալ»։ Եթե ներկառուցված պատուհանը չի բեռնվում, բացեք նոր ներդիրում։",
-          "Select a game and choose Play. If the embedded platform does not load, use Open in a new tab.",
+          "Выберите игру в каталоге: платформа сразу откроется под шапкой сайта. Если она не загружается, нажмите на стрелку в шапке, чтобы открыть новую вкладку.",
+          "Ընտրեք խաղը կատալոգում․ հարթակը կբացվի կայքի հեդերի տակ։ Եթե այն չի բեռնվում, հեդերի սլաքով բացեք նոր ներդիրում։",
+          "Select a game: the platform opens directly below the site header. If it does not load, use the arrow in the header to open a new tab.",
         ),
       },
     ),
@@ -493,9 +518,9 @@ export const initialContent = {
       ),
       {
         description: tr(
-          "Для ответа на заявку сохраняются имя, телефон и Telegram. Доступ к заявкам есть у уполномоченных сотрудников. При переходе в Telegram данные добавляются в черновик сообщения; отправку подтверждаете вы. Для запроса удаления данных обратитесь в поддержку. Это предварительный текст: реквизиты оператора и сроки хранения необходимо указать до запуска.",
-          "Հայտին պատասխանելու համար պահպանվում են անունը, հեռախոսը և Telegram-ը։ Հայտերին հասանելիություն ունեն լիազորված աշխատակիցները։ Telegram անցնելիս տվյալները հայտնվում են հաղորդագրության սևագրում. ուղարկումը հաստատում եք դուք։ Ջնջման համար կապվեք աջակցության հետ։ Նախնական տեքստ. օպերատորի տվյալներն ու պահպանման ժամկետները պետք է լրացվեն մինչև մեկնարկը։",
-          "We save your name, phone number and Telegram handle to respond to your request. Authorised staff can access requests. Continuing to Telegram prepares a message draft; you decide whether to send it. Contact support to request deletion. This is draft copy: operator details and retention periods must be added before launch.",
+          "Для ответа на заявку сохраняются имя, телефон, город, подтверждение 18+ и Telegram, если он указан. Доступ к заявкам есть у уполномоченных сотрудников. При переходе в Telegram данные добавляются в черновик сообщения; отправку подтверждаете вы. Для запроса удаления данных обратитесь в поддержку. Это предварительный текст: реквизиты оператора и сроки хранения необходимо указать до запуска.",
+          "Հայտին պատասխանելու համար պահպանվում են անունը, հեռախոսը, քաղաքը, 18+ հաստատումը և Telegram-ը, եթե նշված է։ Հայտերին հասանելիություն ունեն լիազորված աշխատակիցները։ Telegram անցնելիս տվյալները հայտնվում են հաղորդագրության սևագրում. ուղարկումը հաստատում եք դուք։ Ջնջման համար կապվեք աջակցության հետ։ Նախնական տեքստ. օպերատորի տվյալներն ու պահպանման ժամկետները պետք է լրացվեն մինչև մեկնարկը։",
+          "We save your name, phone number, city, age confirmation and optional Telegram handle to respond to your request. Authorised staff can access requests. Continuing to Telegram prepares a message draft; you decide whether to send it. Contact support to request deletion. This is draft copy: operator details and retention periods must be added before launch.",
         ),
       },
     ),
@@ -545,8 +570,59 @@ export function publicContent(c) {
   out.games = out.games.filter(
     (g) =>
       out.providers.some((p) => p.id === g.provider) &&
-      out.categories.some((p) => p.id === g.category),
+      out.categories.some((p) => p.id === g.category && p.slug === "slots"),
   );
   out.promotions = out.promotions.filter((p) => activePromotion(p));
   return out;
+}
+
+// Additive compatibility for existing CMS databases. Custom text and assets survive updates.
+export function upgradeContent(input) {
+  const c = structuredClone(input);
+  for (const lang of languages)
+    c.interface[lang] = { ...ui[lang], ...c.interface[lang] };
+  for (const p of c.providers) {
+    const seed = initialContent.providers.find((x) => x.id === p.id);
+    if (!p.logo && seed) p.logo = seed.logo;
+  }
+  const originalCopy = {
+    faq: {
+      ru: "Выберите игру в каталоге. На её странице нажмите «Играть». Если встроенное окно не загружается, используйте кнопку открытия в новой вкладке.",
+      hy: "Ընտրեք խաղը կատալոգում և սեղմեք «Խաղալ»։ Եթե ներկառուցված պատուհանը չի բեռնվում, բացեք նոր ներդիրում։",
+      en: "Select a game and choose Play. If the embedded platform does not load, use Open in a new tab.",
+    },
+    privacy: {
+      ru: "Для ответа на заявку сохраняются имя, телефон и Telegram. Доступ к заявкам есть у уполномоченных сотрудников. При переходе в Telegram данные добавляются в черновик сообщения; отправку подтверждаете вы. Для запроса удаления данных обратитесь в поддержку. Это предварительный текст: реквизиты оператора и сроки хранения необходимо указать до запуска.",
+      hy: "Հայտին պատասխանելու համար պահպանվում են անունը, հեռախոսը և Telegram-ը։ Հայտերին հասանելիություն ունեն լիազորված աշխատակիցները։ Telegram անցնելիս տվյալները հայտնվում են հաղորդագրության սևագրում. ուղարկումը հաստատում եք դուք։ Ջնջման համար կապվեք աջակցության հետ։ Նախնական տեքստ. օպերատորի տվյալներն ու պահպանման ժամկետները պետք է լրացվեն մինչև մեկնարկը։",
+      en: "We save your name, phone number and Telegram handle to respond to your request. Authorised staff can access requests. Continuing to Telegram prepares a message draft; you decide whether to send it. Contact support to request deletion. This is draft copy: operator details and retention periods must be added before launch.",
+    },
+  };
+  for (const [collection, id, original] of [
+    ["faq", "launch", originalCopy.faq],
+    ["pages", "privacy", originalCopy.privacy],
+  ]) {
+    const record = c[collection].find((x) => x.id === id);
+    const seed = initialContent[collection].find((x) => x.id === id);
+    if (record && seed)
+      for (const lang of languages)
+        if (record.description[lang] === original[lang])
+          record.description[lang] = seed.description[lang];
+  }
+  // The original six demo records used placeholder categories; real/custom games are untouched.
+  for (const g of c.games) {
+    const seed = initialContent.games.find((x) => x.id === g.id);
+    if (
+      seed &&
+      g.image === seed.image &&
+      !g.url &&
+      ["table", "crash"].includes(g.category)
+    )
+      g.category = "slots";
+  }
+  c.categories = c.categories.filter(
+    (x) =>
+      !["table", "crash"].includes(x.id) ||
+      c.games.some((g) => g.category === x.id),
+  );
+  return c;
 }

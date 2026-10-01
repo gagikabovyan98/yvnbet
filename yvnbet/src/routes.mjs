@@ -11,10 +11,12 @@ export function routeFor(path, c) {
     item = c[section].find((x) => x.slug === slug);
   else item = c.pages.find((x) => x.slug === section) || null;
   if (slug && !item) valid = false;
-  if (slug && !['games', 'providers', 'promotions'].includes(section)) valid = false;
+  if (slug && !["games", "providers", "promotions"].includes(section))
+    valid = false;
   if (
     (![
       "home",
+      "login",
       "slots",
       "promotions",
       "help",

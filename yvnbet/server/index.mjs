@@ -185,12 +185,14 @@ app.post("/api/registrations", (req, res) => {
     .prepare("INSERT INTO leads(payload,created) VALUES(?,?)")
     .run(store.encrypt(lead), created);
   const c = getContent().content;
-  const msg = {
-    ru: "Здравствуйте! Хочу зарегистрироваться.",
-    hy: "Բարև։ Ցանկանում եմ գրանցվել։",
-    en: "Hello! I would like to register.",
-  }[lead.language];
-  const text = `${msg}\n${c.interface[lead.language].name}: ${lead.name}\n${c.interface[lead.language].phone}: ${lead.phone}\nTelegram: ${lead.telegram}`;
+  const t = c.interface[lead.language];
+  const text = [
+    t.registrationIntro,
+    `${t.name}: ${lead.name}`,
+    `${t.phone}: ${lead.phone}`,
+    `${t.city}: ${lead.city}`,
+    ...(lead.telegram ? [`Telegram: ${lead.telegram}`] : []),
+  ].join("\n");
   res.status(201).json({
     id: Number(result.lastInsertRowid),
     telegramUrl: `https://t.me/${c.settings.telegram}?text=${encodeURIComponent(text)}`,

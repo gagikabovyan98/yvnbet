@@ -9,19 +9,26 @@ import {
 } from "./validation.mjs";
 import {
   initialContent,
+  upgradeContent,
   publicContent,
   activePromotion,
 } from "../src/content.mjs";
 import { headFor, sitemap, metaFor } from "./seo.mjs";
-import { routeFor } from '../src/routes.mjs';
+import { routeFor } from "../src/routes.mjs";
 const clone = () => structuredClone(initialContent);
-test('detail metadata stays unique and text pages reject extra path segments', () => {
+test("detail metadata stays unique and text pages reject extra path segments", () => {
   const c = clone();
-  assert.equal(metaFor(c, '/ru/promotions/welcome-guide').title, 'Ваш первый шаг в YvnBet — YvnBet');
-  assert.notEqual(metaFor(c, '/ru/promotions/welcome-guide').description, metaFor(c, '/ru/promotions').description);
-  assert.equal(routeFor('/ru/about/unexpected', c).valid, false);
-  c.pages.push({...c.pages[0], id:'custom', slug:'custom'});
-  assert.equal(routeFor('/en/custom', c).valid, true);
+  assert.equal(
+    metaFor(c, "/ru/promotions/welcome-guide").title,
+    "Ваш первый шаг в YvnBet — YvnBet",
+  );
+  assert.notEqual(
+    metaFor(c, "/ru/promotions/welcome-guide").description,
+    metaFor(c, "/ru/promotions").description,
+  );
+  assert.equal(routeFor("/ru/about/unexpected", c).valid, false);
+  c.pages.push({ ...c.pages[0], id: "custom", slug: "custom" });
+  assert.equal(routeFor("/en/custom", c).valid, true);
 });
 test("CMS accepts variable collections and rejects broken provider/category references", () => {
   const c = clone();
@@ -106,6 +113,8 @@ test("registration requires consent, valid contacts and an empty honeypot", () =
     name: "Test User",
     phone: "+374 00 123456",
     telegram: "@test_user",
+    city: "Yerevan",
+    adult: true,
     consent: true,
     language: "en",
     website: "",
@@ -113,10 +122,50 @@ test("registration requires consent, valid contacts and an empty honeypot", () =
   assert.equal(leadSchema.safeParse(v).success, true);
   for (const change of [
     { consent: false },
+    { adult: false },
+    { adult: undefined },
+    { city: "" },
+    { city: undefined },
     { website: "bot" },
     { telegram: "http://test.com" },
     { name: "" },
   ])
     assert.equal(leadSchema.safeParse({ ...v, ...change }).success, false);
+  assert.equal(leadSchema.safeParse({ ...v, telegram: "" }).success, true);
+  const { telegram, ...withoutTelegram } = v;
+  assert.equal(leadSchema.safeParse(withoutTelegram).success, true);
   assert.equal(safeUrl("https://user:pass@example.com"), false);
+});
+
+test("existing content gains registration fields and slot previews without losing custom CMS values", () => {
+  const c = clone();
+  delete c.interface.hy.city;
+  delete c.interface.ru.registrationIntro;
+  c.interface.en.register = "Custom CTA";
+  c.providers[0].logo = "/uploads/custom-provider.webp";
+  c.providers[1].logo = "";
+  c.categories.push({ ...c.categories[0], id: "table", slug: "table" });
+  c.games[2].category = "table";
+  c.games.push({
+    ...c.games[0],
+    id: "real-table",
+    slug: "real-table",
+    category: "table",
+    url: "https://example.com/real-game",
+  });
+  c.settings.telegram = "custom_operator";
+  const upgraded = upgradeContent(c);
+  assert.equal(validateContent(upgraded).interface.hy.city, "Քաղաք");
+  assert.equal(upgraded.interface.en.register, "Custom CTA");
+  assert.equal(upgraded.settings.telegram, "custom_operator");
+  assert.equal(upgraded.providers[0].logo, "/uploads/custom-provider.webp");
+  assert.match(upgraded.providers[1].logo, /provider-pragmatic/);
+  assert.equal(upgraded.games[2].category, "slots");
+  assert.equal(upgraded.games.at(-1).category, "table");
+  assert.equal(
+    publicContent(upgraded).games.some((g) => g.id === "real-table"),
+    false,
+  );
+  assert.deepEqual(upgradeContent(upgraded), upgraded);
+  assert.equal(c.games[2].category, "table");
 });
