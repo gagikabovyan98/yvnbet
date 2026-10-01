@@ -1,3 +1,4 @@
+import useEmblaCarousel from "embla-carousel-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Home,
@@ -532,18 +533,66 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
     [cycle, setCycle] = useState(0),
     [paused, setPaused] = useState(false),
     [hidden, setHidden] = useState(false),
-    [reduced, setReduced] = useState(false);
-  const gesture = useRef(null),
-    swiped = useRef(false),
-    elapsed = useRef(0),
+    [reduced, setReduced] = useState(false),
+    [moving, setMoving] = useState(false),
+    [dragging, setDragging] = useState(false);
+  const [viewportRef, carousel] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+    duration: reduced ? 0 : 35,
+    skipSnaps: false,
+  });
+  const elapsed = useRef(0),
     progress = useRef(null);
-  const select = (next) => {
+  const resetClock = () => {
     elapsed.current = 0;
     progress.current?.style.setProperty("--slide-progress", "0");
-    setIndex((next + slides.length) % slides.length);
     setCycle((v) => v + 1);
   };
-  const change = (step) => select(index + step);
+  const select = (next) => {
+    if (!carousel) return;
+    resetClock();
+    carousel.scrollTo(next, reduced);
+  };
+  const change = (step) => {
+    if (!carousel) return;
+    resetClock();
+    if (step > 0) carousel.scrollNext(reduced);
+    else carousel.scrollPrev(reduced);
+  };
+  useEffect(() => {
+    if (!carousel) return;
+    const selected = () => {
+      setIndex(carousel.selectedScrollSnap());
+      resetClock();
+    };
+    const scroll = () => setMoving(true);
+    const settle = () => setMoving(false);
+    const down = () => setDragging(true);
+    const up = () => setDragging(false);
+    const reinit = () => {
+      selected();
+      settle();
+      setDragging(false);
+    };
+    carousel
+      .on("select", selected)
+      .on("scroll", scroll)
+      .on("settle", settle)
+      .on("pointerDown", down)
+      .on("pointerUp", up)
+      .on("reInit", reinit);
+    selected();
+    return () => {
+      carousel
+        .off("select", selected)
+        .off("scroll", scroll)
+        .off("settle", settle)
+        .off("pointerDown", down)
+        .off("pointerUp", up)
+        .off("reInit", reinit);
+    };
+  }, [carousel]);
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const motion = () => setReduced(media.matches);
@@ -558,7 +607,16 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
     };
   }, []);
   useEffect(() => {
-    if (paused || hidden || reduced || slides.length < 2) return;
+    if (
+      !carousel ||
+      paused ||
+      hidden ||
+      reduced ||
+      moving ||
+      dragging ||
+      slides.length < 2
+    )
+      return;
     let frame,
       previous = performance.now();
     const duration = Math.max(4, Number(seconds) || 7) * 1000;
@@ -569,18 +627,29 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
       progress.current?.style.setProperty("--slide-progress", String(value));
       if (value >= 1) {
         elapsed.current = 0;
-        setIndex((i) => (i + 1) % slides.length);
-        setCycle((v) => v + 1);
+        carousel.scrollNext();
       } else frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [index, cycle, seconds, paused, hidden, reduced, slides.length]);
+  }, [
+    carousel,
+    index,
+    cycle,
+    seconds,
+    paused,
+    hidden,
+    reduced,
+    moving,
+    dragging,
+    slides.length,
+  ]);
   if (!slides.length) return null;
   const s = slides[index % slides.length];
   return (
     <section
       className="hero banner-slider"
+      data-peek={slides.length > 2}
       aria-roledescription="carousel"
       aria-label={t.offers}
       tabIndex={0}
@@ -597,81 +666,42 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
       }}
     >
       <h1 className="visually-hidden">{L(s.title)}</h1>
-      <div
-        className="banner-viewport"
-        onDragStart={(e) => e.preventDefault()}
-        onPointerDown={(e) => {
-          if (e.pointerType === "mouse" && e.button !== 0) return;
-          gesture.current = { x: e.clientX, y: e.clientY };
-          swiped.current = false;
-        }}
-        onPointerMove={(e) => {
-          if (!gesture.current) return;
-          if (Math.abs(e.clientX - gesture.current.x) > 10)
-            e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        onPointerUp={(e) => {
-          if (!gesture.current) return;
-          const dx = e.clientX - gesture.current.x,
-            dy = e.clientY - gesture.current.y;
-          gesture.current = null;
-          if (
-            Math.abs(dx) > 45 &&
-            Math.abs(dx) > Math.abs(dy) * 1.4 &&
-            slides.length > 1
-          ) {
-            swiped.current = true;
-            change(dx < 0 ? 1 : -1);
-          }
-        }}
-        onPointerCancel={() => {
-          gesture.current = null;
-        }}
-        onPointerLeave={(e) => {
-          if (!e.currentTarget.hasPointerCapture(e.pointerId))
-            gesture.current = null;
-        }}
-        onClickCapture={(e) => {
-          if (swiped.current) {
-            e.preventDefault();
-            e.stopPropagation();
-            swiped.current = false;
-          }
-        }}
-      >
-        {slides.map((slide, i) => {
-          const active = i === index % slides.length;
-          const art = (
-            <img
-              className="banner-image"
-              src={slide.image}
-              alt={L(slide.description) || L(slide.title)}
-              loading={i === 0 ? "eager" : "lazy"}
-              fetchPriority={i === 0 ? "high" : "auto"}
-              draggable="false"
-            />
-          );
-          return (
-            <div
-              key={slide.id}
-              className={"banner-slide" + (active ? " active" : "")}
-              aria-hidden={!active}
-              inert={!active ? true : undefined}
-            >
-              {slide.url ? (
-                <a
-                  className="banner-link"
-                  href={localizedUrl(slide.url)}
-                  aria-label={L(slide.title)}
-                >
-                  {art}
-                </a>
-              ) : (
-                art
-              )}
-            </div>
-          );
-        })}
+      <div className="banner-viewport" ref={viewportRef}>
+        <div className="banner-track">
+          {slides.map((slide, i) => {
+            const active = i === index % slides.length;
+            const art = (
+              <img
+                className="banner-image"
+                src={slide.image}
+                alt={L(slide.description) || L(slide.title)}
+                loading="eager"
+                fetchPriority={i === 0 ? "high" : "auto"}
+                draggable="false"
+              />
+            );
+            return (
+              <div
+                key={slide.id}
+                className={"banner-slide" + (active ? " active" : "")}
+                aria-hidden={!active}
+                inert={!active ? true : undefined}
+              >
+                {slide.url ? (
+                  <a
+                    className="banner-link"
+                    href={localizedUrl(slide.url)}
+                    aria-label={L(slide.title)}
+                  >
+                    {art}
+                  </a>
+                ) : (
+                  art
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
       {slides.length > 1 && (
         <>

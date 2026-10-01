@@ -3109,20 +3109,19 @@ footer {
   filter: invert(1);
   opacity: 0.9;
 }
-.banner-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.35s ease,
-    visibility 0.35s ease;
+.banner-track {
+  display: flex;
+  height: 100%;
+  touch-action: pan-y pinch-zoom;
+  will-change: transform;
 }
-.banner-slide.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+.banner-slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  backface-visibility: hidden;
 }
 .banner-link {
   display: block;
@@ -3222,11 +3221,20 @@ footer {
 }
 @media (max-width: 620px) {
   .public-site .hero.banner-slider {
-    border-radius: 12px;
-    width: calc(100vw - 28px);
+    width: 100vw;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
   .banner-viewport {
     height: 236px;
+  }
+  .banner-slide {
+    border-radius: 10px;
+  }
+  .banner-slider[data-peek="true"] .banner-slide {
+    flex-basis: 92%;
+    margin-inline: 4px;
   }
   .banner-arrow {
     width: 32px;
