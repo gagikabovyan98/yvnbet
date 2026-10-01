@@ -529,25 +529,53 @@ export default function Site({ content: c, path }) {
 }
 function Slider({ slides, L, t, seconds, localizedUrl }) {
   const [index, setIndex] = useState(0),
+    [cycle, setCycle] = useState(0),
     [paused, setPaused] = useState(false),
-    [hover, setHover] = useState(false);
+    [hidden, setHidden] = useState(false),
+    [reduced, setReduced] = useState(false);
   const gesture = useRef(null),
-    swiped = useRef(false);
-  const change = (step) =>
-    setIndex((i) => (i + step + slides.length) % slides.length);
+    swiped = useRef(false),
+    elapsed = useRef(0),
+    progress = useRef(null);
+  const select = (next) => {
+    elapsed.current = 0;
+    progress.current?.style.setProperty("--slide-progress", "0");
+    setIndex((next + slides.length) % slides.length);
+    setCycle((v) => v + 1);
+  };
+  const change = (step) => select(index + step);
   useEffect(() => {
-    if (
-      paused ||
-      hover ||
-      slides.length < 2 ||
-      matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-    const timer = setInterval(() => {
-      if (!document.hidden) setIndex((i) => (i + 1) % slides.length);
-    }, seconds * 1000);
-    return () => clearInterval(timer);
-  }, [paused, hover, seconds, slides.length]);
+    const media = matchMedia("(prefers-reduced-motion: reduce)");
+    const motion = () => setReduced(media.matches);
+    const visibility = () => setHidden(document.hidden);
+    motion();
+    visibility();
+    media.addEventListener("change", motion);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      media.removeEventListener("change", motion);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, []);
+  useEffect(() => {
+    if (paused || hidden || reduced || slides.length < 2) return;
+    let frame,
+      previous = performance.now();
+    const duration = Math.max(4, Number(seconds) || 7) * 1000;
+    const tick = (now) => {
+      elapsed.current += now - previous;
+      previous = now;
+      const value = Math.min(elapsed.current / duration, 1);
+      progress.current?.style.setProperty("--slide-progress", String(value));
+      if (value >= 1) {
+        elapsed.current = 0;
+        setIndex((i) => (i + 1) % slides.length);
+        setCycle((v) => v + 1);
+      } else frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [index, cycle, seconds, paused, hidden, reduced, slides.length]);
   if (!slides.length) return null;
   const s = slides[index % slides.length];
   return (
@@ -566,12 +594,6 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
           e.preventDefault();
           setPaused((p) => !p);
         }
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onFocusCapture={() => setHover(true)}
-      onBlurCapture={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setHover(false);
       }}
     >
       <h1 className="visually-hidden">{L(s.title)}</h1>
@@ -652,14 +674,53 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
         })}
       </div>
       {slides.length > 1 && (
-        <div className="banner-pagination" aria-hidden="true">
-          {slides.map((slide, i) => (
-            <span
-              key={slide.id}
-              className={i === index % slides.length ? "active" : ""}
-            />
-          ))}
-        </div>
+        <>
+          <button
+            type="button"
+            className="banner-arrow banner-arrow-prev"
+            aria-label={t.prev}
+            onClick={() => change(-1)}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            className="banner-arrow banner-arrow-next"
+            aria-label={t.next}
+            onClick={() => change(1)}
+          >
+            <ChevronRight size={22} />
+          </button>
+          <div className="banner-pagination">
+            {slides.map((slide, i) => (
+              <button
+                type="button"
+                key={slide.id}
+                className={i === index % slides.length ? "active" : ""}
+                aria-label={`${t.slide} ${i + 1}`}
+                aria-current={i === index % slides.length ? "true" : undefined}
+                onClick={() => select(i)}
+              >
+                {i === index % slides.length && (
+                  <span
+                    key={cycle}
+                    ref={progress}
+                    className="banner-progress"
+                    style={{ "--slide-progress": 0 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="banner-pause"
+            aria-label={paused ? t.resume : t.pause}
+            onClick={() => setPaused((v) => !v)}
+          >
+            {paused ? t.resume : t.pause}
+          </button>
+        </>
       )}
     </section>
   );
@@ -935,25 +996,14 @@ function Random({ c, t, L, href }) {
 }
 function SlotsIcon({ size = 24 }) {
   return (
-    <svg
+    <img
+      src="/images/nav-slots.png"
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      alt=""
       aria-hidden="true"
-    >
-      <rect x="2" y="4" width="17" height="15" rx="3" />
-      <path d="M19 13h3V7M5 8h11v7H5zM8.7 8v7m3.6-7v7M7 21h7" />
-      <path
-        d="m6.5 10.5 1 1-1 1m3.7-2 1 1-1 1m3.7-2 1 1-1 1"
-        strokeWidth="1.1"
-      />
-      <circle cx="22" cy="5" r="1.25" fill="currentColor" stroke="none" />
-    </svg>
+      className="slots-nav-icon"
+    />
   );
 }
 
@@ -1157,14 +1207,26 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
             onClick={() => onSelect("")}
           >
             <span className="provider-tile">
-              <SlotsIcon size={35} />
+              <img
+                src="/images/providers-all.png"
+                width="35"
+                height="35"
+                alt=""
+                draggable="false"
+              />
             </span>
             <span className="provider-caption">{t.allProviders}</span>
           </button>
         ) : (
           <a className="provider-all" href={href("slots")}>
             <span className="provider-tile">
-              <SlotsIcon size={35} />
+              <img
+                src="/images/providers-all.png"
+                width="35"
+                height="35"
+                alt=""
+                draggable="false"
+              />
             </span>
             <span className="provider-caption">{t.allProviders}</span>
           </a>

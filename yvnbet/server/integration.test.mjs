@@ -127,6 +127,10 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /class="reel-machine /);
     assert.match(homeHtml, /class="hero-actions"/);
     assert.doesNotMatch(homeHtml, /class="hero-controls"/);
+    assert.match(homeHtml, /class="banner-arrow banner-arrow-next"/);
+    assert.match(homeHtml, /class="banner-progress"/);
+    assert.match(homeHtml, /\/images\/nav-slots.png/);
+    assert.match(homeHtml, /\/images\/providers-all.png/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(homeHtml, /class="provider-rail"/);
     assert.match(homeHtml, /class="language-flag"/);

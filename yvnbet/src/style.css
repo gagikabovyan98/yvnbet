@@ -2998,7 +2998,7 @@ footer {
 .banner-viewport {
   width: 100%;
   position: relative;
-  aspect-ratio: 3.05 / 1;
+  height: clamp(236px, 32.8vw, 436px);
   overflow: hidden;
   touch-action: pan-y;
   cursor: grab;
@@ -3007,27 +3007,107 @@ footer {
 .banner-viewport:active {
   cursor: grabbing;
 }
+.banner-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: #383e40e8;
+  color: #fff;
+  transition: background 0.18s;
+}
+.banner-arrow:hover {
+  background: #50585b;
+}
+.banner-arrow-prev {
+  left: 12px;
+}
+.banner-arrow-next {
+  right: 12px;
+}
 .banner-pagination {
   position: absolute;
-  bottom: 10px;
+  z-index: 2;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
-  padding: 6px 9px;
-  border-radius: 20px;
-  background: #160d2266;
-  pointer-events: none;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  height: 24px;
 }
-.banner-pagination span {
+.banner-pagination button {
+  position: relative;
   width: 5px;
-  height: 5px;
-  border-radius: 10px;
-  background: #ffffff70;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.banner-pagination button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 100%;
+  height: 4px;
+  border-radius: 8px;
+  background: #ffffff66;
 }
 .banner-pagination .active {
-  width: 15px;
+  width: 70px;
+}
+.banner-progress {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 70px;
+  height: 4px;
   background: #fff;
+  border-radius: 8px;
+  transform: scaleX(var(--slide-progress));
+  transform-origin: left;
+}
+.banner-pause {
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  right: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #383e40;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.banner-pause:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.slots-nav-icon {
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: invert(1);
+  opacity: 0.9;
+}
+.header-nav .slots-nav-icon {
+  width: 20px;
+  height: 20px;
+}
+.provider-all .provider-tile img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: invert(1);
+  opacity: 0.9;
 }
 .banner-slide {
   position: absolute;
@@ -3146,7 +3226,18 @@ footer {
     width: calc(100vw - 28px);
   }
   .banner-viewport {
-    aspect-ratio: 16 / 9;
+    height: 236px;
+  }
+  .banner-arrow {
+    width: 32px;
+    height: 36px;
+    border-radius: 8px;
+  }
+  .banner-arrow-prev {
+    left: 8px;
+  }
+  .banner-arrow-next {
+    right: 8px;
   }
   .public-site .hero-actions {
     gap: 9px;
