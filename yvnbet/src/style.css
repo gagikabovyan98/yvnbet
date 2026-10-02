@@ -3891,3 +3891,53 @@ footer {
   .banner-copy h2 { font-size: 24px; margin: 8px 0; }
   .banner-copy p { font-size: 12px; max-width: 290px; }
 }
+
+/* Responsive desktop shell; mobile keeps its existing bottom navigation. */
+.desktop-nav, .desktop-register { display: none; }
+.slots-nav-icon {
+  display: inline-block;
+  background: currentColor;
+  mask: url('/images/nav-slots.png?v=8586374') center / contain no-repeat;
+  -webkit-mask: url('/images/nav-slots.png?v=8586374') center / contain no-repeat;
+  filter: none;
+  opacity: 1;
+}
+.banner-picture { display: block; width: 100%; height: 100%; }
+.banner-image { object-fit: cover; }
+.public-site .hero.banner-slider {
+  width: 100%; left: auto; transform: none;
+  background: transparent; border: 0; border-radius: 0;
+}
+.banner-viewport { height: auto; aspect-ratio: 2000 / 656; }
+.banner-slide { flex: 0 0 calc(100% - 16px); margin-inline: 8px; border-radius: 14px; }
+.banner-track { height: 100%; }
+@media (min-width: 901px) {
+  .public-site .header { padding-inline: 28px; }
+  .desktop-register { display: inline-flex; }
+  .public-site .header-actions { margin-left: auto; }
+  .desktop-nav {
+    position: fixed; left: 0; top: 80px; bottom: 0; z-index: 20;
+    width: 184px; display: flex; flex-direction: column; gap: 8px;
+    padding: 24px 12px; background: #150e1d; border-right: 1px solid #44314e;
+  }
+  .desktop-nav a {
+    display: flex; align-items: center; gap: 12px; padding: 14px 12px;
+    color: var(--muted); border-radius: 10px; font-size: 13px;
+  }
+  .desktop-nav a:hover, .desktop-nav a[aria-current] { background: #302039; color: #f0bbeb; }
+  .desktop-nav svg, .desktop-nav .slots-nav-icon { flex-shrink: 0; }
+  .public-site:not(.platform-view) .site-body { margin-left: 184px; max-width: none; padding: 24px 24px 0; }
+  .public-site .hero-actions { display: none; }
+  .banner-copy h2 { font-size: clamp(24px, 3vw, 52px); }
+  .bottom-nav { display: none; }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .bottom-nav { display: flex; }
+  .public-site .site-body { padding-bottom: 84px; }
+}
+@media (max-width: 700px) {
+  .banner-viewport { aspect-ratio: 3 / 2; height: auto; }
+  .banner-slide { border-radius: 10px; }
+  .banner-slider[data-peek="true"] .banner-slide { flex-basis: 92%; margin-inline: 4px; }
+  .banner-copy { padding: 20px 36px; }
+}

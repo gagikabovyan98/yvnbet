@@ -118,6 +118,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     );
     state.content.settings.siteUrl = "https://example.com";
     state.content.settings.indexable = true;
+    state.content.settings.favicon = "/images/wordmark.webp";
+    state.content.slides[0].mobileImageHy = "/images/hero.webp";
     state.content.settings.registrationTelegramUrl =
       "https://t.me/registration_test";
     state.content.settings.supportTelegramUrl = "https://t.me/support_test";
@@ -139,6 +141,10 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(loginHtml, /<footer|class="bottom-nav"/);
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
+    assert.match(homeHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
+    assert.match(homeHtml, /<source media="\(max-width: 700px\)" srcSet="\/images\/hero.webp"/);
+    const adminHtml = await (await call("/login/yvn/admin")).text();
+    assert.match(adminHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
     assert.doesNotMatch(homeHtml, /class="footer-nav"/);
     assert.match(homeHtml, /Թոփ խաղեր/);
     assert.match(homeHtml, /class="reel-machine /);
@@ -146,14 +152,16 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(homeHtml, /class="hero-controls"/);
     assert.match(homeHtml, /class="banner-arrow banner-arrow-next"/);
     assert.match(homeHtml, /class="banner-progress"/);
-    assert.match(homeHtml, /\/images\/nav-slots.png/);
+    assert.match(homeHtml, /class="slots-nav-icon"/);
     assert.match(homeHtml, /\/images\/providers-all.png/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(homeHtml, /class="provider-rail"/);
     assert.match(homeHtml, /class="language-flag"/);
     assert.doesNotMatch(homeHtml, /class="quick-strip"|class="side-nav"/);
     const header = homeHtml.match(/<header[\s\S]*?<\/header>/)[0];
-    assert.doesNotMatch(header, /Գրանցվել/);
+    assert.match(header, /Գրանցվել/);
+    assert.match(header, /desktop-register/);
+    assert.match(homeHtml, /class="desktop-nav"/);
     assert.match(header, /Մուտք/);
     assert.ok(html.includes('hreflang="hy"'));
     assert.ok(html.includes("https://provider.example/game/42"));

@@ -290,6 +290,7 @@ export const initialContent = {
   settings: {
     brand: "YvnBet",
     logo: "/images/wordmark.webp",
+    favicon: "/images/lion.svg",
     lion: "/images/lion-standing.webp",
     telegram: "yvnbet",
     registrationTelegramUrl: "",
@@ -614,7 +615,20 @@ for (const slide of initialContent.slides) {
   slide.imageRu = "";
   slide.imageHy = "";
   slide.imageEn = "";
+  slide.mobileImage = "";
+  slide.mobileImageRu = "";
+  slide.mobileImageHy = "";
+  slide.mobileImageEn = "";
   slide.showText = true;
+}
+
+export function upgradeResponsiveLayout(input) {
+  const c = structuredClone(input);
+  c.settings.favicon ??= initialContent.settings.favicon;
+  for (const slide of c.slides)
+    for (const key of ["mobileImage", "mobileImageRu", "mobileImageHy", "mobileImageEn"])
+      slide[key] ??= "";
+  return c;
 }
 
 export function upgradeSiteControls(input) {

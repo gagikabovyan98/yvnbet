@@ -163,7 +163,6 @@ export default function Site({ content: c, path }) {
           >
             <img src={c.settings.logo} alt={c.settings.brand} />
           </a>
-          {!frame && nav("header-nav")}
           <div className="header-actions">
             <LanguageMenu lang={lang} path={route.path} />
             {frame ? (
@@ -194,12 +193,14 @@ export default function Site({ content: c, path }) {
                 )}
               </>
             ) : (
-              <a className="button quiet" href={href("login")}>
-                {t.login}
-              </a>
+              <>
+                <button className="button desktop-register" onClick={() => setModal({ type: "register" })}>{t.register}</button>
+                <a className="button quiet" href={href("login")}>{t.login}</a>
+              </>
             )}
           </div>
         </header>
+        {!frame && nav("desktop-nav")}
         {frame ? (
           <main id="main" className="platform-main">
             {frame.url ? (
@@ -682,6 +683,8 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
             const active = i === index % slides.length;
             const art = (
               <>
+              <picture className="banner-picture">
+              <source media="(max-width: 700px)" srcSet={L({ru: slide.mobileImageRu, hy: slide.mobileImageHy, en: slide.mobileImageEn}) || slide.mobileImage || L({ru: slide.imageRu, hy: slide.imageHy, en: slide.imageEn}) || slide.image} />
               <img
                 className="banner-image"
                 src={L({ru: slide.imageRu, hy: slide.imageHy, en: slide.imageEn}) || slide.image}
@@ -690,6 +693,7 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
                 fetchPriority={i === 0 ? "high" : "auto"}
                 draggable="false"
               />
+              </picture>
               {slide.showText && <div className="banner-copy">
                 <span>{L(slide.label)}</span>
                 <h2>{L(slide.title)}</h2>
@@ -1096,14 +1100,7 @@ function Random({ c, t, L, href }) {
 }
 function SlotsIcon({ size = 24 }) {
   return (
-    <img
-      src="/images/nav-slots.png?v=8586374"
-      width={size}
-      height={size}
-      alt=""
-      aria-hidden="true"
-      className="slots-nav-icon"
-    />
+    <span aria-hidden="true" className="slots-nav-icon" style={{ width: size, height: size }} />
   );
 }
 

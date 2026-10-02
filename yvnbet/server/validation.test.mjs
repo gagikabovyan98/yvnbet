@@ -13,6 +13,7 @@ import {
   upgradeRegistrationUi,
   upgradeTelegramLinks,
   upgradeSiteControls,
+  upgradeResponsiveLayout,
   telegramContact,
   publicContent,
   activePromotion,
@@ -253,4 +254,20 @@ test("site controls migrate custom artwork and operators without enabling mainte
   }
   upgraded.settings.registrationTelegramUrl = "https://t.me/+37499123456";
   assert.equal(new URL(telegramContact(upgraded.settings, "registration", "hello there")).pathname, "/+37499123456");
+});
+
+test("responsive layout migration preserves custom banners and favicon", () => {
+  const c = clone();
+  delete c.settings.favicon;
+  delete c.slides[0].mobileImage;
+  c.slides[0].image = "/uploads/desktop.webp";
+  const migrated = upgradeResponsiveLayout(c);
+  assert.equal(validateContent(migrated).settings.favicon, "/images/lion.svg");
+  assert.equal(migrated.slides[0].image, "/uploads/desktop.webp");
+  assert.equal(migrated.slides[0].mobileImage, "");
+  migrated.settings.favicon = "/uploads/custom.webp";
+  migrated.slides[0].mobileImageHy = "/uploads/mobile-hy.webp";
+  assert.deepEqual(upgradeResponsiveLayout(migrated), migrated);
+  migrated.settings.favicon = 'javascript:alert(1)';
+  assert.throws(() => validateContent(migrated));
 });

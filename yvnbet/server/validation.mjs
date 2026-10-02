@@ -85,6 +85,7 @@ export const contentSchema = z.strictObject({
   settings: z.strictObject({
     brand: z.string().min(1).max(80),
     logo: image,
+    favicon: image,
     lion: image,
     telegram: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{4,31}$/),
     registrationTelegramUrl: telegramUrl,
@@ -135,7 +136,7 @@ export const contentSchema = z.strictObject({
     mode,
     featured: z.boolean(),
   }),
-  slides: list({ image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
+  slides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
   promotions: list({
     kind: z.enum(["promotion", "bonus", "news", "offer"]),
     image,

@@ -12,7 +12,7 @@ import {
 } from "./store.mjs";
 import { validateContent, parseImage, leadSchema } from "./validation.mjs";
 import { publicContent, telegramContact } from "../src/content.mjs";
-import { headFor, metaFor, jsonSafe, sitemap } from "./seo.mjs";
+import { headFor, metaFor, jsonSafe, sitemap, escapeHtml } from "./seo.mjs";
 import { requestLanguage } from "./language.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = process.env.DATA_DIR || path.join(root, "data");
@@ -416,6 +416,7 @@ app.get("/{*path}", async (req, res, next) => {
       .type("html")
       .send(
         tpl
+          .replace("<!--favicon-->", `<link rel="icon" href="${escapeHtml(c.settings.favicon || "/images/lion.svg")}">`)
           .replace('lang="ru"', `lang="${isAdmin ? "ru" : m.lang}"`)
           .replace(
             "<!--head-->",
