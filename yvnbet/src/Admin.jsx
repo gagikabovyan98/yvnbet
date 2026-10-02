@@ -30,7 +30,8 @@ const groups = [
   ["games", "Игры", Gamepad2],
   ["providers", "Провайдеры", Layers],
   ["categories", "Категории", Layers],
-  ["slides", "Слайдер", Image],
+  ["slides", "Слайдер главной", Image],
+  ["slotSlides", "Слайдер слотов", Image],
   ["promotions", "Акции и новости", Gift],
   ["faq", "Вопросы и ответы", HelpCircle],
   ["pages", "Страницы", FileText],
@@ -88,7 +89,8 @@ const labels = {
   indexable: "Разрешить индексацию",
   ogImage: "Изображение для соцсетей",
   defaultLanguage: "Язык по умолчанию",
-  sliderSeconds: "Интервал слайдера (секунды)",
+  sliderSeconds: "Интервал слайдера главной (секунды)",
+  slotSliderSeconds: "Интервал слайдера слотов (секунды)",
   home: "Главная",
   slots: "Слоты",
   promotions: "Акции",
@@ -196,13 +198,13 @@ export default function Admin() {
     }
   }
   function add() {
-    const template = structuredClone(initialContent[section][0]);
+    const template = structuredClone(initialContent[section][0] || (section === "slotSlides" ? initialContent.slides[0] : undefined));
     // getRandomValues also works on a temporary HTTP demo opened by server IP.
     const suffix = Array.from(
       crypto.getRandomValues(new Uint8Array(8)),
       (byte) => byte.toString(16).padStart(2, "0"),
     ).join("");
-    template.id = section + "-" + suffix;
+    template.id = section.toLowerCase() + "-" + suffix;
     template.slug = template.id;
     template.title = { ru: "Новая запись", hy: "Նոր գրառում", en: "New item" };
     template.description = { ru: "", hy: "", en: "" };
@@ -213,6 +215,10 @@ export default function Admin() {
     };
     if ("url" in template) template.url = "";
     if ("image" in template) template.image = "";
+    if (["slides", "slotSlides"].includes(section)) {
+      for (const key of ["imageRu", "imageHy", "imageEn", "mobileImage", "mobileImageRu", "mobileImageHy", "mobileImageEn"]) template[key] = "";
+      template.showText = false;
+    }
     if ("logo" in template) template.logo = "";
     if (section === "games") {
       template.provider = draft.providers[0]?.id || "";
@@ -269,7 +275,7 @@ export default function Admin() {
               <small>{lang.toUpperCase()}</small>
             </span>
             {["description", "telegramText"].includes(key) ||
-            (key === "title" && path[0] === "slides") ? (
+            (key === "title" && ["slides", "slotSlides"].includes(path[0])) ? (
               <textarea
                 rows={4}
                 value={value[lang]}
@@ -648,7 +654,7 @@ export default function Admin() {
                         <h2>{current.title[lang]}</h2>
                         <Language value={lang} onChange={setLang} />
                       </div>
-                      {section === "slides" && (
+                      {["slides", "slotSlides"].includes(section) && (
                         <p className="cms-banner-help">
                           Общая картинка используется по умолчанию. Для баннеров с
                           текстом внутри изображения загрузите отдельные версии RU, HY и EN
@@ -660,10 +666,15 @@ export default function Admin() {
                           версия пустая, используется обычный баннер выбранного языка.
                         </p>
                       )}
+                      {section === "slotSlides" && <p className="cms-banner-help">
+                        Эти баннеры показываются только в разделе «Слоты» и не связаны с главной.
+                        HTTPS-ссылка откроется внутри сайта во встроенном окне; внутренний путь
+                        (например /promotions) откроет страницу сайта. Внешний сайт должен разрешать iframe.
+                      </p>}
                       {Object.entries(current)
                         .filter(
                           ([k]) =>
-                            section !== "slides" ||
+                            !["slides", "slotSlides"].includes(section) ||
                             !["label", "button"].includes(k),
                         )
                         .map(([k, v]) => field(v, [section, index, k], k))}

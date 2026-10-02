@@ -399,6 +399,7 @@ app.get("/{*path}", async (req, res, next) => {
       c.settings.loginUrl,
       ...c.games.map((g) => g.url),
       ...c.providers.map((p) => p.url),
+      ...c.slotSlides.map((slide) => slide.url).filter((url) => url.startsWith("https://")),
     ]
       .filter(Boolean)
       .map((u) => new URL(u).origin);

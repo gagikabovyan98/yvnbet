@@ -310,13 +310,20 @@ export default function Site({ content: c, path }) {
                         )}
                       </>
                     )}
+                    {section === "slots" && c.slotSlides.length > 0 && (
+                      <Slider slides={c.slotSlides} L={L} t={t}
+                        seconds={c.settings.slotSliderSeconds} localizedUrl={localizedUrl}
+                        headingTag="h2" onOpen={(url, title) => launch(url, "iframe", title)} />
+                    )}
                     {(section === "slots" || section === "providers") && (
                       <>
-                        <section className="page-heading">
-                          <span className="eyebrow">{t.catalog}</span>
-                          <h1>{item ? L(item.title) : t.collection}</h1>
-                          {item && <p>{L(item.description)}</p>}
-                        </section>
+                        {section === "slots" ? <h1 className="visually-hidden">{t.slots}</h1> : (
+                          <section className="page-heading">
+                            <span className="eyebrow">{t.catalog}</span>
+                            <h1>{L(item.title)}</h1>
+                            <p>{L(item.description)}</p>
+                          </section>
+                        )}
                         <Catalog
                           c={c}
                           t={t}
@@ -539,7 +546,7 @@ export default function Site({ content: c, path }) {
     </>
   );
 }
-function Slider({ slides, L, t, seconds, localizedUrl }) {
+function Slider({ slides, L, t, seconds, localizedUrl, onOpen, headingTag: Heading = "h1" }) {
   const [index, setIndex] = useState(0),
     [cycle, setCycle] = useState(0),
     [paused, setPaused] = useState(false),
@@ -676,7 +683,7 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
         }
       }}
     >
-      <h1 className="visually-hidden">{L(s.title)}</h1>
+      <Heading className="visually-hidden">{L(s.title)}</Heading>
       <div className="banner-viewport" ref={viewportRef}>
         <div className="banner-track">
           {slides.map((slide, i) => {
@@ -712,6 +719,10 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
                   <a
                     className="banner-link"
                     href={localizedUrl(slide.url)}
+                    onClick={onOpen && slide.url.startsWith("https://") ? (event) => {
+                      event.preventDefault();
+                      onOpen(slide.url, L(slide.title));
+                    } : undefined}
                     aria-label={L(slide.title)}
                   >
                     {art}

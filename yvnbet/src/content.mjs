@@ -314,6 +314,7 @@ export const initialContent = {
     ogImage: "/images/hero.webp",
     defaultLanguage: "ru",
     sliderSeconds: 7,
+    slotSliderSeconds: 7,
   },
   interface: ui,
   seo: {
@@ -419,6 +420,7 @@ export const initialContent = {
       ),
     }),
   ),
+  slotSlides: [],
   slides: [
     item(
       "welcome",
@@ -622,6 +624,13 @@ for (const slide of initialContent.slides) {
   slide.showText = true;
 }
 
+export function upgradeSlotSlides(input) {
+  const c = structuredClone(input);
+  c.slotSlides ??= [];
+  c.settings.slotSliderSeconds ??= 7;
+  return c;
+}
+
 export function upgradeResponsiveLayout(input) {
   const c = structuredClone(input);
   c.settings.favicon ??= initialContent.settings.favicon;
@@ -658,6 +667,7 @@ export function publicContent(c) {
     "categories",
     "games",
     "slides",
+    "slotSlides",
     "promotions",
     "faq",
     "pages",

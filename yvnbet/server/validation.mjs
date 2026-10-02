@@ -108,6 +108,7 @@ export const contentSchema = z.strictObject({
     ogImage: image,
     defaultLanguage: z.enum(["ru", "hy", "en"]),
     sliderSeconds: z.number().int().min(4).max(30),
+    slotSliderSeconds: z.number().int().min(4).max(30),
   }),
   interface: z.strictObject(
     Object.fromEntries(
@@ -137,6 +138,7 @@ export const contentSchema = z.strictObject({
     featured: z.boolean(),
   }),
   slides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
+  slotSlides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
   promotions: list({
     kind: z.enum(["promotion", "bonus", "news", "offer"]),
     image,
@@ -182,6 +184,7 @@ export function validateContent(input) {
     "providers",
     "categories",
     "slides",
+    "slotSlides",
     "promotions",
     "faq",
     "pages",
@@ -189,7 +192,7 @@ export function validateContent(input) {
     for (const row of c[key])
       if (row.enabled && Object.values(row.title).some((t) => !t.trim()))
         throw new Error(`${key}: заполните заголовок на трёх языках`);
-  for (const key of ["games", "slides", "promotions"])
+  for (const key of ["games", "slides", "slotSlides", "promotions"])
     for (const row of c[key])
       if (row.enabled && !row.image)
         throw new Error(`${key}: добавьте изображение перед публикацией`);
@@ -200,6 +203,7 @@ export function validateContent(input) {
     "categories",
     "games",
     "slides",
+    "slotSlides",
     "promotions",
     "faq",
     "pages",

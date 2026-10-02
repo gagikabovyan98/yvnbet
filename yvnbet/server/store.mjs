@@ -18,6 +18,7 @@ import {
   upgradeLionPresentation,
   upgradeSiteControls,
   upgradeResponsiveLayout,
+  upgradeSlotSlides,
 } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
 export function passwordHash(password) {
@@ -55,6 +56,7 @@ export async function openStore(dir) {
     ["2026-10-lion-paw", upgradeLionPresentation],
     ["2026-10-site-controls", upgradeSiteControls],
     ["2026-10-responsive-favicon", upgradeResponsiveLayout],
+    ["2026-10-independent-slot-slides", upgradeSlotSlides],
   ]) {
     if (db.prepare("SELECT name FROM migrations WHERE name=?").get(name))
       continue;

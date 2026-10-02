@@ -14,6 +14,7 @@ import {
   upgradeTelegramLinks,
   upgradeSiteControls,
   upgradeResponsiveLayout,
+  upgradeSlotSlides,
   telegramContact,
   publicContent,
   activePromotion,
@@ -270,4 +271,24 @@ test("responsive layout migration preserves custom banners and favicon", () => {
   assert.deepEqual(upgradeResponsiveLayout(migrated), migrated);
   migrated.settings.favicon = 'javascript:alert(1)';
   assert.throws(() => validateContent(migrated));
+});
+
+test("slot slider migrates independently, validates links and filters unpublished banners", () => {
+  const old = clone();
+  delete old.slotSlides;
+  delete old.settings.slotSliderSeconds;
+  const next = upgradeSlotSlides(old);
+  assert.deepEqual(next.slotSlides, []);
+  assert.deepEqual(next.slides, old.slides);
+  const banner = structuredClone(next.slides[0]);
+  banner.url = "https://offers.example/promo";
+  next.slotSlides.push(banner);
+  next.slotSlides[0].title.ru = "Отдельный баннер слотов";
+  assert.notEqual(next.slides[0].title.ru, next.slotSlides[0].title.ru);
+  assert.equal(validateContent(next).settings.slotSliderSeconds, 7);
+  assert.deepEqual(upgradeSlotSlides(next), next);
+  next.slotSlides[0].enabled = false;
+  assert.equal(publicContent(next).slotSlides.length, 0);
+  next.slotSlides[0].url = "javascript:alert(1)";
+  assert.throws(() => validateContent(next));
 });

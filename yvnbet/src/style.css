@@ -3945,3 +3945,5 @@ footer {
   .banner-slider[data-peek="true"] .banner-slide { flex-basis: 92%; margin-inline: 4px; }
   .banner-copy { padding: 20px 36px; }
 }
+
+.banner-slider + .visually-hidden + .catalog { margin-top: 24px; }

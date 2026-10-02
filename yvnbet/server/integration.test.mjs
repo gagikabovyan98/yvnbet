@@ -120,6 +120,10 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     state.content.settings.indexable = true;
     state.content.settings.favicon = "/images/wordmark.webp";
     state.content.slides[0].mobileImageHy = "/images/hero.webp";
+    state.content.slotSlides = [{...structuredClone(state.content.slides[0]),
+      id: "slot-offer", slug: "slot-offer", url: "https://offers.example/promo",
+      title: {ru: "Только слоты", hy: "Միայն սլոթեր", en: "Slots exclusive"}
+    }];
     state.content.settings.registrationTelegramUrl =
       "https://t.me/registration_test";
     state.content.settings.supportTelegramUrl = "https://t.me/support_test";
@@ -141,6 +145,14 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(loginHtml, /<footer|class="bottom-nav"/);
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
+    assert.doesNotMatch(homeHtml.split('id="site-data"')[0], /Միայն սլոթեր/);
+    const slotResponse = await call("/hy/slots");
+    assert.match(slotResponse.headers.get("content-security-policy"), /frame-src[^;]*https:\/\/offers\.example/);
+    const slotsHtml = (await slotResponse.text()).split('id="site-data"')[0];
+    assert.match(slotsHtml, /Միայն սլոթեր/);
+    assert.match(slotsHtml, /class="hero banner-slider"/);
+    assert.doesNotMatch(slotsHtml, /class="page-heading"/);
+    assert.equal((slotsHtml.match(/<h1 /g) || []).length, 1);
     assert.match(homeHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
     assert.match(homeHtml, /<source media="\(max-width: 700px\)" srcSet="\/images\/hero.webp"/);
     const adminHtml = await (await call("/login/yvn/admin")).text();
