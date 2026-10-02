@@ -64,7 +64,17 @@ const labels = {
   brand: "Название бренда",
   telegram: "Telegram username без @",
   registrationTelegramUrl: "Telegram для регистрации — полная ссылка",
-  supportTelegramUrl: "Telegram для поддержки и партнёрства — полная ссылка",
+  supportTelegramUrl: "Telegram на странице поддержки",
+  floatingTelegramUrl: "Telegram — плавающая кнопка на всех страницах",
+  partnersTelegramUrl: "Telegram — партнёрская программа",
+  maintenanceTelegramUrl: "Telegram — страница технических работ",
+  maintenance: "Включить технические работы (закрыть сайт для посетителей)",
+  maintenanceTitle: "Заголовок технических работ",
+  maintenanceText: "Сообщение технических работ",
+  imageRu: "Баннер на русском (необязательно)",
+  imageHy: "Баннер на армянском (необязательно)",
+  imageEn: "Баннер на английском (необязательно)",
+  showText: "Показывать переводимый заголовок и описание поверх баннера",
   telegramText: "Сообщение для поддержки",
   loginUrl: "Платформа для входа и игр без отдельной ссылки",
   loginMode: "Открывать вход",
@@ -352,7 +362,7 @@ export default function Admin() {
             }
           />
         )}{" "}
-        {["image", "logo", "lion", "ogImage"].includes(key) && (
+        {["image", "imageRu", "imageHy", "imageEn", "logo", "lion", "ogImage"].includes(key) && (
           <span className="upload-row">
             {value && <img src={value} alt="Предпросмотр" />}
             <span className="upload-control">
@@ -371,10 +381,13 @@ export default function Admin() {
             Для игры укажите прямой HTTPS-адрес. Пустое поле отключает запуск.
           </small>
         )}
-        {["registrationTelegramUrl", "supportTelegramUrl"].includes(key) && (
+        {["registrationTelegramUrl", "supportTelegramUrl", "floatingTelegramUrl", "partnersTelegramUrl", "maintenanceTelegramUrl"].includes(key) && (
           <small>
             Например, https://t.me/your_operator. Если поле пустое, используется
-            Telegram username выше. Текст сообщения добавляется автоматически.
+            {key === "registrationTelegramUrl" || key === "supportTelegramUrl"
+              ? "Telegram username выше."
+              : "ссылка поддержки, а если её нет — Telegram username."}
+            {" "}Сообщение добавляется автоматически.
           </small>
         )}
       </label>
@@ -631,13 +644,12 @@ export default function Admin() {
                       </div>
                       {section === "slides" && (
                         <p className="cms-banner-help">
-                          Загрузите готовый рекламный баннер с текстом внутри
-                          изображения. Рекомендуемый размер — 2000 × 656 px.
-                          Картинка заполняет широкий слайд; края обрезаются под
-                          размер экрана. Текст и важные детали размещайте ближе
-                          к центру, чтобы они оставались видны на телефоне.
-                          Заголовок и описание используются для доступности,
-                          ссылка открывается по нажатию на баннер.
+                          Общая картинка используется по умолчанию. Для баннеров с
+                          текстом внутри изображения загрузите отдельные версии RU, HY и EN
+                          и отключите текст поверх баннера. Для фона без надписей включите
+                          переводимый текст и заполните заголовок и описание на трёх языках.
+                          Рекомендуемые пропорции — 2000 × 656 px: изображение показывается
+                          целиком, без обрезки. На телефоне используйте короткий заголовок.
                         </p>
                       )}
                       {Object.entries(current)
@@ -671,6 +683,12 @@ export default function Admin() {
                 </h2>
                 <Language value={lang} onChange={setLang} />
               </div>
+              {section === "settings" && <p className="cms-banner-help">
+                Технические работы включаются и выключаются после нажатия «Опубликовать».
+                Посетители увидят льва и сообщение; доступ к этой админке сохранится.
+                Telegram можно задать отдельно для регистрации, поддержки, плавающей кнопки,
+                партнёрской программы и технических работ.
+              </p>}
               {section === "seo" && (
                 <p>
                   Пустые поля используют заголовок и описание страницы. SEO игр,

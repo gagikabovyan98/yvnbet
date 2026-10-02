@@ -12,6 +12,7 @@ import {
   upgradeContent,
   upgradeRegistrationUi,
   upgradeTelegramLinks,
+  upgradeSiteControls,
   telegramContact,
   publicContent,
   activePromotion,
@@ -228,4 +229,28 @@ test("existing content gains registration fields and slot previews without losin
   );
   assert.deepEqual(upgradeContent(upgraded), upgraded);
   assert.equal(c.games[2].category, "table");
+});
+
+test("site controls migrate custom artwork and operators without enabling maintenance", () => {
+  const c = clone();
+  delete c.settings.maintenance;
+  delete c.settings.floatingTelegramUrl;
+  c.settings.supportTelegramUrl = "https://t.me/operator_existing";
+  c.slides[0].image = "/uploads/custom.webp";
+  delete c.slides[0].showText;
+  const upgraded = upgradeSiteControls(c);
+  assert.equal(validateContent(upgraded).settings.maintenance, false);
+  assert.equal(upgraded.slides[0].showText, false);
+  assert.equal(upgraded.settings.supportTelegramUrl, c.settings.supportTelegramUrl);
+  assert.deepEqual(upgradeSiteControls(upgraded), upgraded);
+  for (const purpose of ["floating", "partners", "maintenance"]) {
+    assert.equal(new URL(telegramContact(upgraded.settings, purpose, "")).pathname, "/operator_existing");
+    upgraded.settings[purpose + "TelegramUrl"] = "https://t.me/operator_" + purpose;
+    const link = telegramContact(upgraded.settings, purpose, "Բարև hello +374 & name");
+    assert.equal(new URL(link).pathname, "/operator_" + purpose);
+    assert.equal(new URL(link).searchParams.get("text"), "Բարև hello +374 & name");
+    assert.ok(!new URL(link).search.includes("+"));
+  }
+  upgraded.settings.registrationTelegramUrl = "https://t.me/+37499123456";
+  assert.equal(new URL(telegramContact(upgraded.settings, "registration", "hello there")).pathname, "/+37499123456");
 });

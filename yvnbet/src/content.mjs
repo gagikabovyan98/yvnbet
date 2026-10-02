@@ -75,7 +75,7 @@ export const ui = {
     soon: "Ссылка на приложение скоро появится",
     rights: "Все права защищены.",
     responsible:
-      "Игра — развлечение, а не способ заработка. Участвуйте ответственно. 18+",
+      "Играйте ответственно",
     next: "Следующий слайд",
     prev: "Предыдущий слайд",
     pause: "Пауза",
@@ -164,7 +164,7 @@ export const ui = {
     download: "Download",
     soon: "The app link is coming soon",
     rights: "All rights reserved.",
-    responsible: "Gaming is entertainment, not income. Play responsibly. 18+",
+    responsible: "Play responsibly",
     next: "Next slide",
     prev: "Previous slide",
     pause: "Pause",
@@ -255,7 +255,7 @@ export const ui = {
     soon: "Հավելվածի հղումը շուտով կհայտնվի",
     rights: "Բոլոր իրավունքները պաշտպանված են։",
     responsible:
-      "Խաղը զվարճանք է, ոչ թե եկամտի աղբյուր։ Խաղացեք պատասխանատու։ 18+",
+      "Խաղա պատասխանատվությամբ",
     next: "Հաջորդ սլայդը",
     prev: "Նախորդ սլայդը",
     pause: "Դադար",
@@ -294,6 +294,12 @@ export const initialContent = {
     telegram: "yvnbet",
     registrationTelegramUrl: "",
     supportTelegramUrl: "",
+    floatingTelegramUrl: "",
+    partnersTelegramUrl: "",
+    maintenanceTelegramUrl: "",
+    maintenance: false,
+    maintenanceTitle: tr("Технические работы", "Տեխնիկական աշխատանքներ", "Scheduled maintenance"),
+    maintenanceText: tr("Обновляем сайт. Скоро вернёмся — спасибо за терпение!", "Թարմացնում ենք կայքը։ Շուտով կվերադառնանք․ շնորհակալություն համբերության համար։", "We’re updating the website. We’ll be back soon — thank you for your patience!"),
     telegramText: tr(
       "Здравствуйте! Нужна помощь.",
       "Բարև։ Օգնության կարիք ունեմ։",
@@ -603,6 +609,27 @@ export const initialContent = {
     ),
   ],
 };
+// Per-language artwork is optional; editable HTML copy supplies translations.
+for (const slide of initialContent.slides) {
+  slide.imageRu = "";
+  slide.imageHy = "";
+  slide.imageEn = "";
+  slide.showText = true;
+}
+
+export function upgradeSiteControls(input) {
+  const c = structuredClone(input);
+  for (const key of ["floatingTelegramUrl", "partnersTelegramUrl", "maintenanceTelegramUrl", "maintenance", "maintenanceTitle", "maintenanceText"])
+    c.settings[key] ??= structuredClone(initialContent.settings[key]);
+  for (const slide of c.slides) {
+    for (const key of ["imageRu", "imageHy", "imageEn"]) slide[key] ??= "";
+    // Do not overlay new copy on custom artwork which may already include text.
+    slide.showText ??= initialContent.slides.some((seed) => seed.id === slide.id && seed.image === slide.image);
+  }
+  for (const lang of languages) c.interface[lang].responsible = ui[lang].responsible;
+  return c;
+}
+
 export function activePromotion(p, now = Date.now()) {
   return (
     p.enabled &&
@@ -731,11 +758,10 @@ export function upgradeLionPresentation(input) {
 }
 
 export function telegramContact(settings, purpose, text) {
-  const target =
-    purpose === "registration"
-      ? settings.registrationTelegramUrl
-      : settings.supportTelegramUrl;
+  const key = { registration: "registrationTelegramUrl", support: "supportTelegramUrl", floating: "floatingTelegramUrl", partners: "partnersTelegramUrl", maintenance: "maintenanceTelegramUrl" }[purpose];
+  const target = settings[key] || (purpose !== "registration" ? settings.supportTelegramUrl : "");
   const url = new URL(target || `https://t.me/${settings.telegram}`);
   url.searchParams.set("text", text);
+  url.search = url.search.replace(/\+/g, "%20");
   return url.href;
 }

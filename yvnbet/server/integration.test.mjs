@@ -250,6 +250,32 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
       200,
     );
     assert.equal((await (await call("/api/leads")).json()).total, 0);
+    // Maintenance survives restarts, blocks public entry points and keeps CMS usable.
+    state = await (await call("/api/admin/content")).json();
+    state.content.settings.maintenance = true;
+    assert.equal((await call("/api/content", "PUT", state)).status, 200);
+    await stop();
+    await start();
+    for (const url of ["/hy", "/ru/login", "/en/games/golden-eclipse"]) {
+      const page = await call(url);
+      assert.equal(page.status, 503);
+      assert.equal(page.headers.get("retry-after"), "3600");
+      const html = await page.text();
+      assert.match(html, /class="maintenance-page"/);
+      assert.doesNotMatch(html, /<iframe|class="banner-slider"/);
+    }
+    assert.equal((await call("/api/content")).status, 503);
+    assert.equal((await call("/api/registrations", "POST", {})).status, 503);
+    assert.equal((await call("/api/health")).status, 200);
+    const cms = await call("/login/yvn/admin");
+    assert.equal(cms.status, 200);
+    assert.match(await cms.text(), /YvnBet CMS/);
+    state = await (await call("/api/admin/content")).json();
+    state.content.settings.maintenance = false;
+    assert.equal((await call("/api/content", "PUT", state)).status, 200);
+    assert.equal((await call("/hy")).status, 200);
+    assert.equal((await call("/admin")).status, 404);
+    assert.equal((await call("/login/yvn/admin/")).status, 200);
     assert.equal((await call("/api/logout", "POST", {})).status, 200);
     assert.equal((await call("/api/session")).status, 401);
     for (let i = 0; i < 8; i++)

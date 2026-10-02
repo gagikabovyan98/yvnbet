@@ -69,6 +69,17 @@ export default function Site({ content: c, path }) {
     "support",
     L(c.settings.telegramText),
   );
+  if (c.settings.maintenance) return (
+    <main className="maintenance-page">
+      <img className="maintenance-brand" src={c.settings.logo} alt={c.settings.brand} />
+      <img className="maintenance-lion" src={c.settings.lion} alt="" />
+      <h1>{L(c.settings.maintenanceTitle)}</h1>
+      <p>{L(c.settings.maintenanceText)}</p>
+      <a className="button" href={telegramContact(c.settings, "maintenance", L(c.settings.telegramText))} target="_blank" rel="noreferrer">
+        <TelegramIcon size={21} />{t.telegram}
+      </a>
+    </main>
+  );
   const nav = (where) => (
     <nav
       className={where}
@@ -397,7 +408,7 @@ export default function Site({ content: c, path }) {
                             className="button partner-contact"
                             href={telegramContact(
                               c.settings,
-                              "support",
+                              "partners",
                               t.partnerMessage,
                             )}
                             target="_blank"
@@ -487,7 +498,7 @@ export default function Site({ content: c, path }) {
             {nav("bottom-nav")}
             <a
               className="telegram-float"
-              href={telegram}
+              href={telegramContact(c.settings, "floating", L(c.settings.telegramText))}
               target="_blank"
               rel="noreferrer"
               aria-label={t.telegram}
@@ -670,14 +681,21 @@ function Slider({ slides, L, t, seconds, localizedUrl }) {
           {slides.map((slide, i) => {
             const active = i === index % slides.length;
             const art = (
+              <>
               <img
                 className="banner-image"
-                src={slide.image}
+                src={L({ru: slide.imageRu, hy: slide.imageHy, en: slide.imageEn}) || slide.image}
                 alt={L(slide.description) || L(slide.title)}
                 loading="eager"
                 fetchPriority={i === 0 ? "high" : "auto"}
                 draggable="false"
               />
+              {slide.showText && <div className="banner-copy">
+                <span>{L(slide.label)}</span>
+                <h2>{L(slide.title)}</h2>
+                <p>{L(slide.description)}</p>
+              </div>}
+              </>
             );
             return (
               <div

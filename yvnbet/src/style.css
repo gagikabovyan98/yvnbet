@@ -3023,12 +3023,13 @@ footer {
   place-items: center;
   border: 0;
   border-radius: 10px;
-  background: #383e40e8;
+  background: rgb(0 0 0 / 28%);
+  backdrop-filter: blur(4px);
   color: #fff;
-  transition: background 0.18s;
+  transition: background 0.18s, color 0.18s;
 }
 .banner-arrow:hover {
-  background: #50585b;
+  background: rgb(0 0 0 / 48%);
 }
 .banner-arrow-prev {
   left: 12px;
@@ -3099,8 +3100,8 @@ footer {
 .slots-nav-icon {
   object-fit: contain;
   flex-shrink: 0;
-  filter: invert(1);
-  opacity: 0.9;
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 .header-nav .slots-nav-icon {
   width: 20px;
@@ -3139,7 +3140,7 @@ footer {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 .public-site .banner-slider .hero-controls {
@@ -3864,4 +3865,29 @@ footer {
   .paw-button img {
     transition: none;
   }
+}
+
+/* Quiet controls; full artwork and language-aware HTML copy. */
+.banner-arrow { color: rgb(255 255 255 / 72%); }
+.banner-arrow:hover, .banner-arrow:focus-visible { color: white; }
+.banner-slide { background: #100b17; }
+.banner-copy {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 32px clamp(52px, 7vw, 112px); pointer-events: none;
+  background: linear-gradient(90deg, rgb(12 6 20 / 88%), rgb(12 6 20 / 55%) 45%, transparent 85%);
+}
+.banner-copy > span { color: #e1c27d; font-size: 11px; letter-spacing: .14em; }
+.banner-copy h2 { max-width: 620px; margin: 12px 0; font-size: clamp(24px, 3.4vw, 52px); line-height: 1.18; white-space: pre-line; }
+.banner-copy p { max-width: 460px; margin: 0; color: #ddd3e6; font-size: 15px; line-height: 1.5; }
+.maintenance-page { min-height: 100svh; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(ellipse at center, #30173c, #0e0914 75%); }
+.maintenance-brand { width: 160px; margin-bottom: 18px; }
+.maintenance-lion { width: min(300px, 70vw); height: 280px; object-fit: contain; }
+.maintenance-page h1 { font-size: clamp(26px, 5vw, 42px); margin: 20px 0 12px; }
+.maintenance-page p { max-width: 520px; line-height: 1.6; color: #c7b6d3; margin: 0 0 28px; }
+@media (max-width: 600px) {
+  .banner-copy { padding: 22px 40px; }
+  .banner-copy > span { font-size: 9px; }
+  .banner-copy h2 { font-size: 24px; margin: 8px 0; }
+  .banner-copy p { font-size: 12px; max-width: 290px; }
 }

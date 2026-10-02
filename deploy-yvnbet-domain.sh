@@ -177,4 +177,4 @@ done
 curl -fsS --max-time 20 https://yvnbet.com/api/health
 printf '\nFinal Nginx config:\n'
 cat /etc/nginx/conf.d/yvnbet.conf
-printf '\nDONE. Site: https://yvnbet.com  Admin: https://yvnbet.com/admin\nBackup: %s\n' "$backup"
+printf '\nDONE. Site: https://yvnbet.com  Admin: https://yvnbet.com/login/yvn/admin\nBackup: %s\n' "$backup"

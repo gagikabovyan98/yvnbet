@@ -1,3 +1,4 @@
+export const ADMIN_PATH = "/login/yvn/admin";
 export function routeFor(path, c) {
   const parts = path.split("/").filter(Boolean);
   const lang = ["ru", "hy", "en"].includes(parts[0])

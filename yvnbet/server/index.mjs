@@ -1,3 +1,4 @@
+import { ADMIN_PATH } from "../src/routes.mjs";
 import express from "express";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -97,9 +98,12 @@ const all = guard(["admin", "editor", "support"]),
   admin = guard(["admin"]),
   support = guard(["admin", "support"]);
 app.get("/api/health", (_, res) => res.json({ ok: true }));
-app.get("/api/content", (_, res) =>
-  res.json(publicContent(getContent().content)),
-);
+app.get("/api/content", (_, res) => {
+  const content = getContent().content;
+  if (content.settings.maintenance)
+    return res.set("Retry-After", "3600").status(503).json({ maintenance: true });
+  res.json(publicContent(content));
+});
 app.get("/api/session", all, (req, res) => res.json(req.user));
 app.post("/api/login", (req, res) => {
   if (!rate("login:" + req.ip, 8, 15 * 60_000))
@@ -175,6 +179,8 @@ app.post("/api/upload", edit, async (req, res) => {
   }
 });
 app.post("/api/registrations", (req, res) => {
+  if (getContent().content.settings.maintenance)
+    return res.set("Retry-After", "3600").status(503).json({ error: "Технические работы. Попробуйте позже." });
   if (!rate("lead:" + req.ip, 5, 3600_000))
     return res.status(429).json({ error: "Попробуйте позже" });
   const p = leadSchema.safeParse(req.body);
@@ -333,7 +339,7 @@ app.get("/robots.txt", (_, res) => {
     .type("text/plain")
     .send(
       c.settings.indexable
-        ? `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: ${c.settings.siteUrl}/sitemap.xml\n`
+        ? `User-agent: *\nAllow: /\nDisallow: ${ADMIN_PATH}\nDisallow: /api/\nSitemap: ${c.settings.siteUrl}/sitemap.xml\n`
         : "User-agent: *\nDisallow: /\n",
     );
 });
@@ -377,7 +383,7 @@ app.get("/{*path}", async (req, res, next) => {
       );
     }
     const c = publicContent(getContent().content),
-      isAdmin = req.path === "/admin",
+      isAdmin = req.path.replace(/\/$/, "") === ADMIN_PATH,
       m = metaFor(c, req.path);
     const nonce = randomBytes(18).toString("base64");
     let tpl = template,
@@ -400,11 +406,13 @@ app.get("/{*path}", async (req, res, next) => {
       "Content-Security-Policy",
       `default-src 'self'; script-src 'self' 'nonce-${nonce}'${!prod ? " 'unsafe-inline'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self'${!prod ? " ws:" : ""}; frame-src ${[...new Set(frameOrigins)].join(" ") || "'none'"}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`,
     );
-    if (isAdmin || !c.settings.indexable)
+    const maintenance = c.settings.maintenance && !isAdmin;
+    if (maintenance) res.set("Retry-After", "3600");
+    if (maintenance || isAdmin || !c.settings.indexable)
       res.set("X-Robots-Tag", "noindex, nofollow");
     res.set("Cache-Control", "no-store");
     res
-      .status(isAdmin || m.valid ? 200 : 404)
+      .status(maintenance ? 503 : isAdmin || m.valid ? 200 : 404)
       .type("html")
       .send(
         tpl
@@ -437,7 +445,7 @@ app.use((err, req, res, next) => {
   });
 });
 const server = app.listen(port, host, () =>
-  console.log(`YvnBet: ${origin}\nCMS: ${origin}/admin`),
+  console.log(`YvnBet: ${origin}\nCMS: ${origin}${ADMIN_PATH}`),
 );
 for (const signal of ["SIGTERM", "SIGINT"])
   process.on(signal, () =>

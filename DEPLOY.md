@@ -74,3 +74,25 @@ docker compose stop
 The `/` entry URL chooses the saved manual language first, then the visitor's IP country (AM → hy, RU → ru), then the browser's supported language, then the CMS default. Explicit `/hy`, `/ru`, and `/en` links keep their language. Country lookup runs locally using the bundled geoip-country database; no external IP lookup request or browser location permission is used. VPN addresses can change the detected country. Keep the country database current with reviewed `npm update geoip-country` updates and rebuild the image. The package includes MaxMind GeoLite2 data and its license/EULA in node_modules/geoip-country.
 
 When adding a reverse proxy, configure `TRUST_PROXY_HOPS` only for the actual trusted topology; do not blindly trust client-supplied forwarding or country headers. Direct Docker access by IP requires no additional setting.
+
+
+## Управление сайтом после обновления 2 октября
+
+Админка: `https://yvnbet.com/login/yvn/admin`. Старый `/admin` возвращает 404.
+Пароль и пользователи сохраняются. Новый путь не заменяет проверку пароля.
+
+В «Настройки» можно отдельно указать Telegram для регистрации, поддержки,
+плавающей кнопки, партнёрской программы и технических работ. Пустые дополнительные
+поля используют поддержку, затем общий username; регистрация использует свой
+адрес или общий username. Пробелы в черновиках кодируются как `%20`.
+
+«Включить технические работы» → «Опубликовать» закрывает публичные страницы
+ответом HTTP 503 и показывает льва с переводимым сообщением. Регистрация временно
+недоступна; админка и healthcheck работают. Снимите галочку и опубликуйте для
+возобновления работы. При обновлении этот режим по умолчанию выключен.
+
+В «Слайдер» доступны общий фон и отдельные изображения RU/HY/EN. Картинки
+показываются целиком без обрезки; рекомендуемые пропорции 2000 × 656. Переключатель
+«Показывать переводимый заголовок и описание» включает HTML-текст выбранного
+языка. Для готовых картинок с надписями загрузите переведённые версии и выключите
+наложение текста. Существующие пользовательские изображения сохраняются.
