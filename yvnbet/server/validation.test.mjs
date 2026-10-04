@@ -218,7 +218,7 @@ test("existing content gains registration fields and slot previews without losin
   });
   c.settings.telegram = "custom_operator";
   const upgraded = upgradeContent(c);
-  assert.equal(validateContent(upgraded).interface.hy.city, "Քաղաք");
+  assert.equal(validateContent(upgraded).interface.hy.city, "Համայնք");
   assert.equal(upgraded.interface.en.register, "Custom CTA");
   assert.equal(upgraded.settings.telegram, "custom_operator");
   assert.equal(upgraded.providers[0].logo, "/uploads/custom-provider.webp");

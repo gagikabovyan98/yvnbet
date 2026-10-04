@@ -109,6 +109,7 @@ export const contentSchema = z.strictObject({
     defaultLanguage: z.enum(["ru", "hy", "en"]),
     sliderSeconds: z.number().int().min(4).max(30),
     slotSliderSeconds: z.number().int().min(4).max(30),
+    catalogSliderSource: z.enum(["home", "independent"]),
   }),
   interface: z.strictObject(
     Object.fromEntries(

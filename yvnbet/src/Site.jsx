@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
+import RegionInput from "./components/RegionInput.jsx";
+import InstallInstructions from "./components/InstallInstructions.jsx";
 import { normalizePhone } from "./phone.mjs";
-import { telegramContact } from "./content.mjs";
+import { telegramContact, catalogSlides } from "./content.mjs";
 import Modal from "./components/Modal.jsx";
 import { routeFor } from "./routes.mjs";
 const icons = {
@@ -310,20 +312,15 @@ export default function Site({ content: c, path }) {
                         )}
                       </>
                     )}
-                    {section === "slots" && c.slotSlides.length > 0 && (
-                      <Slider slides={c.slotSlides} L={L} t={t}
-                        seconds={c.settings.slotSliderSeconds} localizedUrl={localizedUrl}
-                        headingTag="h2" onOpen={(url, title) => launch(url, "iframe", title)} />
+                    {(section === "slots" || section === "providers") && (
+                      <Slider slides={catalogSlides(c, section)} L={L} t={t}
+                        seconds={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? c.settings.slotSliderSeconds : c.settings.sliderSeconds}
+                        localizedUrl={localizedUrl} headingTag="h2" hideCopy
+                        onOpen={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? (url, title) => launch(url, "iframe", title) : undefined} />
                     )}
                     {(section === "slots" || section === "providers") && (
                       <>
-                        {section === "slots" ? <h1 className="visually-hidden">{t.slots}</h1> : (
-                          <section className="page-heading">
-                            <span className="eyebrow">{t.catalog}</span>
-                            <h1>{L(item.title)}</h1>
-                            <p>{L(item.description)}</p>
-                          </section>
-                        )}
+                        <h1 className="visually-hidden">{item ? L(item.title) : t.slots}</h1>
                         <Catalog
                           c={c}
                           t={t}
@@ -437,7 +434,7 @@ export default function Site({ content: c, path }) {
                         <div>
                           <span className="eyebrow">{t.app}</span>
                           <h1>{L(item.title)}</h1>
-                          <p>{L(item.description)}</p>
+                          <InstallInstructions text={L(item.description)} />
                           {c.settings.appUrl ? (
                             <a
                               className="button"
@@ -546,7 +543,7 @@ export default function Site({ content: c, path }) {
     </>
   );
 }
-function Slider({ slides, L, t, seconds, localizedUrl, onOpen, headingTag: Heading = "h1" }) {
+function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false, headingTag: Heading = "h1" }) {
   const [index, setIndex] = useState(0),
     [cycle, setCycle] = useState(0),
     [paused, setPaused] = useState(false),
@@ -701,7 +698,7 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, headingTag: Headi
                 draggable="false"
               />
               </picture>
-              {slide.showText && <div className="banner-copy">
+              {slide.showText && !hideCopy && <div className="banner-copy">
                 <span>{L(slide.label)}</span>
                 <h2>{L(slide.title)}</h2>
                 <p>{L(slide.description)}</p>
@@ -1184,16 +1181,7 @@ function Registration({ c, lang, t, onClose }) {
             />
           </label>
           <PhoneInput value={phone} onChange={setPhone} t={t} lang={lang} />
-          <label>
-            {t.city}
-            <input
-              name="city"
-              autoComplete="address-level2"
-              required
-              minLength={2}
-              maxLength={100}
-            />
-          </label>
+          <RegionInput lang={lang} label={t.city} country={phone.country} />
           <label>
             {t.handle} <small>{t.optional}</small>
             <input

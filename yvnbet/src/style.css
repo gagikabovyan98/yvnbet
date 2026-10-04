@@ -3947,3 +3947,28 @@ footer {
 }
 
 .banner-slider + .visually-hidden + .catalog { margin-top: 24px; }
+
+/* Registration suggestions stay inside the form and accept custom locations. */
+.region-field { display: grid; gap: 8px; }
+.region-field > label { font-size: 12px; color: #c7b4d1; }
+.region-field > small { color: #b49bc2; font-size: 11px; line-height: 1.5; }
+.region-options { max-height: 180px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #674373; border-radius: 10px; background: #1a1023; }
+.region-options [role="option"] { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; font-size: 13px; }
+.region-options [role="option"] small { color: #b49bc2; font-size: 11px; }
+.region-options [role="option"]:hover, .region-options [aria-selected="true"] { background: #483054; }
+.app-page { align-items: start; gap: 40px; padding-top: 38px; }
+.app-page > div:last-child { min-width: 0; }
+.app-page h1 { font-size: clamp(28px, 3.4vw, 44px); line-height: 1.22; overflow-wrap: anywhere; margin: 14px 0 24px; }
+.install-instructions { max-width: 680px; }
+.app-page .install-instructions p { margin: 0 0 20px; font-size: 15px; line-height: 1.85; color: #c7b6d1; white-space: pre-line; }
+.install-instructions h2 { margin: 32px 0 18px; font-size: 23px; color: #eed2f1; padding-bottom: 12px; border-bottom: 1px solid #51325f; }
+.install-instructions ol { list-style: none; counter-reset: install-step; padding: 0; margin: 0 0 24px; display: grid; gap: 12px; }
+.install-instructions li { counter-increment: install-step; display: flex; gap: 14px; padding: 16px; border-radius: 12px; background: #25182e; border: 1px solid #45304f; line-height: 1.65; font-size: 14px; }
+.install-instructions li::before { content: counter(install-step); flex: 0 0 28px; height: 28px; border-radius: 50%; background: #593568; color: #f4d1f6; display: grid; place-items: center; font-weight: 700; }
+@media (max-width: 700px) {
+  .app-page { padding: 18px 5px 35px; }
+  .app-page .app-symbol { display: none; }
+  .app-page h1 { font-size: 28px; letter-spacing: -.4px; }
+  .app-page .install-instructions p { font-size: 14px; line-height: 1.8; }
+  .install-instructions li { font-size: 13px; padding: 14px; }
+}

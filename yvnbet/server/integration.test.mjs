@@ -120,6 +120,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     state.content.settings.indexable = true;
     state.content.settings.favicon = "/images/wordmark.webp";
     state.content.slides[0].mobileImageHy = "/images/hero.webp";
+    state.content.settings.catalogSliderSource = "independent";
     state.content.slotSlides = [{...structuredClone(state.content.slides[0]),
       id: "slot-offer", slug: "slot-offer", url: "https://offers.example/promo",
       title: {ru: "Только слоты", hy: "Միայն սլոթեր", en: "Slots exclusive"}
@@ -151,6 +152,10 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const slotsHtml = (await slotResponse.text()).split('id="site-data"')[0];
     assert.match(slotsHtml, /Միայն սլոթեր/);
     assert.match(slotsHtml, /class="hero banner-slider"/);
+    assert.doesNotMatch(slotsHtml, /class="banner-copy"/);
+    const providerHtml = (await (await call("/hy/providers/amusnet")).text()).split('id="site-data"')[0];
+    assert.match(providerHtml, /class="hero banner-slider"/);
+    assert.doesNotMatch(providerHtml, /class="page-heading"|class="banner-copy"/);
     assert.doesNotMatch(slotsHtml, /class="page-heading"/);
     assert.equal((slotsHtml.match(/<h1 /g) || []).length, 1);
     assert.match(homeHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);

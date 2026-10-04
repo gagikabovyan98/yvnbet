@@ -47,7 +47,7 @@ export const ui = {
     back: "Назад",
     name: "Имя",
     phone: "Номер телефона",
-    city: "Город",
+    city: "Регион / населённый пункт",
     optional: "необязательно",
     adultConfirmation: "Подтверждаю, что мне исполнилось 18 лет",
     previousProviders: "Предыдущие провайдеры",
@@ -138,7 +138,7 @@ export const ui = {
     back: "Back",
     name: "Name",
     phone: "Phone number",
-    city: "City",
+    city: "Region / community",
     optional: "optional",
     adultConfirmation: "I confirm that I am 18 or older",
     previousProviders: "Previous providers",
@@ -228,7 +228,7 @@ export const ui = {
     back: "Հետ",
     name: "Անուն",
     phone: "Հեռախոսահամար",
-    city: "Քաղաք",
+    city: "Համայնք",
     optional: "ոչ պարտադիր",
     adultConfirmation: "Հաստատում եմ, որ 18+ տարեկան եմ",
     previousProviders: "Նախորդ մատակարարները",
@@ -315,6 +315,7 @@ export const initialContent = {
     defaultLanguage: "ru",
     sliderSeconds: 7,
     slotSliderSeconds: 7,
+    catalogSliderSource: "home",
   },
   interface: ui,
   seo: {
@@ -622,6 +623,19 @@ for (const slide of initialContent.slides) {
   slide.mobileImageHy = "";
   slide.mobileImageEn = "";
   slide.showText = true;
+}
+
+export function upgradeCatalogPresentation(input) {
+  const c = structuredClone(input);
+  c.settings.catalogSliderSource ??= "home";
+  for (const lang of languages) c.interface[lang].city = ui[lang].city;
+  return c;
+}
+
+// Independent slot banners stay saved when the catalogue uses home banners.
+export function catalogSlides(c, section) {
+  return section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length
+    ? c.slotSlides : c.slides;
 }
 
 export function upgradeSlotSlides(input) {
