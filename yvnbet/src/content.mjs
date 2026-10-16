@@ -311,6 +311,7 @@ export const initialContent = {
     appUrl: "",
     siteUrl: "",
     indexable: false,
+    indexImages: false,
     ogImage: "/images/hero.webp",
     defaultLanguage: "ru",
     sliderSeconds: 7,
@@ -414,6 +415,7 @@ export const initialContent = {
       url: "",
       mode: "iframe",
       featured: true,
+      featuredOrder: n,
       description: tr(
         "Предварительный обзор игры. Запуск станет доступен после подключения ссылки провайдера.",
         "Խաղի նախադիտում։ Գործարկումը հասանելի կլինի մատակարարի հղումը միացնելուց հետո։",
@@ -613,6 +615,13 @@ export const initialContent = {
     ),
   ],
 };
+
+// Search visibility is explicit only for real public pages. Slides, FAQ rows and
+// categories are content fragments and must not appear as standalone URLs.
+for (const [key, value] of Object.entries(initialContent.seo))
+  if (key !== "app") value.indexable = true;
+for (const key of ["providers", "games", "promotions", "pages"])
+  for (const value of initialContent[key]) value.indexable = true;
 // Per-language artwork is optional; editable HTML copy supplies translations.
 for (const slide of initialContent.slides) {
   slide.imageRu = "";
@@ -630,6 +639,31 @@ export function upgradeCatalogPresentation(input) {
   c.settings.catalogSliderSource ??= "home";
   for (const lang of languages) c.interface[lang].city = ui[lang].city;
   return c;
+}
+
+export function upgradeSearchAndGames(input) {
+  const c = structuredClone(input);
+  c.settings.indexImages ??= false;
+  for (const [key, value] of Object.entries(c.seo))
+    if (key !== "app") value.indexable ??= true;
+    else delete value.indexable;
+  for (const key of ["providers", "games", "promotions", "pages"])
+    for (const value of c[key]) value.indexable ??= true;
+  c.games.forEach((game, index) => {
+    game.featuredOrder ??= index + 1;
+  });
+  return c;
+}
+
+export function orderedFeaturedGames(games) {
+  return games
+    .map((game, index) => ({ game, index }))
+    .filter(({ game }) => game.featured)
+    .sort((a, b) =>
+      (a.game.featuredOrder || Number.MAX_SAFE_INTEGER) -
+        (b.game.featuredOrder || Number.MAX_SAFE_INTEGER) || a.index - b.index,
+    )
+    .map(({ game }) => game);
 }
 
 // Independent slot banners stay saved when the catalogue uses home banners.

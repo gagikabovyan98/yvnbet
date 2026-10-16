@@ -44,7 +44,7 @@ export function routeFor(path, c) {
   };
 }
 export function paths(c) {
-  return [
+  return [...new Set([
     "",
     "/slots",
     "/promotions",
@@ -53,5 +53,17 @@ export function paths(c) {
     ...["games", "providers", "promotions"].flatMap((k) =>
       c[k].map((x) => `/${k}/${x.slug}`),
     ),
-  ];
+  ])];
+}
+
+export function routeIsIndexable(c, path) {
+  if (!c.settings.indexable) return false;
+  const route = routeFor(path, c);
+  if (!route.valid || route.section === "login") return false;
+  if (route.item) return route.item.indexable !== false;
+  return c.seo[route.section]?.indexable !== false;
+}
+
+export function indexablePaths(c) {
+  return paths(c).filter((path) => routeIsIndexable(c, `/${c.settings.defaultLanguage}${path}`));
 }

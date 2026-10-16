@@ -25,6 +25,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { initialContent } from "./content.mjs";
+import { nextGameIdentifier, sharedGameTitle } from "./admin-games.mjs";
 const groups = [
   ["overview", "Обзор", LayoutDashboard],
   ["games", "Игры", Gamepad2],
@@ -57,7 +58,8 @@ const labels = {
   mode: "Открывать",
   provider: "Провайдер",
   category: "Категория",
-  featured: "На главной странице",
+  featured: "Показывать в «Топ играх»",
+  featuredOrder: "Порядок в топе (1 — первым)",
   label: "Надзаголовок",
   button: "Текст кнопки",
   kind: "Тип публикации",
@@ -87,6 +89,7 @@ const labels = {
   appUrl: "Ссылка на приложение",
   siteUrl: "Основной домен (https://example.com)",
   indexable: "Разрешить индексацию",
+  indexImages: "Разрешить индексацию изображений",
   ogImage: "Изображение для соцсетей",
   defaultLanguage: "Язык по умолчанию",
   sliderSeconds: "Интервал слайдера главной (секунды)",
@@ -222,8 +225,15 @@ export default function Admin() {
     }
     if ("logo" in template) template.logo = "";
     if (section === "games") {
+      const id = nextGameIdentifier(draft.games);
+      template.id = id;
+      template.slug = id;
+      template.title = sharedGameTitle("Новая игра");
       template.provider = draft.providers[0]?.id || "";
       template.category = draft.categories[0]?.id || "";
+      template.featured = false;
+      template.featuredOrder = draft.games.length + 1;
+      template.indexable = true;
     }
     template.enabled = false;
     change([section], [...draft[section], template]);
@@ -268,7 +278,19 @@ export default function Admin() {
   const field = (value, path, key) => {
     const label = labels[key] || initialContent.interface.ru[key] || key;
     if (value && typeof value === "object") {
-      if ("ru" in value && "hy" in value && "en" in value)
+      if ("ru" in value && "hy" in value && "en" in value) {
+        if (path[0] === "games" && key === "title") {
+          return (
+            <label className="cms-field" key={path.join(".")}>
+              <span>{label}</span>
+              <input
+                value={value.ru || value.hy || value.en}
+                onChange={(e) => change(path, sharedGameTitle(e.target.value))}
+              />
+              <small>Название автоматически используется для RU, HY и EN.</small>
+            </label>
+          );
+        }
         return (
           <label className="cms-field" key={path.join(".")}>
             <span>
@@ -290,6 +312,7 @@ export default function Admin() {
             )}
           </label>
         );
+      }
       return (
         <details
           className="cms-fieldset"
@@ -676,11 +699,18 @@ export default function Admin() {
                         HTTPS-ссылка откроется внутри сайта во встроенном окне; внутренний путь
                         (например /promotions) откроет страницу сайта. Внешний сайт должен разрешать iframe.
                       </p>}
+                      {section === "games" && <p className="cms-banner-help">
+                        Числовой адрес создаётся автоматически и не требует редактирования.
+                        Для провайдеров, запрещающих iframe, выберите «Новая вкладка».
+                        Галочка «Показывать в „Топ играх“» добавляет игру в топ, а поле порядка
+                        определяет её позицию.
+                      </p>}
                       {Object.entries(current)
                         .filter(
                           ([k]) =>
-                            !["slides", "slotSlides"].includes(section) ||
-                            !["label", "button"].includes(k),
+                            !(section === "games" && k === "slug") &&
+                            (!["slides", "slotSlides"].includes(section) ||
+                            !["label", "button"].includes(k)),
                         )
                         .map(([k, v]) => field(v, [section, index, k], k))}
                     </>
@@ -714,6 +744,7 @@ export default function Admin() {
                 партнёрской программы и технических работ.
               </p>}
               {section === "settings" && <p className="cms-banner-help">«Как на главной» использует те же картинки и порядок в каталоге. Отдельные баннеры слотов при переключении сохраняются.</p>}
+              {section === "settings" && <p className="cms-banner-help">Если индексация изображений выключена, страницы могут оставаться в Google, но картинки получают запрет noimageindex.</p>}
               {section === "seo" && (
                 <p>
                   Пустые поля используют заголовок и описание страницы. SEO игр,

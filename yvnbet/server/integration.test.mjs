@@ -131,6 +131,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     state.content.games[0].title.ru = "Проверка сохранения";
     state.content.games[0].url = "https://provider.example/game/42";
     state.content.games[0].seo.title.ru = "Уникальный заголовок игры";
+    state.content.games[1].mode = "external";
+    state.content.games[1].url = "https://provider.example/game/external";
     assert.equal((await call("/api/content", "PUT", state)).status, 200);
     assert.equal((await call("/api/content", "PUT", state)).status, 409);
     const html = await (await call("/ru/games/golden-eclipse")).text();
@@ -173,6 +175,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /\/images\/providers-all.png/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(homeHtml, /class="provider-rail"/);
+    assert.match(homeHtml, /href="https:\/\/provider\.example\/game\/external" target="_blank"/);
     assert.match(homeHtml, /class="language-flag"/);
     assert.doesNotMatch(homeHtml, /class="quick-strip"|class="side-nav"/);
     const header = homeHtml.match(/<header[\s\S]*?<\/header>/)[0];

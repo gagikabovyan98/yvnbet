@@ -326,6 +326,10 @@ app.use(
     dotfiles: "deny",
     maxAge: "1y",
     immutable: true,
+    setHeaders: (res) => {
+      if (!getContent().content.settings.indexImages)
+        res.setHeader("X-Robots-Tag", "noindex, noimageindex");
+    },
   }),
 );
 app.get("/sitemap.xml", (_, res) =>
@@ -354,6 +358,8 @@ if (prod) {
       setHeaders: (res, p) => {
         if (p.includes("/assets/"))
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        if (/\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(p) && !getContent().content.settings.indexImages)
+          res.setHeader("X-Robots-Tag", "noindex, noimageindex");
       },
     }),
   );
@@ -409,8 +415,11 @@ app.get("/{*path}", async (req, res, next) => {
     );
     const maintenance = c.settings.maintenance && !isAdmin;
     if (maintenance) res.set("Retry-After", "3600");
-    if (maintenance || isAdmin || !c.settings.indexable)
-      res.set("X-Robots-Tag", "noindex, nofollow");
+    const robots = [];
+    if (maintenance || isAdmin || !m.indexable)
+      robots.push("noindex", "nofollow");
+    if (!c.settings.indexImages) robots.push("noimageindex");
+    if (robots.length) res.set("X-Robots-Tag", [...new Set(robots)].join(", "));
     res.set("Cache-Control", "no-store");
     res
       .status(maintenance ? 503 : isAdmin || m.valid ? 200 : 404)

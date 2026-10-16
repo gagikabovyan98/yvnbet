@@ -60,6 +60,7 @@ const seo = z.strictObject({
   description: local,
   keywords: local,
 });
+const pageSeo = seo.extend({ indexable: z.boolean() });
 const base = {
   id: slug,
   slug,
@@ -105,6 +106,7 @@ export const contentSchema = z.strictObject({
       "Укажите домен без пути и завершающего слеша",
     ),
     indexable: z.boolean(),
+    indexImages: z.boolean(),
     ogImage: image,
     defaultLanguage: z.enum(["ru", "hy", "en"]),
     sliderSeconds: z.number().int().min(4).max(30),
@@ -124,11 +126,15 @@ export const contentSchema = z.strictObject({
     ),
   ),
   seo: z.strictObject(
-    Object.fromEntries(
-      ["home", "slots", "promotions", "help", "app"].map((k) => [k, seo]),
-    ),
+    {
+      home: pageSeo,
+      slots: pageSeo,
+      promotions: pageSeo,
+      help: pageSeo,
+      app: seo,
+    },
   ),
-  providers: list({ logo: image, url: external, mode }),
+  providers: list({ logo: image, url: external, mode, indexable: z.boolean() }),
   categories: list({}),
   games: list({
     provider: slug,
@@ -137,6 +143,8 @@ export const contentSchema = z.strictObject({
     url: external,
     mode,
     featured: z.boolean(),
+    featuredOrder: z.number().int().min(1).max(10000),
+    indexable: z.boolean(),
   }),
   slides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
   slotSlides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
@@ -147,9 +155,10 @@ export const contentSchema = z.strictObject({
     end: date,
     button: local,
     url,
+    indexable: z.boolean(),
   }),
   faq: list({}),
-  pages: list({}),
+  pages: list({ indexable: z.boolean() }),
 });
 export function validateContent(input) {
   const parsed = contentSchema.safeParse(input);

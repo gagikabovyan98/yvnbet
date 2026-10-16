@@ -19,7 +19,7 @@ import PhoneInput from "./components/PhoneInput.jsx";
 import RegionInput from "./components/RegionInput.jsx";
 import InstallInstructions from "./components/InstallInstructions.jsx";
 import { normalizePhone } from "./phone.mjs";
-import { telegramContact, catalogSlides } from "./content.mjs";
+import { telegramContact, catalogSlides, orderedFeaturedGames } from "./content.mjs";
 import Modal from "./components/Modal.jsx";
 import { routeFor } from "./routes.mjs";
 const icons = {
@@ -38,7 +38,7 @@ export default function Site({ content: c, path }) {
     [age, setAge] = useState(true),
     [denied, setDenied] = useState(false);
   const gamePage = valid && section === "games" && item;
-  const platformPage = gamePage || (valid && section === "login");
+  const platformPage = (gamePage && item.mode === "iframe") || (valid && section === "login");
   const frame = platformPage
     ? {
         url:
@@ -105,8 +105,15 @@ export default function Site({ content: c, path }) {
     url.startsWith("/") && !/^\/(ru|hy|en)(\/|$)/.test(url)
       ? `/${lang}${url}`
       : url;
-  const card = (g) => (
-    <a className="game-card" key={g.id} href={href("games/" + g.slug)}>
+  const card = (g) => {
+    const provider = c.providers.find((p) => p.id === g.provider);
+    const externalUrl = g.url || provider?.url;
+    const opensExternal = g.mode === "external" && externalUrl;
+    return (
+    <a className="game-card" key={g.id}
+      href={opensExternal ? externalUrl : href("games/" + g.slug)}
+      target={opensExternal ? "_blank" : undefined}
+      rel={opensExternal ? "noopener noreferrer" : undefined}>
       <div className="game-art">
         <img
           src={g.image}
@@ -121,11 +128,12 @@ export default function Site({ content: c, path }) {
       </div>
       <div className="game-meta">
         <h3>{L(g.title)}</h3>
-        <p>{L(c.providers.find((p) => p.id === g.provider)?.title)}</p>
+        <p>{L(provider?.title)}</p>
         <ArrowUpRight size={17} />
       </div>
     </a>
-  );
+    );
+  };
   const offers = (list) => (
     <div className="promotion-grid">
       {list.map((p) => (
@@ -206,13 +214,19 @@ export default function Site({ content: c, path }) {
         {frame ? (
           <main id="main" className="platform-main">
             {frame.url ? (
-              <iframe
-                title={frame.title}
-                src={age ? undefined : frame.url}
-                referrerPolicy="strict-origin-when-cross-origin"
-                sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-                allow="fullscreen"
-              />
+              <>
+                <iframe
+                  title={frame.title}
+                  src={age ? undefined : frame.url}
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads"
+                  allow="fullscreen; clipboard-read; clipboard-write; payment"
+                />
+                <div className="frame-fallback">
+                  <span>{t.frameHelp}</span>
+                  <a href={frame.url} target="_blank" rel="noopener noreferrer">{t.external}<ArrowUpRight size={16} /></a>
+                </div>
+              </>
             ) : (
               <p className="notice">{t.unavailable}</p>
             )}
@@ -274,12 +288,7 @@ export default function Site({ content: c, path }) {
                               </h2>
                             </div>
                           </div>
-                          <div className="game-grid">
-                            {c.games
-                              .filter((g) => g.featured)
-                              .slice(0, 6)
-                              .map(card)}
-                          </div>
+                          <HorizontalGames games={orderedFeaturedGames(c.games).slice(0, 15)} card={card} label={t.featured} t={t} />
                         </section>
                         {c.providers.map((provider) => (
                           <ProviderGames
@@ -317,6 +326,21 @@ export default function Site({ content: c, path }) {
                         seconds={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? c.settings.slotSliderSeconds : c.settings.sliderSeconds}
                         localizedUrl={localizedUrl} headingTag="h2" hideCopy
                         onOpen={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? (url, title) => launch(url, "iframe", title) : undefined} />
+                    )}
+                    {section === "games" && item && item.mode === "external" && (
+                      <article className="detail">
+                        <img className="detail-art" src={item.image} alt={L(item.title)} />
+                        <div>
+                          <span className="eyebrow">{L(c.providers.find((p) => p.id === item.provider)?.title)}</span>
+                          <h1>{L(item.title)}</h1>
+                          <p className="prose">{L(item.description)}</p>
+                          {(item.url || c.providers.find((p) => p.id === item.provider)?.url) ? (
+                            <a className="button" href={item.url || c.providers.find((p) => p.id === item.provider)?.url} target="_blank" rel="noopener noreferrer">
+                              {t.external}<ArrowUpRight size={17} />
+                            </a>
+                          ) : <p className="notice">{t.unavailable}</p>}
+                        </div>
+                      </article>
                     )}
                     {(section === "slots" || section === "providers") && (
                       <>
@@ -786,12 +810,17 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
 }
 function Catalog({ c, t, L, provider, card }) {
   const [filter, setFilter] = useState(provider || ""),
-    [search, setSearch] = useState("");
+    [search, setSearch] = useState(""),
+    [page, setPage] = useState(0);
   const games = c.games.filter(
     (g) =>
       (!filter || g.provider === filter) &&
       L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
   );
+  const pageSize = 15,
+    pages = Math.max(1, Math.ceil(games.length / pageSize)),
+    visibleGames = games.slice(page * pageSize, (page + 1) * pageSize);
+  useEffect(() => setPage(0), [filter, search, provider]);
   return (
     <section className="catalog">
       <div className="catalog-controls">
@@ -818,7 +847,12 @@ function Catalog({ c, t, L, provider, card }) {
           onSelect={setFilter}
         />
       )}
-      <div className="game-grid">{games.map(card)}</div>
+      {pages > 1 && <div className="catalog-pagination">
+        <button className="icon-button" disabled={page === 0} aria-label={t.previousGames} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={17}/></button>
+        <span>{page + 1} / {pages}</span>
+        <button className="icon-button" disabled={page === pages - 1} aria-label={t.nextGames} onClick={() => setPage((value) => Math.min(pages - 1, value + 1))}><ChevronRight size={17}/></button>
+      </div>}
+      <HorizontalGames key={`${filter}-${search}-${page}`} games={visibleGames} card={card} label={t.slots} t={t} />
       {!games.length && <p className="empty">{t.empty}</p>}
     </section>
   );
@@ -1519,8 +1553,24 @@ function ProviderGames({ provider, games, card, L, t, href }) {
           }
         }}
       >
-        {games.map(card)}
+        {games.slice(0, 15).map(card)}
       </div>
     </section>
   );
+}
+
+function HorizontalGames({ games, card, label, t }) {
+  const ref = useRef(null);
+  const scroll = (direction) => ref.current?.scrollBy({
+    left: direction * ref.current.clientWidth * 0.85,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+  });
+  if (!games.length) return null;
+  return <div className="horizontal-games">
+    <div className="horizontal-games-actions">
+      <button className="icon-button" aria-label={`${t.previousGames}: ${label}`} onClick={() => scroll(-1)}><ChevronLeft size={17}/></button>
+      <button className="icon-button" aria-label={`${t.nextGames}: ${label}`} onClick={() => scroll(1)}><ChevronRight size={17}/></button>
+    </div>
+    <div className="provider-games-track" ref={ref} aria-label={label}>{games.map(card)}</div>
+  </div>;
 }

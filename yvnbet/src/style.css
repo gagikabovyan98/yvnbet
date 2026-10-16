@@ -2086,6 +2086,7 @@ footer {
     border-top: 1px solid #54336455;
     backdrop-filter: blur(15px);
     padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
   }
   .bottom-nav a {
     display: flex;
@@ -2108,6 +2109,7 @@ footer {
     right: 17px;
     border-radius: 15px;
   }
+  .frame-fallback { bottom: 10px; font-size: 10px; gap: 8px; }
   .telegram-float svg {
     width: 23px;
   }
@@ -2562,6 +2564,7 @@ footer {
   width: 100%;
   display: flex;
   background: #110c18;
+  position: relative;
 }
 .platform-main iframe {
   display: block;
@@ -2570,6 +2573,29 @@ footer {
   height: 100%;
   border: 0;
 }
+.frame-fallback {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100% - 28px);
+  padding: 9px 12px;
+  border: 1px solid #6d5478;
+  border-radius: 12px;
+  background: rgb(20 12 28 / 92%);
+  color: #cbbbd3;
+  font-size: 12px;
+  box-shadow: 0 8px 30px #0008;
+}
+.frame-fallback a { display: inline-flex; align-items: center; gap: 6px; color: #f0caef; white-space: nowrap; }
+.horizontal-games { position: relative; }
+.horizontal-games-actions { display: flex; justify-content: flex-end; gap: 7px; margin: -8px 0 9px; }
+.horizontal-games .provider-games-track .game-card { flex-basis: 220px; }
+.catalog-pagination { display: flex; justify-content: flex-end; align-items: center; gap: 9px; margin: -8px 0 10px; color: #a995b5; font-size: 12px; }
+.catalog-pagination .icon-button:disabled { opacity: .35; cursor: default; }
 @media (max-width: 1050px) {
   .public-site .header {
     padding-inline: 22px;

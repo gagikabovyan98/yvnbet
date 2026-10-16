@@ -1,4 +1,4 @@
-import { routeFor, paths } from "../src/routes.mjs";
+import { routeFor, indexablePaths, routeIsIndexable } from "../src/routes.mjs";
 export const escapeHtml = (s) =>
   String(s ?? "").replace(
     /[&<>"']/g,
@@ -16,6 +16,7 @@ export function metaFor(c, path) {
     L = (x) => x?.[r.lang] || "";
   return {
     ...r,
+    indexable: routeIsIndexable(c, path),
     title: r.valid
       ? L(s?.title) ||
         L(pageSeo?.title) ||
@@ -56,7 +57,8 @@ export function headFor(c, path, nonce) {
         }
       : {}),
   };
-  return `<title>${escapeHtml(m.title)}</title>${tag("description", m.description)}${tag("keywords", m.keywords)}${tag("robots", c.settings.indexable && m.valid ? "index, follow" : "noindex, nofollow")}${tag("og:type", "website", true)}${tag("og:site_name", c.settings.brand, true)}${tag("og:title", m.title, true)}${tag("og:description", m.description, true)}${tag("og:locale", { ru: "ru_RU", hy: "hy_AM", en: "en_GB" }[m.lang], true)}${tag("twitter:card", "summary_large_image")}${tag("twitter:title", m.title)}${tag("twitter:description", m.description)}${origin ? `${tag("og:url", canonical, true)}${tag("og:image", img, true)}${tag("twitter:image", img)}<link rel="canonical" href="${escapeHtml(canonical)}">${["ru", "hy", "en"].map((l) => `<link rel="alternate" hreflang="${l}" href="${escapeHtml(origin + m.path.replace(/^\/(ru|hy|en)/, "/" + l))}">`).join("")}<link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + m.path.replace(/^\/(ru|hy|en)/, "/" + c.settings.defaultLanguage))}">` : ""}<script type="application/ld+json" nonce="${nonce}">${jsonSafe(schema)}</script>`;
+  const robots = `${m.indexable ? "index, follow" : "noindex, follow"}${c.settings.indexImages ? "" : ", noimageindex"}`;
+  return `<title>${escapeHtml(m.title)}</title>${tag("description", m.description)}${tag("keywords", m.keywords)}${tag("robots", robots)}${tag("og:type", "website", true)}${tag("og:site_name", c.settings.brand, true)}${tag("og:title", m.title, true)}${tag("og:description", m.description, true)}${tag("og:locale", { ru: "ru_RU", hy: "hy_AM", en: "en_GB" }[m.lang], true)}${tag("twitter:card", "summary_large_image")}${tag("twitter:title", m.title)}${tag("twitter:description", m.description)}${origin ? `${tag("og:url", canonical, true)}${tag("og:image", img, true)}${tag("twitter:image", img)}<link rel="canonical" href="${escapeHtml(canonical)}">${["ru", "hy", "en"].map((l) => `<link rel="alternate" hreflang="${l}" href="${escapeHtml(origin + m.path.replace(/^\/(ru|hy|en)/, "/" + l))}">`).join("")}<link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + m.path.replace(/^\/(ru|hy|en)/, "/" + c.settings.defaultLanguage))}">` : ""}<script type="application/ld+json" nonce="${nonce}">${jsonSafe(schema)}</script>`;
 }
 export function sitemap(c) {
   const origin = c.settings.siteUrl;
@@ -64,11 +66,11 @@ export function sitemap(c) {
     return '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>';
   return (
     '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' +
-    paths(c)
+    indexablePaths(c)
       .flatMap((p) =>
         ["ru", "hy", "en"].map(
           (l) =>
-            `<url><loc>${escapeHtml(origin + "/" + l + p)}</loc>${["ru", "hy", "en"].map((x) => `<xhtml:link rel="alternate" hreflang="${x}" href="${escapeHtml(origin + "/" + x + p)}"/>`).join("")}</url>`,
+            `<url><loc>${escapeHtml(origin + "/" + l + p)}</loc>${["ru", "hy", "en"].map((x) => `<xhtml:link rel="alternate" hreflang="${x}" href="${escapeHtml(origin + "/" + x + p)}"/>`).join("")}<xhtml:link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + "/" + c.settings.defaultLanguage + p)}"/></url>`,
         ),
       )
       .join("") +

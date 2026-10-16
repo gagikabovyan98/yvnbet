@@ -18,9 +18,12 @@ import {
   telegramContact,
   publicContent,
   activePromotion,
+  upgradeSearchAndGames,
+  orderedFeaturedGames,
 } from "../src/content.mjs";
 import { headFor, sitemap, metaFor } from "./seo.mjs";
 import { routeFor } from "../src/routes.mjs";
+import { nextGameIdentifier, sharedGameTitle } from "../src/admin-games.mjs";
 const clone = () => structuredClone(initialContent);
 test("detail metadata stays unique and text pages reject extra path segments", () => {
   const c = clone();
@@ -145,6 +148,30 @@ test("SEO escapes metadata and JSON-LD and emits route-specific multilingual lin
   const xml = sitemap(c);
   for (const l of ["ru", "hy", "en"])
     assert.ok(xml.includes(`https://example.com/${l}/games/golden-eclipse`));
+  assert.match(xml, /hreflang="x-default"/);
+  c.games[0].indexable = false;
+  assert.doesNotMatch(sitemap(c), /games\/golden-eclipse/);
+  assert.match(headFor(c, "/ru/games/golden-eclipse", "nonce"), /content="noindex, follow, noimageindex"/);
+});
+
+test("search controls migrate safely and game administration generates shared titles, IDs and top order", () => {
+  const old = clone();
+  delete old.settings.indexImages;
+  delete old.seo.home.indexable;
+  delete old.games[0].indexable;
+  delete old.games[0].featuredOrder;
+  const c = upgradeSearchAndGames(old);
+  assert.equal(validateContent(c).settings.indexImages, false);
+  assert.equal(c.seo.home.indexable, true);
+  assert.equal(c.games[0].indexable, true);
+  assert.equal(c.games[0].featuredOrder, 1);
+  c.games[0].featuredOrder = 9;
+  c.games[1].featuredOrder = 1;
+  c.games[2].featured = false;
+  assert.equal(orderedFeaturedGames(c.games)[0].id, c.games[1].id);
+  assert.equal(nextGameIdentifier([{ id: "10000", slug: "10000" }]), "10001");
+  assert.deepEqual(sharedGameTitle("Candy Dice"), { ru: "Candy Dice", hy: "Candy Dice", en: "Candy Dice" });
+  assert.deepEqual(upgradeSearchAndGames(c), c);
 });
 test("registration requires consent, valid contacts and an empty honeypot", () => {
   const v = {
