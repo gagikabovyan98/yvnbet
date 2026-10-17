@@ -215,6 +215,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const externalLoginState = await (await call("/api/admin/content")).json();
     externalLoginState.content.settings.loginMode = "external";
     externalLoginState.content.settings.loginUrl = "https://provider.example/login";
+    externalLoginState.content.settings.ageGate = false;
     assert.equal(
       (await call("/api/content", "PUT", externalLoginState)).status,
       200,
@@ -227,6 +228,14 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     );
     const externalLoginPage = await (await call("/hy/login")).text();
     assert.doesNotMatch(externalLoginPage, /class="platform-main"|<iframe/);
+    const noAgeGateGame = await (
+      await call("/ru/games/golden-eclipse")
+    ).text();
+    assert.match(
+      noAgeGateGame,
+      /<iframe title="Проверка сохранения" src="https:\/\/provider\.example\/game\/42"/,
+    );
+    assert.doesNotMatch(noAgeGateGame, /class="age-content"/);
     assert.equal(
       (
         await call("/api/users", "POST", {

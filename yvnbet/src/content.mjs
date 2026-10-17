@@ -299,6 +299,7 @@ export const initialContent = {
     partnersTelegramUrl: "",
     maintenanceTelegramUrl: "",
     maintenance: false,
+    ageGate: true,
     maintenanceTitle: tr("Технические работы", "Տեխնիկական աշխատանքներ", "Scheduled maintenance"),
     maintenanceText: tr("Обновляем сайт. Скоро вернёмся — спасибо за терпение!", "Թարմացնում ենք կայքը։ Շուտով կվերադառնանք․ շնորհակալություն համբերության համար։", "We’re updating the website. We’ll be back soon — thank you for your patience!"),
     telegramText: tr(
@@ -664,6 +665,12 @@ export function orderedFeaturedGames(games) {
         (b.game.featuredOrder || Number.MAX_SAFE_INTEGER) || a.index - b.index,
     )
     .map(({ game }) => game);
+}
+
+export function upgradeAgeGate(input) {
+  const c = structuredClone(input);
+  c.settings.ageGate ??= true;
+  return c;
 }
 
 // Independent slot banners stay saved when the catalogue uses home banners.

@@ -19,6 +19,7 @@ import {
   publicContent,
   activePromotion,
   upgradeSearchAndGames,
+  upgradeAgeGate,
   orderedFeaturedGames,
 } from "../src/content.mjs";
 import { headFor, sitemap, metaFor, schemaFor } from "./seo.mjs";
@@ -196,6 +197,15 @@ test("search controls migrate safely and game administration generates shared ti
   );
   assert.deepEqual(sharedGameTitle("Candy Dice"), { ru: "Candy Dice", hy: "Candy Dice", en: "Candy Dice" });
   assert.deepEqual(upgradeSearchAndGames(c), c);
+});
+test("age confirmation toggle migrates enabled and preserves the administrator choice", () => {
+  const old = clone();
+  delete old.settings.ageGate;
+  const upgraded = upgradeAgeGate(old);
+  assert.equal(validateContent(upgraded).settings.ageGate, true);
+  upgraded.settings.ageGate = false;
+  assert.equal(upgradeAgeGate(upgraded).settings.ageGate, false);
+  assert.deepEqual(upgradeAgeGate(upgraded), upgraded);
 });
 test("registration requires consent, valid contacts and an empty honeypot", () => {
   const v = {

@@ -73,6 +73,7 @@ const labels = {
   partnersTelegramUrl: "Telegram — партнёрская программа",
   maintenanceTelegramUrl: "Telegram — страница технических работ",
   maintenance: "Включить технические работы (закрыть сайт для посетителей)",
+  ageGate: "Показывать подтверждение 18+ при первом входе",
   maintenanceTitle: "Заголовок технических работ",
   maintenanceText: "Сообщение технических работ",
   mobileImage: "Баннер для телефона — общий",

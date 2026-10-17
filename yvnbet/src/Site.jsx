@@ -43,6 +43,7 @@ export default function Site({ content: c, path }) {
   const [modal, setModal] = useState(null),
     [age, setAge] = useState(true),
     [denied, setDenied] = useState(false);
+  const ageBlocked = c.settings.ageGate !== false && age;
   const gamePage = valid && section === "games" && item;
   const platformPage =
     (gamePage && item.mode === "iframe") ||
@@ -171,7 +172,7 @@ export default function Site({ content: c, path }) {
       </a>
       <div
         className={"public-site" + (frame ? " platform-view" : "")}
-        inert={age ? true : undefined}
+        inert={ageBlocked ? true : undefined}
       >
         <header className="header">
           <a
@@ -225,7 +226,7 @@ export default function Site({ content: c, path }) {
               <>
                 <iframe
                   title={frame.title}
-                  src={age ? undefined : frame.url}
+                  src={ageBlocked ? undefined : frame.url}
                   referrerPolicy="strict-origin-when-cross-origin"
                   sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads"
                   allow="fullscreen; clipboard-read; clipboard-write; payment"
@@ -565,7 +566,7 @@ export default function Site({ content: c, path }) {
           </>
         )}
       </div>
-      {age && (
+      {ageBlocked && (
         <Modal title={denied ? "18+" : t.age}>
           <div className="age-content">
             <img className="age-lion" src="/images/lion-age.webp" alt="" />
@@ -588,7 +589,7 @@ export default function Site({ content: c, path }) {
           </div>
         </Modal>
       )}
-      {!age && modal?.type === "register" && (
+      {!ageBlocked && modal?.type === "register" && (
         <Registration c={c} lang={lang} t={t} onClose={() => setModal(null)} />
       )}
     </>

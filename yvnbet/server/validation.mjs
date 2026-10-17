@@ -95,6 +95,7 @@ export const contentSchema = z.strictObject({
     partnersTelegramUrl: telegramUrl,
     maintenanceTelegramUrl: telegramUrl,
     maintenance: z.boolean(),
+    ageGate: z.boolean(),
     maintenanceTitle: local,
     maintenanceText: local,
     telegramText: local,
