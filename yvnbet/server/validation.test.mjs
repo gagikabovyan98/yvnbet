@@ -21,7 +21,7 @@ import {
   upgradeSearchAndGames,
   orderedFeaturedGames,
 } from "../src/content.mjs";
-import { headFor, sitemap, metaFor } from "./seo.mjs";
+import { headFor, sitemap, metaFor, schemaFor } from "./seo.mjs";
 import { routeFor } from "../src/routes.mjs";
 import { nextGameIdentifier, sharedGameTitle } from "../src/admin-games.mjs";
 const clone = () => structuredClone(initialContent);
@@ -146,12 +146,27 @@ test("SEO escapes metadata and JSON-LD and emits route-specific multilingual lin
   assert.ok(head.includes("https://example.com/ru/games/golden-eclipse"));
   assert.doesNotMatch(head, /<script>alert/);
   const xml = sitemap(c);
+  assert.match(
+    xml,
+    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9"/,
+  );
   for (const l of ["ru", "hy", "en"])
     assert.ok(xml.includes(`https://example.com/${l}/games/golden-eclipse`));
   assert.match(xml, /hreflang="x-default"/);
   c.games[0].indexable = false;
   assert.doesNotMatch(sitemap(c), /games\/golden-eclipse/);
   assert.match(headFor(c, "/ru/games/golden-eclipse", "nonce"), /content="noindex, follow, noimageindex"/);
+  const schema = schemaFor(c, "/ru/games/golden-eclipse");
+  assert.equal(schema["@context"], "https://schema.org");
+  assert.ok(schema["@graph"].some((entry) => entry["@type"] === "WebSite"));
+  assert.ok(
+    schema["@graph"].some((entry) => entry["@type"] === "BreadcrumbList"),
+  );
+  assert.equal(
+    schema["@graph"].find((entry) => entry["@type"] === "WebPage")
+      .mainEntity["@type"],
+    "VideoGame",
+  );
 });
 
 test("search controls migrate safely and game administration generates shared titles, IDs and top order", () => {
@@ -169,7 +184,16 @@ test("search controls migrate safely and game administration generates shared ti
   c.games[1].featuredOrder = 1;
   c.games[2].featured = false;
   assert.equal(orderedFeaturedGames(c.games)[0].id, c.games[1].id);
-  assert.equal(nextGameIdentifier([{ id: "10000", slug: "10000" }]), "10001");
+  const samples = [35321, 46841];
+  assert.equal(
+    nextGameIdentifier(
+      [{ id: "45321", slug: "45321" }],
+      (values) => {
+        values[0] = samples.shift();
+      },
+    ),
+    "56841",
+  );
   assert.deepEqual(sharedGameTitle("Candy Dice"), { ru: "Candy Dice", hy: "Candy Dice", en: "Candy Dice" });
   assert.deepEqual(upgradeSearchAndGames(c), c);
 });

@@ -133,6 +133,23 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     state.content.games[0].seo.title.ru = "Уникальный заголовок игры";
     state.content.games[1].mode = "external";
     state.content.games[1].url = "https://provider.example/game/external";
+    state.content.providers.push({
+      ...structuredClone(state.content.providers[0]),
+      id: "new-provider",
+      slug: "new-provider",
+      title: { ru: "Новый провайдер", hy: "Նոր մատակարար", en: "New provider" },
+    });
+    state.content.games.push({
+      ...structuredClone(state.content.games[0]),
+      id: "82739",
+      slug: "82739",
+      provider: "new-provider",
+      title: { ru: "Provider Test Game", hy: "Provider Test Game", en: "Provider Test Game" },
+      mode: "external",
+      url: "https://provider.example/game/82739",
+      featured: false,
+      featuredOrder: 99,
+    });
     assert.equal((await call("/api/content", "PUT", state)).status, 200);
     assert.equal((await call("/api/content", "PUT", state)).status, 409);
     const html = await (await call("/ru/games/golden-eclipse")).text();
@@ -176,6 +193,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(homeHtml, /class="provider-rail"/);
     assert.match(homeHtml, /href="https:\/\/provider\.example\/game\/external" target="_blank"/);
+    assert.match(homeHtml, /Provider Test Game/);
     assert.match(homeHtml, /class="language-flag"/);
     assert.doesNotMatch(homeHtml, /class="quick-strip"|class="side-nav"/);
     const header = homeHtml.match(/<header[\s\S]*?<\/header>/)[0];
@@ -191,6 +209,24 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
         "/hy/games/golden-eclipse",
       ),
     );
+    assert.ok(
+      (await (await call("/sitemap.xml")).text()).includes("/hy/games/82739"),
+    );
+    const externalLoginState = await (await call("/api/admin/content")).json();
+    externalLoginState.content.settings.loginMode = "external";
+    externalLoginState.content.settings.loginUrl = "https://provider.example/login";
+    assert.equal(
+      (await call("/api/content", "PUT", externalLoginState)).status,
+      200,
+    );
+    const externalLoginHome = await (await call("/hy")).text();
+    const externalHeader = externalLoginHome.match(/<header[\s\S]*?<\/header>/)[0];
+    assert.match(
+      externalHeader,
+      /href="https:\/\/provider\.example\/login" target="_blank"/,
+    );
+    const externalLoginPage = await (await call("/hy/login")).text();
+    assert.doesNotMatch(externalLoginPage, /class="platform-main"|<iframe/);
     assert.equal(
       (
         await call("/api/users", "POST", {

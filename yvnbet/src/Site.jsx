@@ -34,11 +34,19 @@ export default function Site({ content: c, path }) {
     t = c.interface[lang],
     L = (v) => v?.[lang] || "",
     href = (s) => `/${lang}${s === "home" ? "" : "/" + s}`;
+  const loginExternal =
+      c.settings.loginMode === "external" && Boolean(c.settings.loginUrl),
+    loginHref = loginExternal ? c.settings.loginUrl : href("login"),
+    loginLinkProps = loginExternal
+      ? { target: "_blank", rel: "noopener noreferrer" }
+      : {};
   const [modal, setModal] = useState(null),
     [age, setAge] = useState(true),
     [denied, setDenied] = useState(false);
   const gamePage = valid && section === "games" && item;
-  const platformPage = (gamePage && item.mode === "iframe") || (valid && section === "login");
+  const platformPage =
+    (gamePage && item.mode === "iframe") ||
+    (valid && section === "login" && c.settings.loginMode === "iframe");
   const frame = platformPage
     ? {
         url:
@@ -205,7 +213,7 @@ export default function Site({ content: c, path }) {
             ) : (
               <>
                 <button className="button desktop-register" onClick={() => setModal({ type: "register" })}>{t.register}</button>
-                <a className="button quiet" href={href("login")}>{t.login}</a>
+                <a className="button quiet" href={loginHref} {...loginLinkProps}>{t.login}</a>
               </>
             )}
           </div>
@@ -266,7 +274,7 @@ export default function Site({ content: c, path }) {
                           >
                             {t.register}
                           </button>
-                          <a className="button quiet" href={href("login")}>
+                          <a className="button quiet" href={loginHref} {...loginLinkProps}>
                             {t.login}
                           </a>
                         </div>
@@ -320,6 +328,25 @@ export default function Site({ content: c, path }) {
                           </section>
                         )}
                       </>
+                    )}
+                    {section === "login" && c.settings.loginMode === "external" && (
+                      <section className="page-heading">
+                        <span className="eyebrow">{c.settings.brand}</span>
+                        <h1>{t.login}</h1>
+                        {c.settings.loginUrl ? (
+                          <a
+                            className="button"
+                            href={c.settings.loginUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {t.external}
+                            <ArrowUpRight size={17} />
+                          </a>
+                        ) : (
+                          <p className="notice">{t.unavailable}</p>
+                        )}
+                      </section>
                     )}
                     {(section === "slots" || section === "providers") && (
                       <Slider slides={catalogSlides(c, section)} L={L} t={t}

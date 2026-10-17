@@ -234,6 +234,7 @@ export default function Admin() {
       template.featured = false;
       template.featuredOrder = draft.games.length + 1;
       template.indexable = true;
+      template.mode = "external";
     }
     template.enabled = false;
     change([section], [...draft[section], template]);
