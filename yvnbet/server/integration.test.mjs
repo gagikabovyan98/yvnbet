@@ -183,7 +183,11 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(adminHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
     assert.doesNotMatch(homeHtml, /class="footer-nav"/);
     assert.match(homeHtml, /Թոփ խաղեր/);
+    assert.match(homeHtml, /class="section featured-showcase"/);
+    assert.equal((homeHtml.match(/class="featured-card-slot/g) || []).length, 3);
     assert.match(homeHtml, /class="reel-machine /);
+    assert.match(homeHtml, /class="random-game-button"/);
+    assert.doesNotMatch(homeHtml, /class="lion-celebration"/);
     assert.match(homeHtml, /class="hero-actions"/);
     assert.doesNotMatch(homeHtml, /class="hero-controls"/);
     assert.match(homeHtml, /class="banner-arrow banner-arrow-next"/);

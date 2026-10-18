@@ -13,6 +13,9 @@ import {
   Smartphone,
   Sparkles,
   CheckCircle2,
+  Crown,
+  Gamepad2,
+  Dices,
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
@@ -285,20 +288,12 @@ export default function Site({ content: c, path }) {
                           t={t}
                           href={href}
                         />
-                        <section className="section">
-                          <div className="section-heading">
-                            <div>
-                              <span className="eyebrow">{t.catalog}</span>
-                              <h2>
-                                {t.featured}
-                                <span className="count">
-                                  {c.games.filter((g) => g.featured).length}
-                                </span>
-                              </h2>
-                            </div>
-                          </div>
-                          <HorizontalGames games={orderedFeaturedGames(c.games).slice(0, 15)} card={card} label={t.featured} t={t} />
-                        </section>
+                        <FeaturedGames
+                          games={orderedFeaturedGames(c.games).slice(0, 15)}
+                          card={card}
+                          label={t.featured}
+                          t={t}
+                        />
                         {c.providers.map((provider) => (
                           <ProviderGames
                             key={provider.id}
@@ -889,49 +884,12 @@ function Random({ c, t, L, href }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [celebrating, setCelebrating] = useState(false);
-  const video = useRef(null);
   const [reel, setReel] = useState(() => createReel(c.games, 0));
   const [position, setPosition] = useState(1);
   const [moving, setMoving] = useState(false);
   const timer = useRef(),
     frames = useRef([]),
     pending = useRef(null);
-  const reveal = () => {
-    setCelebrating(false);
-    setShowResult(true);
-  };
-  useEffect(() => {
-    if (!celebrating) return;
-    const clip = video.current;
-    let cancelled = false;
-    let fallback = setTimeout(reveal, 15000);
-    // The clip is decorative: a playback failure must never block the selected game.
-    if (clip) {
-      const bounds = clip.getBoundingClientRect();
-      if (bounds.top < 72 || bounds.bottom > window.innerHeight - 80)
-        clip.scrollIntoView({ block: "center", behavior: "smooth" });
-      clip.currentTime = 0;
-      clip
-        .play()
-        ?.then(() => {
-          if (cancelled) return;
-          clearTimeout(fallback);
-          fallback = setTimeout(
-            reveal,
-            Math.max(6, (clip.duration || 4) + 2) * 1000,
-          );
-        })
-        .catch(() => {
-          if (!cancelled) reveal();
-        });
-    }
-    return () => {
-      cancelled = true;
-      clearTimeout(fallback);
-      clip?.pause();
-    };
-  }, [celebrating]);
   useEffect(
     () => () => {
       clearTimeout(timer.current);
@@ -949,17 +907,14 @@ function Random({ c, t, L, href }) {
     setPosition(run.target);
     setMoving(false);
     setResult(run.winner);
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setCelebrating(!reduced);
-    setShowResult(reduced);
     setBusy(false);
   };
   const spin = () => {
-    if (pending.current || celebrating || !c.games.length) return;
-    if (video.current && video.current.readyState < 2) {
-      video.current.preload = "auto";
-      video.current.load();
+    if (result && !busy) {
+      setShowResult(true);
+      return;
     }
+    if (pending.current || !c.games.length) return;
     const n = new Uint32Array(1);
     crypto.getRandomValues(n);
     const run = createReel(
@@ -997,30 +952,6 @@ function Random({ c, t, L, href }) {
         <h2>{t.random}</h2>
         <p>{t.randomText}</p>
       </div>
-      <div
-        className={"lion-stage" + (celebrating ? " is-celebrating" : "")}
-        aria-hidden="true"
-      >
-        <img
-          className="lion-portrait"
-          src={c.settings.lion}
-          alt=""
-          loading="lazy"
-        />
-        <video
-          ref={video}
-          className="lion-celebration"
-          src="/media/lion-celebration.mp4"
-          muted
-          playsInline
-          preload="none"
-          onEnded={reveal}
-          onError={() => {
-            if (celebrating) reveal();
-          }}
-          tabIndex={-1}
-        />
-      </div>
       {c.games.length ? (
         <>
           <div
@@ -1036,13 +967,12 @@ function Random({ c, t, L, href }) {
             >
               <path
                 d="M3 3h36L21 41Z"
-                fill="#c739a5"
-                stroke="#efce85"
+                fill="#14a594"
+                stroke="#e8b64e"
                 strokeWidth="5"
                 strokeLinejoin="round"
               />
             </svg>
-            <div className="reel-lights" aria-hidden="true" />
             <div
               className="reel-window"
               aria-busy={busy}
@@ -1069,20 +999,15 @@ function Random({ c, t, L, href }) {
                   const art = (
                     <>
                       <img src={g.image} alt="" draggable="false" />
-                      <span>{L(g.title)}</span>
+                      <span className="visually-hidden">{L(g.title)}</span>
                     </>
                   );
-                  return selected ? (
-                    <a
+                  return (
+                    <div
                       key={i}
-                      className="reel-card selected"
-                      href={href("games/" + g.slug)}
-                      aria-label={`${t.play}: ${L(g.title)}`}
+                      className={"reel-card" + (selected ? " selected" : "")}
+                      aria-hidden={!selected}
                     >
-                      {art}
-                    </a>
-                  ) : (
-                    <div key={i} className="reel-card" aria-hidden="true">
                       {art}
                     </div>
                   );
@@ -1090,17 +1015,16 @@ function Random({ c, t, L, href }) {
               </div>
               <div className="reel-center" aria-hidden="true" />
             </div>
-            <div className="reel-lights" aria-hidden="true" />
           </div>
           <button
             type="button"
-            className="paw-button"
-            disabled={busy || celebrating}
+            className={"random-game-button" + (result ? " ready" : "")}
+            disabled={busy}
             onClick={spin}
-            aria-label={busy ? t.spinning : result ? t.again : t.spin}
+            aria-label={busy ? t.spinning : result ? t.play : t.spin}
           >
-            <img src="/images/lion-paw.webp" alt="" draggable="false" />
-            <span>{busy ? t.spinning : result ? t.again : t.spin}</span>
+            <Dices size={19} />
+            <span>{busy ? t.spinning : result ? t.play : t.spin}</span>
           </button>
           <div className="reel-result" aria-live="polite" aria-atomic="true">
             {busy ? (
@@ -1108,10 +1032,7 @@ function Random({ c, t, L, href }) {
             ) : result ? (
               <button
                 className="winner-summary"
-                onClick={() => {
-                  setCelebrating(false);
-                  setShowResult(true);
-                }}
+                onClick={() => setShowResult(true)}
               >
                 <img src={result.image} alt="" />
                 <span>{L(result.title)}</span>
@@ -1601,4 +1522,74 @@ function HorizontalGames({ games, card, label, t }) {
     </div>
     <div className="provider-games-track" ref={ref} aria-label={label}>{games.map(card)}</div>
   </div>;
+}
+
+function FeaturedGames({ games, card, label, t }) {
+  const [center, setCenter] = useState(games.length > 1 ? 1 : 0);
+  useEffect(() => {
+    setCenter((value) => Math.min(value, Math.max(0, games.length - 1)));
+  }, [games.length]);
+  if (!games.length) return null;
+  const step = (direction) =>
+    setCenter((value) => (value + direction + games.length) % games.length);
+  const visible =
+    games.length <= 3
+      ? games
+      : [-1, 0, 1].map(
+          (offset) => games[(center + offset + games.length) % games.length],
+        );
+  const activeId = games[center]?.id;
+  const dotCount = Math.min(3, games.length);
+  return (
+    <section className="section featured-showcase" aria-label={label}>
+      <div className="featured-showcase-heading">
+        <div>
+          <Gamepad2 size={31} aria-hidden="true" />
+          <h2>{label}</h2>
+          <span className="count">{games.length}</span>
+        </div>
+        <div className="featured-showcase-controls">
+          <div className="featured-dots" aria-hidden="true">
+            {Array.from({ length: dotCount }, (_, index) => (
+              <i key={index} className={index === center % dotCount ? "active" : ""} />
+            ))}
+          </div>
+          <button
+            className="featured-arrow"
+            aria-label={`${t.previousGames}: ${label}`}
+            onClick={() => step(-1)}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            className="featured-arrow"
+            aria-label={`${t.nextGames}: ${label}`}
+            onClick={() => step(1)}
+          >
+            <ChevronRight size={22} />
+          </button>
+        </div>
+      </div>
+      <div className="featured-cards" key={center}>
+        {visible.map((game, slot) => {
+          const active = game.id === activeId;
+          return (
+            <div
+              className={"featured-card-slot" + (active ? " active" : "")}
+              key={`${slot}-${game.id}`}
+            >
+              {active && (
+                <span className="featured-crown" aria-hidden="true">
+                  <Crown size={21} />
+                </span>
+              )}
+              {React.cloneElement(card(game), {
+                className: "game-card featured-game-card",
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
