@@ -3985,18 +3985,32 @@ footer {
   border-color: #ad5cf3;
   background: #542589;
 }
+.featured-viewport {
+  overflow: hidden;
+  margin: -22px -10px -24px;
+  padding: 22px 10px 24px;
+}
 .featured-cards {
+  --featured-gap: clamp(14px, 2.5vw, 34px);
+  --featured-width: calc((100% - 2 * var(--featured-gap)) / 3);
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
-  gap: clamp(14px, 2.5vw, 34px);
+  gap: var(--featured-gap);
   transform: translateX(var(--featured-drag, 0px));
-  transition: transform 0.2s ease-out;
+  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
   touch-action: pan-y;
   cursor: grab;
-  animation: featured-cards-in 0.28s ease both;
+}
+.featured-cards.sliding {
+  grid-template-columns: repeat(5, var(--featured-width));
+  transform: translate3d(calc(-1 * (var(--featured-width) + var(--featured-gap)) * (1 + var(--featured-step, 0)) + var(--featured-drag, 0px)), 0, 0);
+  transition: none;
+}
+.featured-cards.sliding.settling, .featured-cards.sliding.returning {
+  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .featured-cards.dragging {
   transition: none;
@@ -4008,7 +4022,7 @@ footer {
   min-width: 0;
   opacity: 0.78;
   transform: scale(0.94);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 480ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .featured-card-slot.active {
   z-index: 2;
@@ -4023,8 +4037,17 @@ footer {
   box-shadow: 0 10px 22px #0008;
 }
 .featured-card-slot.active .featured-game-card {
-  border-color: #ffe5a3;
-  box-shadow: 0 0 12px #fff0b966, 0 0 26px #f6c86270;
+  border-color: #fff0bd;
+  box-shadow: 0 0 0 2px #f5d783, inset 0 0 0 1px #fff6da,
+    0 0 14px #ffe9a49c, 0 0 30px #f6ba5266;
+}
+.featured-game-card {
+  transition: border-color 480ms ease, box-shadow 480ms ease;
+}
+.featured-cards.sliding:not(.settling):not(.dragging) .featured-card-slot,
+.featured-cards.sliding:not(.settling):not(.dragging) .featured-game-card,
+.featured-cards.sliding:not(.settling):not(.dragging) .featured-crown {
+  transition: none;
 }
 .featured-game-card .game-art {
   aspect-ratio: 1.06;
@@ -4052,6 +4075,8 @@ footer {
   display: none;
 }
 .featured-crown {
+  opacity: 0;
+  transition: opacity 480ms ease;
   position: absolute;
   z-index: 4;
   top: -15px;
@@ -4066,9 +4091,7 @@ footer {
   background: linear-gradient(145deg, #7d5622, #3a230f);
   box-shadow: 0 0 18px #f4bd54aa;
 }
-@keyframes featured-cards-in {
-  from { opacity: 0.55; transform: translateX(12px); }
-}
+.featured-card-slot.active .featured-crown { opacity: 1; }
 
 /* Random game follows the supplied moving-strip reference. */
 .public-site .random-reel-section {
@@ -4107,10 +4130,10 @@ footer {
   box-shadow: none;
 }
 .random-reel-section .reel-pointer {
-  top: -9px;
-  width: 30px;
-  height: 30px;
-  filter: drop-shadow(0 3px 5px #c5a36566);
+  top: -16px;
+  width: 36px;
+  height: 39px;
+  filter: drop-shadow(0 2px 3px #b5843866);
   transform: translateX(-50%) rotate(var(--pointer-angle, 0deg));
   transform-origin: 50% 0;
 }
@@ -4222,7 +4245,7 @@ footer {
   .featured-dots { gap: 5px; margin-right: 1px; }
   .featured-dots i { width: 7px; height: 7px; }
   .featured-arrow { width: 36px; height: 36px; }
-  .featured-cards { gap: 10px; }
+  .featured-cards { --featured-gap: 10px; }
   .featured-card-slot { transform: scale(0.94); }
   .featured-card-slot.active { transform: scale(1.04); }
   .public-site .featured-game-card { border-radius: 12px; }
@@ -4238,7 +4261,7 @@ footer {
   .random-again-button { min-width: 142px; min-height: 42px; font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .featured-cards { animation: none; }
+  .featured-cards, .featured-cards.sliding.settling, .featured-cards.sliding.returning, .featured-card-slot, .featured-game-card, .featured-crown { transition: none; }
 }
 .banner-copy > span { color: #e1c27d; font-size: 11px; letter-spacing: .14em; }
 .banner-copy h2 { max-width: 620px; margin: 12px 0; font-size: clamp(24px, 3.4vw, 52px); line-height: 1.18; white-space: pre-line; }

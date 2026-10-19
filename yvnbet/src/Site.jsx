@@ -1013,17 +1013,27 @@ function Random({ c, t, L, href }) {
             <svg
               className="reel-pointer"
               ref={pointer}
-              viewBox="0 0 36 30"
+              viewBox="0 0 48 52"
               aria-hidden="true"
             >
-              <path
-                d="M12 3h12v9h7L18 27 5 12h7Z"
-                fill="#08aa7d"
-                stroke="#c5a365"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <defs>
+                <linearGradient id="reel-pointer-green" x1="0" y1="0" x2="1" y2="1">
+                  <stop stopColor="#68e6a1" />
+                  <stop offset="0.5" stopColor="#24bd77" />
+                  <stop offset="1" stopColor="#078c60" />
+                </linearGradient>
+                <linearGradient id="reel-pointer-gold" x1="0" y1="0" x2="1" y2="1">
+                  <stop stopColor="#f2d68a" />
+                  <stop offset="0.5" stopColor="#bd8534" />
+                  <stop offset="1" stopColor="#e1b961" />
+                </linearGradient>
+              </defs>
+              <path d="M5 5 24 15 43 5 24 47Z" fill="url(#reel-pointer-green)"
+                stroke="#795524" strokeWidth="5" strokeLinejoin="round" />
+              <path d="M5 5 24 15 43 5 24 47Z" fill="none"
+                stroke="url(#reel-pointer-gold)" strokeWidth="2.8" strokeLinejoin="round" />
+              <path d="M9 10 24 19 37 12 24 39Z" fill="none"
+                stroke="#9ff3b7" strokeOpacity="0.3" strokeWidth="1.2" />
             </svg>
             <div
               className="reel-window"
@@ -1616,27 +1626,57 @@ function FeaturedGames({ games, card, label, t }) {
   const [dragging, setDragging] = useState(false);
   const swipe = useRef(null);
   const blockClick = useRef(false);
+  const rail = useRef(null);
+  const pendingStep = useRef(0);
+  const settleTimer = useRef(null);
+  const [direction, setDirection] = useState(0);
+  const [returning, setReturning] = useState(false);
+  const sliding = games.length > 3;
   useEffect(() => {
     setCenter((value) => Math.min(value, Math.max(0, games.length - 1)));
   }, [games.length]);
-  if (!games.length) return null;
-  const step = (direction) =>
-    setCenter((value) => (value + direction + games.length) % games.length);
+  useEffect(() => () => clearTimeout(settleTimer.current), []);
+  const completeStep = () => {
+    const next = pendingStep.current;
+    if (!next) return;
+    clearTimeout(settleTimer.current);
+    pendingStep.current = 0;
+    setCenter((value) => (value + next + games.length) % games.length);
+    setDirection(0);
+    setDragOffset(0);
+  };
+  const step = (next) => {
+    if (pendingStep.current) return;
+    if (!sliding || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCenter((value) => (value + next + games.length) % games.length);
+      setDragOffset(0);
+      return;
+    }
+    pendingStep.current = next;
+    setDirection(next);
+    setDragOffset(0);
+    settleTimer.current = setTimeout(completeStep, 560);
+  };
   const finishSwipe = (event, cancelled = false) => {
-    if (!swipe.current) return;
-    const distance = event.clientX - swipe.current.x;
-    if (!cancelled && Math.abs(distance) >= 34)
+    const gesture = swipe.current;
+    if (!gesture) return;
+    const distance = event.clientX - gesture.x;
+    const elapsed = Math.max(1, performance.now() - gesture.time);
+    const threshold = Math.min(28, (rail.current?.clientWidth || 320) * 0.07);
+    if (!cancelled && gesture.horizontal &&
+        (Math.abs(distance) >= threshold || (Math.abs(distance) > 10 && Math.abs(distance) / elapsed > 0.3)))
       step(distance < 0 ? 1 : -1);
+    if (!pendingStep.current && gesture.horizontal) setReturning(true);
     setDragging(false);
     setDragOffset(0);
     swipe.current = null;
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
   };
-  const visible =
-    games.length <= 3
-      ? games
-      : [-1, 0, 1].map(
-          (offset) => games[(center + offset + games.length) % games.length],
-        );
+  if (!games.length) return null;
+  const visible = sliding
+    ? [-2, -1, 0, 1, 2].map((offset) => games[(center + offset + games.length) % games.length])
+    : games;
   const activeId = games[center]?.id;
   const dotCount = Math.min(3, games.length);
   return (
@@ -1669,23 +1709,42 @@ function FeaturedGames({ games, card, label, t }) {
           </button>
         </div>
       </div>
+      <div className="featured-viewport">
       <div
-        className={"featured-cards" + (dragging ? " dragging" : "")}
-        key={center}
-        style={{ "--featured-drag": `${dragOffset}px` }}
+        ref={rail}
+        className={"featured-cards" + (sliding ? " sliding" : "") + (dragging ? " dragging" : "") + (direction ? " settling" : "") + (returning ? " returning" : "")}
+        style={{ "--featured-drag": `${dragOffset}px`, "--featured-step": direction }}
+        onTransitionEnd={(event) => {
+          if (event.target === event.currentTarget && event.propertyName === "transform") {
+            completeStep();
+            setReturning(false);
+          }
+        }}
+        onDragStart={(event) => event.preventDefault()}
         onPointerDown={(event) => {
-          if (games.length < 2 || (event.pointerType === "mouse" && event.button !== 0))
+          if (games.length < 2 || pendingStep.current || (event.pointerType === "mouse" && event.button !== 0))
             return;
-          swipe.current = { x: event.clientX };
+          setReturning(false);
+          swipe.current = { x: event.clientX, y: event.clientY, time: performance.now(), horizontal: false };
           blockClick.current = false;
-          setDragging(true);
-          event.currentTarget.setPointerCapture?.(event.pointerId);
         }}
         onPointerMove={(event) => {
           if (!swipe.current) return;
           const distance = event.clientX - swipe.current.x;
-          if (Math.abs(distance) > 6) blockClick.current = true;
-          setDragOffset(Math.max(-54, Math.min(54, distance)));
+          if (!swipe.current.horizontal) {
+            if (Math.abs(event.clientY - swipe.current.y) > Math.abs(distance) && Math.abs(event.clientY - swipe.current.y) > 6) {
+              swipe.current = null;
+              return;
+            }
+            if (Math.abs(distance) < 6) return;
+            swipe.current.horizontal = true;
+            blockClick.current = true;
+            setDragging(true);
+            event.currentTarget.setPointerCapture?.(event.pointerId);
+          }
+          const width = event.currentTarget.querySelector(".featured-card-slot")?.offsetWidth || 100;
+          const gap = parseFloat(getComputedStyle(event.currentTarget).columnGap) || 0;
+          setDragOffset(Math.max(-width - gap, Math.min(width + gap, distance)));
         }}
         onPointerUp={(event) => finishSwipe(event)}
         onPointerCancel={(event) => finishSwipe(event, true)}
@@ -1697,17 +1756,18 @@ function FeaturedGames({ games, card, label, t }) {
         }}
       >
         {visible.map((game, slot) => {
-          const active = game.id === activeId;
+          const active = sliding ? slot === 2 + direction : game.id === activeId;
+          const offscreen = sliding && (slot < 1 + direction || slot > 3 + direction);
           return (
             <div
               className={"featured-card-slot" + (active ? " active" : "")}
-              key={`${slot}-${game.id}`}
+              key={slot}
+              inert={offscreen ? true : undefined}
+              aria-hidden={offscreen || undefined}
             >
-              {active && (
-                <span className="featured-crown" aria-hidden="true">
-                  <Crown size={21} />
-                </span>
-              )}
+              <span className="featured-crown" aria-hidden="true">
+                <Crown size={21} />
+              </span>
               {card(game, {
                 className: "game-card featured-game-card",
                 featuredIcon: game.featuredIcon,
@@ -1715,6 +1775,7 @@ function FeaturedGames({ games, card, label, t }) {
             </div>
           );
         })}
+      </div>
       </div>
     </section>
   );

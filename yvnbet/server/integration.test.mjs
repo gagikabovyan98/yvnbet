@@ -184,8 +184,10 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(homeHtml, /class="footer-nav"/);
     assert.match(homeHtml, /Թոփ խաղեր/);
     assert.match(homeHtml, /class="section featured-showcase"/);
-    assert.equal((homeHtml.match(/class="featured-card-slot/g) || []).length, 3);
-    assert.equal((homeHtml.match(/class="game-featured-icon"/g) || []).length, 3);
+    // Three visible cards plus two inert neighbours for a continuous slide.
+    assert.equal((homeHtml.match(/class="featured-card-slot/g) || []).length, 5);
+    assert.equal((homeHtml.match(/class="featured-card-slot" inert="" aria-hidden="true"/g) || []).length, 2);
+    assert.equal((homeHtml.match(/class="game-featured-icon"/g) || []).length, 5);
     assert.match(homeHtml, /class="reel-machine /);
     assert.match(homeHtml, /class="random-game-button"/);
     assert.doesNotMatch(homeHtml, /class="lion-celebration"/);
