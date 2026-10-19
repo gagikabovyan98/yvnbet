@@ -4104,11 +4104,11 @@ footer {
   transform-origin: 50% 0;
 }
 .random-reel-section .is-spinning .reel-pointer {
-  animation: reel-pointer-tick 0.38s linear infinite;
+  animation: reel-pointer-swipe 0.55s ease-in-out infinite alternate;
 }
-@keyframes reel-pointer-tick {
-  0%, 68%, 100% { transform: translateX(-50%) translateY(0); }
-  82% { transform: translateX(-50%) translateY(3px); }
+@keyframes reel-pointer-swipe {
+  from { transform: translateX(calc(-50% - 4px)); }
+  to { transform: translateX(calc(-50% + 4px)); }
 }
 .random-reel-section .reel-window {
   padding-block: 18px 10px;
