@@ -3973,19 +3973,33 @@ footer {
   box-shadow: 0 0 12px #d93cff;
 }
 .featured-arrow {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 1px solid #633695;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #66418d;
   border-radius: 50%;
-  color: #ebd9ff;
-  background: linear-gradient(145deg, #4f2082, #29144d);
-  box-shadow: inset 0 0 12px #b14cff22;
+  color: #f1e3ff;
+  background: linear-gradient(145deg, #38205c, #21123f);
+  box-shadow: inset 0 1px 2px #c794ff26, 0 2px 6px #07031144;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.featured-arrow::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
 }
 .featured-arrow:hover {
-  border-color: #ad5cf3;
-  background: #542589;
+  border-color: #a373cd;
+  background: #412560;
+}
+.featured-arrow:focus-visible {
+  outline: 2px solid #dab6fa;
+  outline-offset: 3px;
 }
 .featured-viewport {
   overflow: hidden;

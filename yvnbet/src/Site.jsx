@@ -136,7 +136,7 @@ export default function Site({ content: c, path }) {
           alt={L(g.title)}
           width="600"
           height="440"
-          loading="lazy"
+          loading={options.eager ? "eager" : "lazy"}
         />
         <span className="game-play">
           <Play size={25} fill="currentColor" />
@@ -932,7 +932,7 @@ function Random({ c, t, L, href }) {
       const travelled = Math.max(0, (origin - current) / cardStep);
       const phase = travelled - Math.floor(travelled);
       const distance = phase > 0.5 ? phase - 1 : phase;
-      const targetAngle = -3.2 * Math.exp(-Math.pow(distance / 0.16, 2));
+      const targetAngle = -5.8 * Math.exp(-Math.pow(distance / 0.19, 2));
       const elapsed = Math.min(0.05, (time - previousTime) / 1000);
       previousTime = time;
       angle += (targetAngle - angle) * (1 - Math.exp(-10 * elapsed));
@@ -1641,7 +1641,7 @@ function FeaturedGames({ games, card, label, t }) {
     if (!next) return;
     clearTimeout(settleTimer.current);
     pendingStep.current = 0;
-    setCenter((value) => (value + next + games.length) % games.length);
+    setCenter((value) => value + next);
     setDirection(0);
     setDragOffset(0);
   };
@@ -1675,9 +1675,9 @@ function FeaturedGames({ games, card, label, t }) {
   };
   if (!games.length) return null;
   const visible = sliding
-    ? [-2, -1, 0, 1, 2].map((offset) => games[(center + offset + games.length) % games.length])
+    ? [-2, -1, 0, 1, 2].map((offset) => games[((center + offset) % games.length + games.length) % games.length])
     : games;
-  const activeId = games[center]?.id;
+  const activeId = games[((center % games.length) + games.length) % games.length]?.id;
   const dotCount = Math.min(3, games.length);
   return (
     <section className="section featured-showcase" aria-label={label}>
@@ -1690,7 +1690,7 @@ function FeaturedGames({ games, card, label, t }) {
         <div className="featured-showcase-controls">
           <div className="featured-dots" aria-hidden="true">
             {Array.from({ length: dotCount }, (_, index) => (
-              <i key={index} className={index === center % dotCount ? "active" : ""} />
+              <i key={index} className={index === ((center % games.length + games.length) % games.length) % dotCount ? "active" : ""} />
             ))}
           </div>
           <button
@@ -1698,14 +1698,14 @@ function FeaturedGames({ games, card, label, t }) {
             aria-label={`${t.previousGames}: ${label}`}
             onClick={() => step(-1)}
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} strokeWidth={1.8} />
           </button>
           <button
             className="featured-arrow"
             aria-label={`${t.nextGames}: ${label}`}
             onClick={() => step(1)}
           >
-            <ChevronRight size={22} />
+            <ChevronRight size={20} strokeWidth={1.8} />
           </button>
         </div>
       </div>
@@ -1761,7 +1761,7 @@ function FeaturedGames({ games, card, label, t }) {
           return (
             <div
               className={"featured-card-slot" + (active ? " active" : "")}
-              key={slot}
+              key={sliding ? center + slot - 2 : game.id}
               inert={offscreen ? true : undefined}
               aria-hidden={offscreen || undefined}
             >
@@ -1777,6 +1777,7 @@ function FeaturedGames({ games, card, label, t }) {
               {card(game, {
                 className: "game-card featured-game-card",
                 featuredIcon: game.featuredIcon,
+                eager: true,
               })}
             </div>
           );
