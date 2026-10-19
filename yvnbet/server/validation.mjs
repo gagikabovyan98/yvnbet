@@ -145,6 +145,7 @@ export const contentSchema = z.strictObject({
     mode,
     featured: z.boolean(),
     featuredOrder: z.number().int().min(1).max(10000),
+    featuredIcon: z.string().max(16),
     indexable: z.boolean(),
   }),
   slides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),

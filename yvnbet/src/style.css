@@ -3992,7 +3992,16 @@ footer {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
   gap: clamp(14px, 2.5vw, 34px);
+  transform: translateX(var(--featured-drag, 0px));
+  transition: transform 0.2s ease-out;
+  touch-action: pan-y;
+  cursor: grab;
   animation: featured-cards-in 0.28s ease both;
+}
+.featured-cards.dragging {
+  transition: none;
+  cursor: grabbing;
+  user-select: none;
 }
 .featured-card-slot {
   position: relative;
@@ -4034,9 +4043,10 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.featured-card-slot:nth-child(1) .game-meta h3::before { content: "🔥"; }
-.featured-card-slot:nth-child(2) .game-meta h3::before { content: "⭐"; }
-.featured-card-slot:nth-child(3) .game-meta h3::before { content: "🌀"; }
+.game-featured-icon {
+  flex: 0 0 auto;
+  line-height: 1;
+}
 .featured-game-card .game-meta p,
 .featured-game-card .game-meta > svg {
   display: none;
@@ -4104,11 +4114,12 @@ footer {
   transform-origin: 50% 0;
 }
 .random-reel-section .is-spinning .reel-pointer {
-  animation: reel-pointer-swipe 0.55s ease-in-out infinite alternate;
+  animation: reel-pointer-swipe 0.72s ease-in-out infinite;
 }
 @keyframes reel-pointer-swipe {
-  from { transform: translateX(calc(-50% - 4px)); }
-  to { transform: translateX(calc(-50% + 4px)); }
+  0%, 12%, 88%, 100% { transform: translateX(-50%); }
+  32% { transform: translateX(calc(-50% + 5px)); }
+  68% { transform: translateX(calc(-50% - 5px)); }
 }
 .random-reel-section .reel-window {
   padding-block: 18px 10px;

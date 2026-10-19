@@ -19,6 +19,7 @@ import {
   publicContent,
   activePromotion,
   upgradeSearchAndGames,
+  upgradeFeaturedIcons,
   upgradeAgeGate,
   orderedFeaturedGames,
 } from "../src/content.mjs";
@@ -197,6 +198,15 @@ test("search controls migrate safely and game administration generates shared ti
   );
   assert.deepEqual(sharedGameTitle("Candy Dice"), { ru: "Candy Dice", hy: "Candy Dice", en: "Candy Dice" });
   assert.deepEqual(upgradeSearchAndGames(c), c);
+});
+test("featured game icons migrate once and remain administrator controlled", () => {
+  const old = clone();
+  delete old.games[0].featuredIcon;
+  const upgraded = upgradeFeaturedIcons(old);
+  assert.equal(upgraded.games[0].featuredIcon, "🔥");
+  upgraded.games[0].featuredIcon = "👑";
+  assert.equal(validateContent(upgraded).games[0].featuredIcon, "👑");
+  assert.deepEqual(upgradeFeaturedIcons(upgraded), upgraded);
 });
 test("age confirmation toggle migrates enabled and preserves the administrator choice", () => {
   const old = clone();

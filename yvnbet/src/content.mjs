@@ -402,13 +402,13 @@ export const initialContent = {
   ],
   categories: [item("slots", tr("Слоты", "Սլոթեր", "Slots"))],
   games: [
-    ["golden-eclipse", "Golden Eclipse", "amusnet", "slots", 1],
-    ["crystal-path", "Crystal Path", "amusnet", "slots", 1],
-    ["midnight-star", "Midnight Star", "pragmatic-play", "slots", 2],
-    ["neon-crown", "Neon Crown", "amatic", "slots", 3],
-    ["royal-orbit", "Royal Orbit", "pragmatic-play", "slots", 4],
-    ["silver-rush", "Silver Rush", "amatic", "slots", 5],
-  ].map(([id, name, provider, category, n]) =>
+    ["golden-eclipse", "Golden Eclipse", "amusnet", "slots", 1, "🔥"],
+    ["crystal-path", "Crystal Path", "amusnet", "slots", 1, "⭐"],
+    ["midnight-star", "Midnight Star", "pragmatic-play", "slots", 2, "🌀"],
+    ["neon-crown", "Neon Crown", "amatic", "slots", 3, "🎰"],
+    ["royal-orbit", "Royal Orbit", "pragmatic-play", "slots", 4, "💎"],
+    ["silver-rush", "Silver Rush", "amatic", "slots", 5, "⚡"],
+  ].map(([id, name, provider, category, n, featuredIcon]) =>
     item(id, same(name), {
       provider,
       category,
@@ -417,6 +417,7 @@ export const initialContent = {
       mode: "iframe",
       featured: true,
       featuredOrder: n,
+      featuredIcon,
       description: tr(
         "Предварительный обзор игры. Запуск станет доступен после подключения ссылки провайдера.",
         "Խաղի նախադիտում։ Գործարկումը հասանելի կլինի մատակարարի հղումը միացնելուց հետո։",
@@ -652,6 +653,15 @@ export function upgradeSearchAndGames(input) {
     for (const value of c[key]) value.indexable ??= true;
   c.games.forEach((game, index) => {
     game.featuredOrder ??= index + 1;
+  });
+  return c;
+}
+
+export function upgradeFeaturedIcons(input) {
+  const c = structuredClone(input);
+  const defaults = ["🔥", "⭐", "🌀", "🎰", "💎", "⚡"];
+  c.games.forEach((game, index) => {
+    game.featuredIcon ??= defaults[index % defaults.length];
   });
   return c;
 }

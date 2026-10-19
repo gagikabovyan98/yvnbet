@@ -117,12 +117,16 @@ export default function Site({ content: c, path }) {
     url.startsWith("/") && !/^\/(ru|hy|en)(\/|$)/.test(url)
       ? `/${lang}${url}`
       : url;
-  const card = (g) => {
+  const card = (g, cardOptions) => {
+    const options =
+      cardOptions && typeof cardOptions === "object" && !Array.isArray(cardOptions)
+        ? cardOptions
+        : {};
     const provider = c.providers.find((p) => p.id === g.provider);
     const externalUrl = g.url || provider?.url;
     const opensExternal = g.mode === "external" && externalUrl;
     return (
-    <a className="game-card" key={g.id}
+    <a className={options.className || "game-card"} key={g.id}
       href={opensExternal ? externalUrl : href("games/" + g.slug)}
       target={opensExternal ? "_blank" : undefined}
       rel={opensExternal ? "noopener noreferrer" : undefined}>
@@ -139,7 +143,14 @@ export default function Site({ content: c, path }) {
         </span>
       </div>
       <div className="game-meta">
-        <h3>{L(g.title)}</h3>
+        <h3>
+          {options.featuredIcon && (
+            <span className="game-featured-icon" aria-hidden="true">
+              {options.featuredIcon}
+            </span>
+          )}
+          {L(g.title)}
+        </h3>
         <p>{L(provider?.title)}</p>
         <ArrowUpRight size={17} />
       </div>
@@ -942,6 +953,12 @@ function Random({ c, t, L, href }) {
       }),
     ];
   };
+  const resultProvider = result
+    ? c.providers.find((provider) => provider.id === result.provider)
+    : null;
+  const resultExternalUrl = result?.url || resultProvider?.url || "";
+  const resultOpensExternal =
+    result?.mode === "external" && Boolean(resultExternalUrl);
   return (
     <section className="random-section random-reel-section">
       <div className="lion-heading">
@@ -1013,16 +1030,28 @@ function Random({ c, t, L, href }) {
             </div>
           </div>
           <div className="random-game-actions">
-            <button
-              type="button"
-              className={"random-game-button" + (result ? " ready" : "")}
-              disabled={busy}
-              onClick={result ? () => setShowResult(true) : spin}
-              aria-label={busy ? t.spinning : result ? t.play : t.spin}
-            >
-              {result ? <Play size={19} fill="currentColor" /> : <Dices size={19} />}
-              <span>{busy ? t.spinning : result ? t.play : t.spin}</span>
-            </button>
+            {resultOpensExternal ? (
+              <a
+                className="random-game-button ready"
+                href={resultExternalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Play size={19} fill="currentColor" />
+                <span>{t.play}</span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                className={"random-game-button" + (result ? " ready" : "")}
+                disabled={busy}
+                onClick={result ? () => setShowResult(true) : spin}
+                aria-label={busy ? t.spinning : result ? t.play : t.spin}
+              >
+                {result ? <Play size={19} fill="currentColor" /> : <Dices size={19} />}
+                <span>{busy ? t.spinning : result ? t.play : t.spin}</span>
+              </button>
+            )}
             {result && !busy && (
               <button type="button" className="random-again-button" onClick={spin}>
                 <Dices size={17} />
@@ -1034,17 +1063,30 @@ function Random({ c, t, L, href }) {
             {busy ? (
               <p>{t.spinning}</p>
             ) : result ? (
-              <button
-                className="winner-summary"
-                onClick={() => setShowResult(true)}
-              >
-                <img src={result.image} alt="" />
-                <span>{L(result.title)}</span>
-                <Play size={18} />
-              </button>
+              resultOpensExternal ? (
+                <a
+                  className="winner-summary"
+                  href={resultExternalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src={result.image} alt="" />
+                  <span>{L(result.title)}</span>
+                  <ArrowUpRight size={18} />
+                </a>
+              ) : (
+                <button
+                  className="winner-summary"
+                  onClick={() => setShowResult(true)}
+                >
+                  <img src={result.image} alt="" />
+                  <span>{L(result.title)}</span>
+                  <Play size={18} />
+                </button>
+              )
             ) : null}
           </div>
-          {showResult && result && (
+          {showResult && result && !resultOpensExternal && (
             <Modal
               title={t.winner}
               closeLabel={t.close}
@@ -1530,12 +1572,25 @@ function HorizontalGames({ games, card, label, t }) {
 
 function FeaturedGames({ games, card, label, t }) {
   const [center, setCenter] = useState(games.length > 1 ? 1 : 0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const swipe = useRef(null);
+  const blockClick = useRef(false);
   useEffect(() => {
     setCenter((value) => Math.min(value, Math.max(0, games.length - 1)));
   }, [games.length]);
   if (!games.length) return null;
   const step = (direction) =>
     setCenter((value) => (value + direction + games.length) % games.length);
+  const finishSwipe = (event, cancelled = false) => {
+    if (!swipe.current) return;
+    const distance = event.clientX - swipe.current.x;
+    if (!cancelled && Math.abs(distance) >= 34)
+      step(distance < 0 ? 1 : -1);
+    setDragging(false);
+    setDragOffset(0);
+    swipe.current = null;
+  };
   const visible =
     games.length <= 3
       ? games
@@ -1574,7 +1629,33 @@ function FeaturedGames({ games, card, label, t }) {
           </button>
         </div>
       </div>
-      <div className="featured-cards" key={center}>
+      <div
+        className={"featured-cards" + (dragging ? " dragging" : "")}
+        key={center}
+        style={{ "--featured-drag": `${dragOffset}px` }}
+        onPointerDown={(event) => {
+          if (games.length < 2 || (event.pointerType === "mouse" && event.button !== 0))
+            return;
+          swipe.current = { x: event.clientX };
+          blockClick.current = false;
+          setDragging(true);
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          if (!swipe.current) return;
+          const distance = event.clientX - swipe.current.x;
+          if (Math.abs(distance) > 6) blockClick.current = true;
+          setDragOffset(Math.max(-54, Math.min(54, distance)));
+        }}
+        onPointerUp={(event) => finishSwipe(event)}
+        onPointerCancel={(event) => finishSwipe(event, true)}
+        onClickCapture={(event) => {
+          if (!blockClick.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+          blockClick.current = false;
+        }}
+      >
         {visible.map((game, slot) => {
           const active = game.id === activeId;
           return (
@@ -1587,8 +1668,9 @@ function FeaturedGames({ games, card, label, t }) {
                   <Crown size={21} />
                 </span>
               )}
-              {React.cloneElement(card(game), {
+              {card(game, {
                 className: "game-card featured-game-card",
+                featuredIcon: game.featuredIcon,
               })}
             </div>
           );

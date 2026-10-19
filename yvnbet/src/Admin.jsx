@@ -60,6 +60,7 @@ const labels = {
   category: "Категория",
   featured: "Показывать в «Топ играх»",
   featuredOrder: "Порядок в топе (1 — первым)",
+  featuredIcon: "Эмодзи в «Топ играх»",
   label: "Надзаголовок",
   button: "Текст кнопки",
   kind: "Тип публикации",
@@ -234,6 +235,7 @@ export default function Admin() {
       template.category = draft.categories[0]?.id || "";
       template.featured = false;
       template.featuredOrder = draft.games.length + 1;
+      template.featuredIcon = "⭐";
       template.indexable = true;
       template.mode = "external";
     }
@@ -705,7 +707,7 @@ export default function Admin() {
                         Числовой адрес создаётся автоматически и не требует редактирования.
                         Для провайдеров, запрещающих iframe, выберите «Новая вкладка».
                         Галочка «Показывать в „Топ играх“» добавляет игру в топ, а поле порядка
-                        определяет её позицию.
+                        определяет её позицию. Эмодзи рядом с названием можно заменить или удалить.
                       </p>}
                       {Object.entries(current)
                         .filter(
