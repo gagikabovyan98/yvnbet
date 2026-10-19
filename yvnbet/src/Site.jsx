@@ -900,14 +900,47 @@ function Random({ c, t, L, href }) {
   const [moving, setMoving] = useState(false);
   const timer = useRef(),
     frames = useRef([]),
+    pointerFrame = useRef(),
+    pointer = useRef(null),
+    track = useRef(null),
     pending = useRef(null);
   useEffect(
     () => () => {
       clearTimeout(timer.current);
       frames.current.forEach(cancelAnimationFrame);
+      cancelAnimationFrame(pointerFrame.current);
     },
     [],
   );
+  useEffect(() => {
+    const marker = pointer.current;
+    const rail = track.current;
+    if (!moving || !marker || !rail) {
+      marker?.style.setProperty("--pointer-angle", "0deg");
+      return undefined;
+    }
+    const cardWidth = rail.querySelector(".reel-card")?.getBoundingClientRect().width || 1;
+    const gap = Number.parseFloat(getComputedStyle(rail).columnGap) || 0;
+    const cardStep = cardWidth + gap;
+    let origin;
+    const trackX = () => new DOMMatrixReadOnly(getComputedStyle(rail).transform).m41;
+    const updatePointer = () => {
+      const current = trackX();
+      origin ??= current;
+      const travelled = Math.max(0, (origin - current) / cardStep);
+      const phase = travelled - Math.floor(travelled);
+      let angle = 0;
+      if (phase > 0.82) angle = 2.5 * ((phase - 0.82) / 0.18);
+      else if (phase < 0.22) angle = -5.5 * (1 - phase / 0.22);
+      marker.style.setProperty("--pointer-angle", `${angle.toFixed(2)}deg`);
+      pointerFrame.current = requestAnimationFrame(updatePointer);
+    };
+    pointerFrame.current = requestAnimationFrame(updatePointer);
+    return () => {
+      cancelAnimationFrame(pointerFrame.current);
+      marker.style.setProperty("--pointer-angle", "0deg");
+    };
+  }, [moving]);
   const finish = () => {
     const run = pending.current;
     if (!run) return;
@@ -975,14 +1008,16 @@ function Random({ c, t, L, href }) {
           >
             <svg
               className="reel-pointer"
-              viewBox="0 0 42 46"
+              ref={pointer}
+              viewBox="0 0 36 30"
               aria-hidden="true"
             >
               <path
-                d="M3 3h36L21 41Z"
+                d="M3 3h8l7 10L25 3h8L18 27Z"
                 fill="#14a594"
                 stroke="#e8b64e"
-                strokeWidth="3.5"
+                strokeWidth="3"
+                strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
@@ -993,6 +1028,7 @@ function Random({ c, t, L, href }) {
             >
               <div
                 className="reel-track"
+                ref={track}
                 style={{
                   "--reel-position": position,
                   transition: moving
