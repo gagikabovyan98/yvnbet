@@ -4107,10 +4107,10 @@ footer {
   box-shadow: none;
 }
 .random-reel-section .reel-pointer {
-  top: -8px;
-  width: 32px;
-  height: 28px;
-  filter: drop-shadow(0 3px 5px #e8b64e66);
+  top: -9px;
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 3px 5px #c5a36566);
   transform: translateX(-50%) rotate(var(--pointer-angle, 0deg));
   transform-origin: 50% 0;
 }

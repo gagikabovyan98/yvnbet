@@ -923,15 +923,19 @@ function Random({ c, t, L, href }) {
     const gap = Number.parseFloat(getComputedStyle(rail).columnGap) || 0;
     const cardStep = cardWidth + gap;
     let origin;
+    let angle = 0;
+    let previousTime = performance.now();
     const trackX = () => new DOMMatrixReadOnly(getComputedStyle(rail).transform).m41;
-    const updatePointer = () => {
+    const updatePointer = (time) => {
       const current = trackX();
       origin ??= current;
       const travelled = Math.max(0, (origin - current) / cardStep);
       const phase = travelled - Math.floor(travelled);
-      let angle = 0;
-      if (phase > 0.82) angle = 2.5 * ((phase - 0.82) / 0.18);
-      else if (phase < 0.22) angle = -5.5 * (1 - phase / 0.22);
+      const distance = phase > 0.5 ? phase - 1 : phase;
+      const targetAngle = -3.2 * Math.exp(-Math.pow(distance / 0.16, 2));
+      const elapsed = Math.min(0.05, (time - previousTime) / 1000);
+      previousTime = time;
+      angle += (targetAngle - angle) * (1 - Math.exp(-10 * elapsed));
       marker.style.setProperty("--pointer-angle", `${angle.toFixed(2)}deg`);
       pointerFrame.current = requestAnimationFrame(updatePointer);
     };
@@ -1013,10 +1017,10 @@ function Random({ c, t, L, href }) {
               aria-hidden="true"
             >
               <path
-                d="M3 3h8l7 10L25 3h8L18 27Z"
-                fill="#14a594"
-                stroke="#e8b64e"
-                strokeWidth="3"
+                d="M12 3h12v9h7L18 27 5 12h7Z"
+                fill="#08aa7d"
+                stroke="#c5a365"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
