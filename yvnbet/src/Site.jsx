@@ -910,10 +910,6 @@ function Random({ c, t, L, href }) {
     setBusy(false);
   };
   const spin = () => {
-    if (result && !busy) {
-      setShowResult(true);
-      return;
-    }
     if (pending.current || !c.games.length) return;
     const n = new Uint32Array(1);
     crypto.getRandomValues(n);
@@ -1016,16 +1012,24 @@ function Random({ c, t, L, href }) {
               <div className="reel-center" aria-hidden="true" />
             </div>
           </div>
-          <button
-            type="button"
-            className={"random-game-button" + (result ? " ready" : "")}
-            disabled={busy}
-            onClick={spin}
-            aria-label={busy ? t.spinning : result ? t.play : t.spin}
-          >
-            <Dices size={19} />
-            <span>{busy ? t.spinning : result ? t.play : t.spin}</span>
-          </button>
+          <div className="random-game-actions">
+            <button
+              type="button"
+              className={"random-game-button" + (result ? " ready" : "")}
+              disabled={busy}
+              onClick={result ? () => setShowResult(true) : spin}
+              aria-label={busy ? t.spinning : result ? t.play : t.spin}
+            >
+              {result ? <Play size={19} fill="currentColor" /> : <Dices size={19} />}
+              <span>{busy ? t.spinning : result ? t.play : t.spin}</span>
+            </button>
+            {result && !busy && (
+              <button type="button" className="random-again-button" onClick={spin}>
+                <Dices size={17} />
+                {t.again}
+              </button>
+            )}
+          </div>
           <div className="reel-result" aria-live="polite" aria-atomic="true">
             {busy ? (
               <p>{t.spinning}</p>
