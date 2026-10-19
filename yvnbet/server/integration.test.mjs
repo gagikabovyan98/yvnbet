@@ -116,6 +116,9 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
       ).status,
       403,
     );
+    state.content.interface.hy.random = "Ընտրիր քո խաղը";
+    state.content.interface.hy.randomText = "Քո նոր նկարագրությունը";
+    state.content.interface.hy.spin = "Սկսել ընտրությունը";
     state.content.settings.siteUrl = "https://example.com";
     state.content.settings.indexable = true;
     state.content.settings.favicon = "/images/wordmark.webp";
@@ -165,6 +168,11 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(loginHtml, /<footer|class="bottom-nav"/);
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
+    const publicHome = homeHtml.split('id="site-data"')[0];
+    assert.ok(publicHome.includes("Ընտրիր քո խաղը"));
+    assert.ok(publicHome.includes("Քո նոր նկարագրությունը"));
+    assert.ok(publicHome.includes("Սկսել ընտրությունը"));
+    assert.doesNotMatch(publicHome, /class="game-play"/);
     assert.doesNotMatch(homeHtml.split('id="site-data"')[0], /Միայն սլոթեր/);
     const slotResponse = await call("/hy/slots");
     assert.match(slotResponse.headers.get("content-security-policy"), /frame-src[^;]*https:\/\/offers\.example/);

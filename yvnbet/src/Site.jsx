@@ -138,9 +138,6 @@ export default function Site({ content: c, path }) {
           height="440"
           loading={options.eager ? "eager" : "lazy"}
         />
-        <span className="game-play">
-          <Play size={25} fill="currentColor" />
-        </span>
       </div>
       <div className="game-meta">
         <h3>

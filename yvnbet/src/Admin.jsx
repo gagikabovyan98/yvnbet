@@ -43,6 +43,16 @@ const groups = [
   ["users", "Команда и доступ", Users],
   ["audit", "Журнал действий", ShieldCheck],
 ];
+const randomTextLabels = {
+  random: "Заголовок блока",
+  randomText: "Текст под заголовком",
+  spin: "Кнопка выбора случайной игры",
+  spinning: "Текст во время выбора",
+  again: "Кнопка повторного выбора",
+  play: "Кнопка запуска игры (общая для сайта)",
+  selection: "Название области выбора для озвучивания",
+  winner: "Заголовок окна выбранной игры",
+};
 const labels = {
   id: "ID",
   slug: "Адрес страницы (slug)",
@@ -280,7 +290,7 @@ export default function Admin() {
     }
   }
   const field = (value, path, key) => {
-    const label = labels[key] || initialContent.interface.ru[key] || key;
+    const label = (path[0] === "interface" && randomTextLabels[key]) || labels[key] || initialContent.interface.ru[key] || key;
     if (value && typeof value === "object") {
       if ("ru" in value && "hy" in value && "en" in value) {
         if (path[0] === "games" && key === "title") {
@@ -757,9 +767,20 @@ export default function Admin() {
                 </p>
               )}
               {section === "interface"
-                ? Object.entries(draft.interface[lang]).map(([k, v]) =>
-                    field(v, ["interface", lang, k], k),
-                  )
+                ? <>
+                    <details className="cms-fieldset" open>
+                      <summary>Случайная игра — блок со львом</summary>
+                      <div>
+                        <p className="cms-banner-help">Выберите язык RU, HY или EN сверху. Измените тексты и нажмите «Опубликовать».</p>
+                        {Object.keys(randomTextLabels).map((key) =>
+                          field(draft.interface[lang][key], ["interface", lang, key], key),
+                        )}
+                      </div>
+                    </details>
+                    {Object.entries(draft.interface[lang])
+                      .filter(([key]) => !Object.hasOwn(randomTextLabels, key))
+                      .map(([k, v]) => field(v, ["interface", lang, k], k))}
+                  </>
                 : Object.entries(draft[section]).map(([k, v]) =>
                     field(v, [section, k], k),
                   )}
