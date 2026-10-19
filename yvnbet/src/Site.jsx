@@ -1766,7 +1766,13 @@ function FeaturedGames({ games, card, label, t }) {
               aria-hidden={offscreen || undefined}
             >
               <span className="featured-crown" aria-hidden="true">
-                <Crown size={21} />
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="m3.5 7.5 4.8 3L12 4l3.7 6.5 4.8-3L18.5 18h-13Z" />
+                  <rect x="5.5" y="19.5" width="13" height="2" rx="0.8" />
+                  <circle cx="3.5" cy="7" r="1.5" />
+                  <circle cx="12" cy="3.5" r="1.5" />
+                  <circle cx="20.5" cy="7" r="1.5" />
+                </svg>
               </span>
               {card(game, {
                 className: "game-card featured-game-card",

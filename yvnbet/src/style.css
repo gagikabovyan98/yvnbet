@@ -3907,13 +3907,14 @@ footer {
 /* Featured games: three-card showcase with a raised centre selection. */
 .public-site .featured-showcase {
   position: relative;
+  container-type: inline-size;
   overflow: hidden;
-  padding: 24px 28px 30px;
-  border: 1px solid #58366f;
+  padding: 26px 24px 28px;
+  border: 1px solid #503364;
   border-radius: 24px;
   background:
-    radial-gradient(circle at 50% 78%, rgb(144 36 188 / 24%), transparent 42%),
-    linear-gradient(145deg, #180b2d, #0f0920 60%, #160829);
+    radial-gradient(ellipse at 50% 100%, #32133c55, transparent 60%),
+    linear-gradient(135deg, #130822, #08051a 60%, #10091c);
   box-shadow: inset 0 0 35px rgb(159 57 210 / 8%);
 }
 .featured-showcase::after {
@@ -3938,7 +3939,7 @@ footer {
   z-index: 2;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: clamp(24px, 4.8cqw, 48px);
 }
 .featured-showcase-heading > div:first-child {
   gap: 12px;
@@ -3949,9 +3950,10 @@ footer {
 }
 .featured-showcase-heading h2 {
   margin: 0;
-  font-size: clamp(20px, 2.1vw, 30px);
+  font-size: clamp(16px, 3.7cqw, 30px);
   letter-spacing: -0.5px;
 }
+.featured-showcase-heading .count { display: none; }
 .featured-showcase-controls {
   gap: 10px;
 }
@@ -4020,7 +4022,7 @@ footer {
 .featured-card-slot {
   position: relative;
   min-width: 0;
-  opacity: 0.78;
+  opacity: 1;
   transform: scale(0.94);
   transition: opacity 480ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -4030,16 +4032,21 @@ footer {
   transform: scale(1.04);
 }
 .public-site .featured-game-card {
+  position: relative;
   display: block;
-  border: 2px solid #3c245e;
-  border-radius: 20px;
-  background: #170d27;
-  box-shadow: 0 10px 22px #0008;
+  aspect-ratio: 1.08;
+  overflow: hidden;
+  border: clamp(2px, 0.35cqw, 4px) solid #452958;
+  border-radius: clamp(12px, 3cqw, 30px);
+  background: #090511;
+  box-shadow: inset 0 0 0 1px #8a58a233, 0 8px 18px #0006;
 }
 .featured-card-slot.active .featured-game-card {
-  border-color: #fff0bd;
-  box-shadow: 0 0 0 2px #f5d783, inset 0 0 0 1px #fff6da,
-    0 0 14px #ffe9a49c, 0 0 30px #f6ba5266;
+  border-color: transparent;
+  background: linear-gradient(#090511, #090511) padding-box,
+    linear-gradient(140deg, #fff9d8, #edc66e 48%, #ffe9a5 78%, #dba94b) border-box;
+  box-shadow: 0 0 0 1px #fff1c7, inset 0 0 0 1px #fff7da,
+    0 0 13px #ffe4a080, 0 0 29px #efb34b55;
 }
 .featured-game-card {
   transition: border-color 480ms ease, box-shadow 480ms ease;
@@ -4050,24 +4057,38 @@ footer {
   transition: none;
 }
 .featured-game-card .game-art {
-  aspect-ratio: 1.06;
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
 }
 .featured-game-card .game-meta {
-  min-height: 58px;
-  padding: 13px 14px;
-  background: linear-gradient(180deg, #241334, #120a1e);
+  position: absolute;
+  inset: auto 0 0;
+  min-height: 31%;
+  display: flex;
+  align-items: flex-end;
+  padding: 14% 7% 7%;
+  background: linear-gradient(180deg, transparent, #080411d9 45%, #080411fa);
+  pointer-events: none;
 }
 .featured-game-card .game-meta h3 {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: clamp(12px, 1.25vw, 18px);
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-weight: 600;
+  font-size: clamp(9px, 2.6cqw, 24px);
+  line-height: 1.25;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .game-featured-icon {
-  flex: 0 0 auto;
+  display: inline-block;
+  margin-right: 0.32em;
+  font-size: 1.2em;
+  vertical-align: -0.03em;
   line-height: 1;
 }
 .featured-game-card .game-meta p,
@@ -4079,18 +4100,20 @@ footer {
   transition: opacity 480ms ease;
   position: absolute;
   z-index: 4;
-  top: -15px;
-  right: 12px;
+  top: 1px;
+  right: 1px;
   display: grid;
   place-items: center;
-  width: 47px;
-  height: 47px;
-  border: 2px solid #ffe3a1;
+  width: 24%;
+  aspect-ratio: 1;
+  border: clamp(1.5px, 0.3cqw, 3px) solid #fbe1a0;
+  pointer-events: none;
   border-radius: 50%;
-  color: #ffe29a;
-  background: linear-gradient(145deg, #7d5622, #3a230f);
-  box-shadow: 0 0 18px #f4bd54aa;
+  color: #ffe7a1;
+  background: radial-gradient(circle at 48% 30%, #8e7144, #4c371e 58%, #261b18);
+  box-shadow: inset 0 0 10px #ffe6a333, 0 0 12px #f4bd5455;
 }
+.featured-crown svg { width: 58%; height: 58%; filter: drop-shadow(0 0 3px #ffdc87aa); }
 .featured-card-slot.active .featured-crown { opacity: 1; }
 
 /* Random game follows the supplied moving-strip reference. */
@@ -4244,16 +4267,12 @@ footer {
   .featured-showcase-controls { gap: 6px; }
   .featured-dots { gap: 5px; margin-right: 1px; }
   .featured-dots i { width: 7px; height: 7px; }
-  .featured-arrow { width: 36px; height: 36px; }
+  .featured-arrow { width: 29px; height: 29px; }
+  .featured-arrow svg { width: 17px; height: 17px; }
   .featured-cards { --featured-gap: 10px; }
   .featured-card-slot { transform: scale(0.94); }
   .featured-card-slot.active { transform: scale(1.04); }
-  .public-site .featured-game-card { border-radius: 12px; }
-  .featured-game-card .game-art { aspect-ratio: 0.94; }
-  .featured-game-card .game-meta { min-height: 44px; padding: 9px 6px; }
-  .featured-game-card .game-meta h3 { justify-content: center; gap: 3px; font-size: 9.5px; text-align: center; }
-  .featured-crown { top: -10px; right: 5px; width: 32px; height: 32px; }
-  .featured-crown svg { width: 16px; }
+
   .public-site .random-reel-section { padding-block: 24px 20px; border-radius: 18px; }
   .random-reel-section .lion-heading { width: calc(100% - 32px); }
   .random-reel-section .reel-machine { --reel-card: clamp(84px, 27vw, 116px); }
