@@ -4006,17 +4006,8 @@ footer {
   opacity: 1;
   transform: scale(1.04);
 }
-.featured-card-slot.active::before {
-  content: "";
-  position: absolute;
-  z-index: 3;
-  inset: -5px;
-  border: 3px solid #ffe4a0;
-  border-radius: 24px;
-  box-shadow: 0 0 10px #fff0b999, 0 0 32px #f6be4c99;
-  pointer-events: none;
-}
 .public-site .featured-game-card {
+  display: block;
   border: 2px solid #3c245e;
   border-radius: 20px;
   background: #170d27;
@@ -4024,7 +4015,7 @@ footer {
 }
 .featured-card-slot.active .featured-game-card {
   border-color: #ffe5a3;
-  box-shadow: 0 0 0 2px #c49a4a88, 0 0 30px #f6c86266;
+  box-shadow: 0 0 12px #fff0b966, 0 0 26px #f6c86270;
 }
 .featured-game-card .game-art {
   aspect-ratio: 1.06;
@@ -4106,18 +4097,18 @@ footer {
   box-shadow: none;
 }
 .random-reel-section .reel-pointer {
-  top: -14px;
-  width: 38px;
-  height: 42px;
-  filter: drop-shadow(0 4px 7px #00a89777);
+  top: -5px;
+  width: 22px;
+  height: 25px;
+  filter: drop-shadow(0 3px 4px #00a89766);
   transform-origin: 50% 0;
 }
 .random-reel-section .is-spinning .reel-pointer {
-  animation: reel-pointer-bounce 0.34s ease-in-out infinite alternate;
+  animation: reel-pointer-tick 0.38s linear infinite;
 }
-@keyframes reel-pointer-bounce {
-  from { transform: translateX(-50%) translateY(-4px) rotate(-4deg); }
-  to { transform: translateX(-50%) translateY(8px) rotate(4deg); }
+@keyframes reel-pointer-tick {
+  0%, 68%, 100% { transform: translateX(-50%) translateY(0); }
+  82% { transform: translateX(-50%) translateY(3px); }
 }
 .random-reel-section .reel-window {
   padding-block: 18px 10px;
@@ -4230,7 +4221,6 @@ footer {
   .featured-cards { gap: 10px; }
   .featured-card-slot { transform: scale(0.94); }
   .featured-card-slot.active { transform: scale(1.04); }
-  .featured-card-slot.active::before { inset: -4px; border-width: 2px; border-radius: 16px; }
   .public-site .featured-game-card { border-radius: 12px; }
   .featured-game-card .game-art { aspect-ratio: 0.94; }
   .featured-game-card .game-meta { min-height: 44px; padding: 9px 6px; }

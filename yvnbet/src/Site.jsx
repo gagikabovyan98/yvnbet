@@ -965,7 +965,7 @@ function Random({ c, t, L, href }) {
                 d="M3 3h36L21 41Z"
                 fill="#14a594"
                 stroke="#e8b64e"
-                strokeWidth="5"
+                strokeWidth="3.5"
                 strokeLinejoin="round"
               />
             </svg>
