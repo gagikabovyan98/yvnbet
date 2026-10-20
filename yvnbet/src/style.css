@@ -4372,3 +4372,6 @@ footer {
   .app-page .install-instructions p { font-size: 14px; line-height: 1.8; }
   .install-instructions li { font-size: 13px; padding: 14px; }
 }
+
+.cms-game-image-preview { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cms-game-image-preview small { max-width: 180px; font-size: 11px; color: #786184; }

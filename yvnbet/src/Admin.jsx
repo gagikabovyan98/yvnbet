@@ -414,7 +414,7 @@ export default function Admin() {
         )}{" "}
         {["image", "imageRu", "imageHy", "imageEn", "mobileImage", "mobileImageRu", "mobileImageHy", "mobileImageEn", "logo", "favicon", "lion", "ogImage"].includes(key) && (
           <span className="upload-row">
-            {value && <img src={value} alt="Предпросмотр" />}
+            {value && (path[0] === "games" && key === "image" ? <GameImagePreview key={value} src={value} /> : <img src={value} alt="Предпросмотр" />)}
             <span className="upload-control">
               <Upload size={15} /> Загрузить PNG, JPG, WebP
               <input
@@ -426,6 +426,7 @@ export default function Admin() {
             </span>
           </span>
         )}
+        {path[0] === "games" && key === "image" && <small>Рекомендуемый исходник: 1200 × 1200 px (квадрат), PNG, JPG или WebP, до 4 МБ. Одна картинка используется в нескольких форматах: лента провайдера — 6:5; каталог — 1,04:1 на компьютере и 1,08:1 на телефоне; «Топ игры» — 1,08:1; случайный выбор — 1:1. Размер карточки на экране адаптивный. Края обрезаются под формат, поэтому важные детали держите в центре; снизу в топе находится название.</small>}
         {key === "favicon" && <small>Загрузите квадратный PNG или WebP, например 256 × 256 px. Пустое поле возвращает стандартного льва. Изменение применяется после публикации.</small>}
         {["url", "loginUrl", "appUrl"].includes(key) && (
           <small>
@@ -798,6 +799,18 @@ export default function Admin() {
     </div>
   );
 }
+function GameImagePreview({ src }) {
+  const [dimensions, setDimensions] = useState(null);
+  const [failed, setFailed] = useState(false);
+  return <span className="cms-game-image-preview">
+    <img src={src} alt="Предпросмотр" onLoad={(event) => {
+      setDimensions([event.currentTarget.naturalWidth, event.currentTarget.naturalHeight]);
+      setFailed(false);
+    }} onError={() => { setFailed(true); setDimensions(null); }} />
+    <small>{dimensions ? `Загружено: ${dimensions[0]} × ${dimensions[1]} px` : failed ? "Не удалось определить размер картинки" : "Проверяем размер картинки…"}</small>
+  </span>;
+}
+
 function Language({ value, onChange }) {
   return (
     <div className="cms-languages">

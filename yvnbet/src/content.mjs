@@ -636,6 +636,29 @@ for (const slide of initialContent.slides) {
   slide.showText = true;
 }
 
+// Applied once to the existing installation guide; subsequent CMS edits are preserved.
+export function upgradeAndroidAppCopy(input) {
+  const c = structuredClone(input);
+  const page = c.pages.find((entry) => entry.slug === "app");
+  if (!page) return c;
+  const availability = {
+    ru: ["📱 Доступно для устройств Android и iOS", "📱 Доступно для устройств Android"],
+    hy: ["📱 Հասանելի է Android և iOS սարքերի համար", "📱 Հասանելի է Android սարքերի համար"],
+    en: ["📱 Available for Android and iOS devices", "📱 Available for Android devices"],
+  };
+  for (const [lang, [previous, replacement]] of Object.entries(availability)) {
+    const text = page.description[lang];
+    if (!text.includes(previous)) continue;
+    // Match a standalone platform heading, never an incidental mention in custom copy.
+    const heading = /\n\s*\niOS\s*\n/i.exec(text);
+    const end = text.indexOf(previous);
+    page.description[lang] = (heading && heading.index < end
+      ? text.slice(0, heading.index) + "\n\n" + text.slice(end)
+      : text).replace(previous, replacement);
+  }
+  return c;
+}
+
 export function upgradeCatalogPresentation(input) {
   const c = structuredClone(input);
   c.settings.catalogSliderSource ??= "home";
