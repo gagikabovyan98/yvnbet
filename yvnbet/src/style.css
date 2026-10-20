@@ -4062,7 +4062,8 @@ footer {
   align-items: center;
   padding: 5% 6%;
   border-radius: clamp(9px, 2.4cqw, 24px);
-  background: linear-gradient(180deg, rgb(5 3 12 / 72%), rgb(5 3 12 / 94%));
+  background: linear-gradient(180deg, rgb(5 3 12 / 30%), rgb(5 3 12 / 58%) 55%, rgb(5 3 12 / 76%));
+  text-shadow: 0 1px 3px rgb(0 0 0 / 75%);
   pointer-events: none;
 }
 .featured-game-card .game-meta h3 {
