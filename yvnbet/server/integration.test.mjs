@@ -184,6 +184,9 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(providerHtml, /class="hero banner-slider"/);
     assert.doesNotMatch(providerHtml, /class="page-heading"|class="banner-copy"/);
     assert.doesNotMatch(slotsHtml, /class="page-heading"/);
+    assert.match(slotsHtml, /class="catalog-games-grid"/);
+    assert.doesNotMatch(slotsHtml, /class="horizontal-games"/);
+    assert.match(providerHtml, /class="catalog-games-grid"/);
     assert.equal((slotsHtml.match(/<h1 /g) || []).length, 1);
     assert.match(homeHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
     assert.match(homeHtml, /<source media="\(max-width: 700px\)" srcSet="\/images\/hero.webp"/);

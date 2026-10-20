@@ -4375,3 +4375,21 @@ footer {
 
 .cms-game-image-preview { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .cms-game-image-preview small { max-width: 180px; font-size: 11px; color: #786184; }
+
+/* Compact slots catalog, independent of the home-page carousels. */
+.catalog-games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  max-width: 1170px;
+  gap: 22px;
+}
+.catalog-games-grid .game-card { display: block; border-radius: 10px; }
+.catalog-games-grid .game-art { aspect-ratio: 1.493; }
+.catalog-games-grid .game-meta { display: none; }
+@media (max-width: 700px) {
+  .catalog-games-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px 17px;
+    margin-inline: -5px;
+  }
+}

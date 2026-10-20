@@ -883,7 +883,9 @@ function Catalog({ c, t, L, provider, card }) {
         <span>{page + 1} / {pages}</span>
         <button className="icon-button" disabled={page === pages - 1} aria-label={t.nextGames} onClick={() => setPage((value) => Math.min(pages - 1, value + 1))}><ChevronRight size={17}/></button>
       </div>}
-      <HorizontalGames key={`${filter}-${search}-${page}`} games={visibleGames} card={card} label={t.slots} t={t} />
+      <div className="catalog-games-grid" aria-label={t.slots}>
+        {visibleGames.map((game) => card(game))}
+      </div>
       {!games.length && <p className="empty">{t.empty}</p>}
     </section>
   );
