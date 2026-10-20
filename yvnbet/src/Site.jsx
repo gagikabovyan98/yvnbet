@@ -452,7 +452,7 @@ export default function Site({ content: c, path }) {
                                 {L(q.title)}
                                 <span>+</span>
                               </summary>
-                              <p>{L(q.description)}</p>
+                              <div className="faq-answer"><InstallInstructions text={L(q.description)} /></div>
                             </details>
                           ))}
                         </div>

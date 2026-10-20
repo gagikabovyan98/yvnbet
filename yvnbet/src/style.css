@@ -4393,3 +4393,14 @@ footer {
     margin-inline: -5px;
   }
 }
+
+.faq-answer { padding: 18px 0 4px 34px; }
+.faq-answer .install-instructions { max-width: none; }
+.faq-answer .install-instructions p { padding: 0; margin: 0 0 18px; white-space: pre-line; }
+.faq-answer .install-instructions ol { gap: 10px; margin-bottom: 18px; }
+.faq-answer .install-instructions li { background: #21152a; border-color: #45304f88; }
+.faq-answer .install-instructions li > span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 620px) {
+  .faq-answer { padding: 16px 0 4px; }
+  .faq-answer .install-instructions li { padding: 12px; gap: 10px; }
+}

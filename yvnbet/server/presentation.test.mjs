@@ -57,3 +57,13 @@ test('Android guide migration removes the iOS section and preserves editable cus
   app.description.ru = 'Custom Android and iOS guide';
   assert.equal(upgradeAndroidAppCopy(old).pages.find(p => p.slug === 'app').description.ru, app.description.ru);
 });
+
+test('numbered FAQ instructions render as separate steps without changing Armenian copy', () => {
+  assert.deepEqual(instructionBlocks('YvnBet-ում գրանցվելու համար՝\n\n1. Սեղմեք «Գրանցվել»։\n2. Լրացրեք տվյալները։\n3. Բացեք Telegram։\nՇարունակություն։\n\nԱվարտ։'), [
+    {type:'paragraph',text:'YvnBet-ում գրանցվելու համար՝'},
+    {type:'steps',items:['Սեղմեք «Գրանցվել»։','Լրացրեք տվյալները։','Բացեք Telegram։\nՇարունակություն։']},
+    {type:'paragraph',text:'Ավարտ։'},
+  ]);
+  assert.deepEqual(instructionBlocks('Version 1.2 costs 3.50.\nKeep this line.'), [{type:'paragraph',text:'Version 1.2 costs 3.50.\nKeep this line.'}]);
+  assert.deepEqual(instructionBlocks('1) First\r\n2) Second'), [{type:'steps',items:['First','Second']}]);
+});
