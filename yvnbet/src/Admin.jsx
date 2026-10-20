@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard,
   Gamepad2,
@@ -25,7 +25,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { initialContent } from "./content.mjs";
-import { nextGameIdentifier, sharedGameTitle } from "./admin-games.mjs";
+import { nextGameIdentifier, sharedGameTitle, providerSlug } from "./admin-games.mjs";
 const groups = [
   ["overview", "Обзор", LayoutDashboard],
   ["games", "Игры", Gamepad2],
@@ -114,6 +114,7 @@ const labels = {
   app: "Приложение",
 };
 export default function Admin() {
+  const automaticProviders = useRef(new Set());
   const [user, setUser] = useState(null),
     [ready, setReady] = useState(false),
     [draft, setDraft] = useState(null),
@@ -146,6 +147,7 @@ export default function Admin() {
     const d = await api("/admin/content");
     setDraft(d.content);
     setRevision(d.revision);
+    automaticProviders.current.clear();
     setDirty(false);
   }
   useEffect(() => {
@@ -188,9 +190,18 @@ export default function Admin() {
   const change = (path, value) => {
     setDraft((prev) => {
       const next = structuredClone(prev);
+      if (path.length === 3 && path[0] === "providers" && path[2] === "slug") {
+        automaticProviders.current.delete(next.providers[path[1]].id);
+        value = String(value).toLowerCase().replace(/\s+/g, "-");
+      }
       let ref = next;
       for (const key of path.slice(0, -1)) ref = ref[key];
       ref[path.at(-1)] = value;
+      if (path.length === 3 && path[0] === "providers" && path[2] === "title") {
+        const provider = next.providers[path[1]];
+        if (automaticProviders.current.has(provider.id))
+          provider.slug = providerSlug(value.en, next.providers, provider.id);
+      }
       return next;
     });
     setDirty(true);
@@ -205,6 +216,7 @@ export default function Admin() {
         body: JSON.stringify({ content: draft, revision }),
       });
       setRevision(d.revision);
+      automaticProviders.current.clear();
       setDirty(false);
       setMessage("Изменения опубликованы");
     } catch (e) {
@@ -248,6 +260,10 @@ export default function Admin() {
       template.featuredIcon = "⭐";
       template.indexable = true;
       template.mode = "external";
+    }
+    if (["providers", "categories"].includes(section)) {
+      template.title = sharedGameTitle("");
+      if (section === "providers") automaticProviders.current.add(template.id);
     }
     template.enabled = false;
     change([section], [...draft[section], template]);
@@ -293,7 +309,7 @@ export default function Admin() {
     const label = (path[0] === "interface" && randomTextLabels[key]) || labels[key] || initialContent.interface.ru[key] || key;
     if (value && typeof value === "object") {
       if ("ru" in value && "hy" in value && "en" in value) {
-        if (path[0] === "games" && key === "title") {
+        if (path.length === 3 && ["games", "providers", "categories"].includes(path[0]) && key === "title") {
           return (
             <label className="cms-field" key={path.join(".")}>
               <span>{label}</span>
@@ -714,6 +730,8 @@ export default function Admin() {
                         HTTPS-ссылка откроется внутри сайта во встроенном окне; внутренний путь
                         (например /promotions) откроет страницу сайта. Внешний сайт должен разрешать iframe.
                       </p>}
+                      {section === "providers" && <p className="cms-banner-help">Введите название один раз — оно сохранится одинаково для RU, HY и EN. Адрес нового провайдера создаётся автоматически строчными латинскими буквами, например PRAGMATIC PLAY → pragmatic-play. Адрес существующего провайдера при смене названия сохраняется.</p>}
+                      {section === "categories" && <p className="cms-banner-help">Название категории вводится один раз и сохраняется одинаково для RU, HY и EN.</p>}
                       {section === "games" && <p className="cms-banner-help">
                         Числовой адрес создаётся автоматически и не требует редактирования.
                         Для провайдеров, запрещающих iframe, выберите «Новая вкладка».

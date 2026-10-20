@@ -25,7 +25,7 @@ import {
 } from "../src/content.mjs";
 import { headFor, sitemap, metaFor, schemaFor } from "./seo.mjs";
 import { routeFor } from "../src/routes.mjs";
-import { nextGameIdentifier, sharedGameTitle } from "../src/admin-games.mjs";
+import { nextGameIdentifier, sharedGameTitle, providerSlug } from "../src/admin-games.mjs";
 const clone = () => structuredClone(initialContent);
 test("detail metadata stays unique and text pages reject extra path segments", () => {
   const c = clone();
@@ -362,4 +362,12 @@ test("slot slider migrates independently, validates links and filters unpublishe
   assert.equal(publicContent(next).slotSlides.length, 0);
   next.slotSlides[0].url = "javascript:alert(1)";
   assert.throws(() => validateContent(next));
+});
+
+test("provider addresses normalize names and avoid duplicate slugs", () => {
+  const providers = [{id:"old", slug:"pragmatic-play"}];
+  assert.equal(providerSlug("PRAGMATIC PLAY", providers, "new"), "pragmatic-play-2");
+  assert.equal(providerSlug("PRAGMATIC PLAY", providers, "old"), "pragmatic-play");
+  assert.equal(providerSlug("  ÉVOLUTION & LIVE! ", [], "new"), "evolution-live");
+  assert.equal(providerSlug("", [], "providers-abc"), "providers-abc");
 });

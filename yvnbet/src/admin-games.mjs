@@ -12,3 +12,12 @@ export function nextGameIdentifier(games, fillRandom = (values) => crypto.getRan
 export function sharedGameTitle(value) {
   return { ru: value, hy: value, en: value };
 }
+
+export function providerSlug(title, providers, currentId) {
+  const base = title.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/g, "") || currentId;
+  const used = new Set(providers.filter(p => p.id !== currentId).map(p => p.slug));
+  let candidate = base;
+  for (let suffix = 2; used.has(candidate); suffix += 1) candidate = `${base}-${suffix}`;
+  return candidate;
+}
