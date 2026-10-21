@@ -55,7 +55,7 @@ export function schemaFor(c, routeOrPath) {
     websiteId = origin ? origin + "/#website" : "#website",
     pageId = canonical + "#webpage";
   const page = {
-    "@type": m.section === "help" ? "FAQPage" : "WebPage",
+    "@type": m.section === "help" ? "FAQPage" : m.section === "categories" ? "CollectionPage" : "WebPage",
     "@id": pageId,
     url: canonical,
     name: m.title,
@@ -128,6 +128,11 @@ export function schemaFor(c, routeOrPath) {
         },
       ],
     });
+    if (m.section === "categories") {
+      const breadcrumbs = graph.at(-1).itemListElement;
+      breadcrumbs.splice(1, 1);
+      breadcrumbs[1].position = 2;
+    }
     page.breadcrumb = { "@id": canonical + "#breadcrumb" };
   }
   return { "@context": "https://schema.org", "@graph": graph };

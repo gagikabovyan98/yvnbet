@@ -142,8 +142,12 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
       slug: "new-provider",
       title: { ru: "Новый провайдер", hy: "Նոր մատակարար", en: "New provider" },
     });
+    state.content.categories.push({ ...structuredClone(state.content.categories[0]),
+      id: "lottery", slug: "lottery", title: {ru: "Lottery", hy: "Lottery", en: "Lottery"}
+    });
     state.content.games.push({
       ...structuredClone(state.content.games[0]),
+      category: "lottery",
       id: "82739",
       slug: "82739",
       provider: "new-provider",
@@ -169,6 +173,16 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
     const publicHome = homeHtml.split('id="site-data"')[0];
+    assert.match(publicHome, /href="\/hy\/categories\/lottery"/);
+    assert.match(publicHome, /Provider Test Game/);
+    for (const route of ["/hy/lottery", "/hy/categories/lottery"]) {
+      const response = await call(route);
+      assert.equal(response.status, 200);
+      const categoryHtml = (await response.text()).split('id="site-data"')[0];
+      assert.match(categoryHtml, /Provider Test Game/);
+      assert.match(categoryHtml, /aria-label="Lottery"/);
+      assert.doesNotMatch(categoryHtml, /href="\/hy\/games\/golden-eclipse"/);
+    }
     assert.ok(publicHome.includes("Ընտրիր քո խաղը"));
     assert.ok(publicHome.includes("Քո նոր նկարագրությունը"));
     assert.ok(publicHome.includes("Սկսել ընտրությունը"));

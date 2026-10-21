@@ -4,15 +4,20 @@ export function routeFor(path, c) {
   const lang = ["ru", "hy", "en"].includes(parts[0])
     ? parts.shift()
     : c.settings.defaultLanguage;
-  const section = parts.shift() || "home";
+  let section = parts.shift() || "home";
   const slug = parts.shift();
   let item = null,
     valid = parts.length === 0;
-  if (["games", "providers", "promotions"].includes(section) && slug)
+  if (["games", "providers", "promotions", "categories"].includes(section) && slug)
     item = c[section].find((x) => x.slug === slug);
   else item = c.pages.find((x) => x.slug === section) || null;
+  // Legacy flat category links remain usable, while the namespace avoids page collisions.
+  if (!slug && !item && !["home", "login", "slots", "promotions", "help", "app", "games", "providers", "categories", "about", "privacy", "terms"].includes(section)) {
+    item = c.categories.find((x) => x.slug === section) || null;
+    if (item) section = "categories";
+  }
   if (slug && !item) valid = false;
-  if (slug && !["games", "providers", "promotions"].includes(section))
+  if (slug && !["games", "providers", "promotions", "categories"].includes(section))
     valid = false;
   if (
     (![
@@ -29,7 +34,7 @@ export function routeFor(path, c) {
       "terms",
     ].includes(section) &&
       !item) ||
-    (["games", "providers"].includes(section) && !item)
+    (["games", "providers", "categories"].includes(section) && !item)
   )
     valid = false;
   if (["about", "privacy", "terms", "app"].includes(section) && !item)
@@ -40,7 +45,7 @@ export function routeFor(path, c) {
     slug,
     item,
     valid,
-    path: `/${lang}${section === "home" ? "" : "/" + section}${slug ? "/" + slug : ""}`,
+    path: section === "categories" && item ? (item.slug === "slots" ? `/${lang}/slots` : `/${lang}/categories/${item.slug}`) : `/${lang}${section === "home" ? "" : "/" + section}${slug ? "/" + slug : ""}`,
   };
 }
 export function paths(c) {
@@ -50,8 +55,8 @@ export function paths(c) {
     "/promotions",
     "/help",
     ...c.pages.map((x) => "/" + x.slug),
-    ...["games", "providers", "promotions"].flatMap((k) =>
-      c[k].map((x) => `/${k}/${x.slug}`),
+    ...["games", "providers", "promotions", "categories"].flatMap((k) =>
+      c[k].filter((x) => k !== "categories" || x.slug !== "slots").map((x) => `/${k}/${x.slug}`),
     ),
   ])];
 }

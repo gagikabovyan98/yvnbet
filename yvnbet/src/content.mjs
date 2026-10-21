@@ -619,7 +619,7 @@ export const initialContent = {
 };
 
 // Search visibility is explicit only for real public pages. Slides, FAQ rows and
-// categories are content fragments and must not appear as standalone URLs.
+// FAQ rows are content fragments; categories have their own public catalogs.
 for (const [key, value] of Object.entries(initialContent.seo))
   if (key !== "app") value.indexable = true;
 for (const key of ["providers", "games", "promotions", "pages"])
@@ -764,7 +764,7 @@ export function publicContent(c) {
   out.games = out.games.filter(
     (g) =>
       out.providers.some((p) => p.id === g.provider) &&
-      out.categories.some((p) => p.id === g.category && p.slug === "slots"),
+      out.categories.some((p) => p.id === g.category),
   );
   out.promotions = out.promotions.filter((p) => activePromotion(p));
   return out;

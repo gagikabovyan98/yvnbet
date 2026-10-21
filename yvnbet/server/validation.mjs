@@ -178,6 +178,7 @@ export function validateContent(input) {
     "slots",
     "games",
     "providers",
+    "categories",
     "promotions",
     "help",
     "ru",

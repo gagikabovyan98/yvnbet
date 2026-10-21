@@ -315,9 +315,9 @@ export default function Admin() {
               <span>{label}</span>
               <input
                 value={value.ru || value.hy || value.en}
-                onChange={(e) => change(path, sharedGameTitle(e.target.value))}
+                onChange={(e) => change(path, sharedGameTitle(path[0] === "providers" ? e.target.value.toLowerCase() : e.target.value))}
               />
-              <small>Название автоматически используется для RU, HY и EN.</small>
+              <small>Название автоматически используется для RU, HY и EN. {path[0] === "providers" && "Буквы автоматически становятся строчными."}</small>
             </label>
           );
         }
@@ -673,7 +673,7 @@ export default function Admin() {
                           <strong>{x.title[lang] || x.id}</strong>
                           <small>
                             {x.enabled ? "Опубликовано" : "Черновик"} · /
-                            {x.slug}
+                            {section === "categories" && x.slug !== "slots" ? "categories/" : ""}{x.slug}
                           </small>
                         </span>
                       </button>

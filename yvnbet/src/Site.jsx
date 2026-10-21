@@ -290,6 +290,7 @@ export default function Site({ content: c, path }) {
                             {t.login}
                           </a>
                         </div>
+                        <CategoryLinks c={c} L={L} href={href} />
                         <ProviderRail
                           providers={c.providers}
                           L={L}
@@ -352,7 +353,7 @@ export default function Site({ content: c, path }) {
                         )}
                       </section>
                     )}
-                    {(section === "slots" || section === "providers") && (
+                    {(section === "slots" || section === "providers" || section === "categories") && (
                       <Slider slides={catalogSlides(c, section)} L={L} t={t}
                         seconds={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? c.settings.slotSliderSeconds : c.settings.sliderSeconds}
                         localizedUrl={localizedUrl} headingTag="h2" hideCopy
@@ -373,14 +374,18 @@ export default function Site({ content: c, path }) {
                         </div>
                       </article>
                     )}
-                    {(section === "slots" || section === "providers") && (
+                    {(section === "slots" || section === "providers" || section === "categories") && (
                       <>
                         <h1 className="visually-hidden">{item ? L(item.title) : t.slots}</h1>
                         <Catalog
                           c={c}
                           t={t}
                           L={L}
-                          provider={item?.id}
+                          key={route.path}
+                          provider={section === "providers" ? item?.id : undefined}
+                          category={section === "categories" ? item?.id : section === "slots" ? c.categories.find((x) => x.slug === "slots")?.id : undefined}
+                          label={item ? L(item.title) : t.slots}
+                          href={href}
                           card={card}
                         />
                         {item?.url && (
@@ -839,24 +844,33 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
     </section>
   );
 }
-function Catalog({ c, t, L, provider, card }) {
+function CategoryLinks({ c, L, href }) {
+  if (!c.categories.length || (c.categories.length === 1 && c.categories[0].slug === "slots")) return null;
+  return <nav className="category-links">
+    {c.categories.map((category) => <a className="provider-view-all" key={category.id}
+      href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}>{L(category.title)}</a>)}
+  </nav>;
+}
+function Catalog({ c, t, L, provider, category, label, href, card }) {
   const [filter, setFilter] = useState(provider || ""),
     [search, setSearch] = useState(""),
     [page, setPage] = useState(0);
   const games = c.games.filter(
     (g) =>
       (!filter || g.provider === filter) &&
+      (!category || g.category === category) &&
       L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
   );
   const pageSize = 15,
     pages = Math.max(1, Math.ceil(games.length / pageSize)),
     visibleGames = games.slice(page * pageSize, (page + 1) * pageSize);
-  useEffect(() => setPage(0), [filter, search, provider]);
+  useEffect(() => setPage(0), [filter, search, provider, category]);
   return (
     <section className="catalog">
+      <CategoryLinks c={c} L={L} href={href} />
       <div className="catalog-controls">
         <span className="catalog-label">
-          {t.slots}
+          {label}
           <span className="count">{games.length}</span>
         </span>
         <label className="search">
@@ -883,7 +897,7 @@ function Catalog({ c, t, L, provider, card }) {
         <span>{page + 1} / {pages}</span>
         <button className="icon-button" disabled={page === pages - 1} aria-label={t.nextGames} onClick={() => setPage((value) => Math.min(pages - 1, value + 1))}><ChevronRight size={17}/></button>
       </div>}
-      <div className="catalog-games-grid" aria-label={t.slots}>
+      <div className="catalog-games-grid" aria-label={label}>
         {visibleGames.map((game) => card(game))}
       </div>
       {!games.length && <p className="empty">{t.empty}</p>}

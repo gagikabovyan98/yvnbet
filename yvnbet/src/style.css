@@ -4404,3 +4404,5 @@ footer {
   .faq-answer { padding: 16px 0 4px; }
   .faq-answer .install-instructions li { padding: 12px; gap: 10px; }
 }
+
+.category-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }

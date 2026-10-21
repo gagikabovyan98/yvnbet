@@ -298,7 +298,7 @@ test("existing content gains registration fields and slot previews without losin
   assert.equal(upgraded.games.at(-1).category, "table");
   assert.equal(
     publicContent(upgraded).games.some((g) => g.id === "real-table"),
-    false,
+    true,
   );
   assert.deepEqual(upgradeContent(upgraded), upgraded);
   assert.equal(c.games[2].category, "table");
@@ -370,4 +370,35 @@ test("provider addresses normalize names and avoid duplicate slugs", () => {
   assert.equal(providerSlug("PRAGMATIC PLAY", providers, "old"), "pragmatic-play");
   assert.equal(providerSlug("  ÉVOLUTION & LIVE! ", [], "new"), "evolution-live");
   assert.equal(providerSlug("", [], "providers-abc"), "providers-abc");
+});
+
+
+test("custom categories expose games and catalog routes only while their dependencies are published", () => {
+  const c = clone();
+  c.settings.indexable = true;
+  c.settings.siteUrl = "https://example.com";
+  c.categories.push({...structuredClone(c.categories[0]), id: "lottery", slug: "lottery"});
+  c.games[0].category = "lottery";
+  let visible = publicContent(c);
+  assert.ok(visible.games.some(g => g.id === c.games[0].id));
+  for (const lang of ["ru", "hy", "en"]) {
+    for (const path of [`/${lang}/lottery`, `/${lang}/categories/lottery`]) {
+      const route = routeFor(path, visible);
+      assert.equal(route.valid, true);
+      assert.equal(route.section, "categories");
+      assert.equal(route.item.id, "lottery");
+      assert.equal(route.path, `/${lang}/categories/lottery`);
+    }
+  }
+  assert.equal(routeFor("/hy/categories/missing", visible).valid, false);
+  assert.equal(routeFor("/hy/lottery/extra", visible).valid, false);
+  assert.equal(routeFor("/hy/categories/lottery/extra", visible).valid, false);
+  assert.match(sitemap(visible), /hy\/categories\/lottery/);
+  c.providers.find(p => p.id === c.games[0].provider).enabled = false;
+  assert.ok(!publicContent(c).games.some(g => g.id === c.games[0].id));
+  c.categories.at(-1).enabled = false;
+  visible = publicContent(c);
+  assert.equal(routeFor("/hy/lottery", visible).valid, false);
+  assert.equal(routeFor("/hy/categories/lottery", visible).valid, false);
+  assert.doesNotMatch(sitemap(visible), /categories\/lottery/);
 });
