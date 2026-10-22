@@ -301,14 +301,31 @@ export default function Site({ content, path }) {
                             {t.login}
                           </a>
                         </div>
-                        <ProviderRail providers={c.providers} L={L} t={t} href={href} />
+                        <ProviderRail
+                          providers={c.providers}
+                          L={L}
+                          t={t}
+                          href={href}
+                        />
                         <FeaturedGames
                           games={orderedFeaturedGames(c.games).slice(0, 15)}
                           card={card}
                           label={t.featured}
                           t={t}
                         />
-                        <HomeProviderGames c={c} t={t} L={L} href={href} card={card} />
+                        {c.providers.map((provider) => (
+                          <ProviderGames
+                            key={provider.id}
+                            provider={provider}
+                            games={c.games.filter(
+                              (g) => g.provider === provider.id,
+                            )}
+                            card={card}
+                            L={L}
+                            t={t}
+                            href={href}
+                          />
+                        ))}
                         <Random c={c} t={t} L={L} href={href} onGameClick={gameClick} />
                         {c.promotions.length > 0 && (
                           <section className="section">
@@ -851,19 +868,6 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
     </section>
   );
 }
-function HomeProviderGames({ c, t, L, href, card }) {
-  const [search, setSearch] = useState("");
-  const query = search.trim().toLocaleLowerCase();
-  const games = c.games.filter(game => [L(game.title), L(c.providers.find(p => p.id === game.provider)?.title)].join(" ").toLocaleLowerCase().includes(query));
-  return <>
-    <label className="search home-game-search"><Search size={18} />
-      <input aria-label={t.searchCatalog} placeholder={t.searchCatalog} value={search} onChange={event => setSearch(event.target.value)} />
-    </label>
-    {c.providers.map(provider => <ProviderGames key={provider.id} provider={provider}
-      games={games.filter(game => game.provider === provider.id)} card={card} L={L} t={t} href={href} />)}
-    {!games.length && <p className="empty">{t.empty}</p>}
-  </>;
-}
 function ProviderDirectory({ c, L, t, href }) {
   const [search, setSearch] = useState("");
   const query = search.trim().toLocaleLowerCase();
@@ -888,27 +892,18 @@ function CategoryLinks({ c, L, href }) {
       href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}>{L(category.title)}</a>)}
   </nav>;
 }
-function Catalog({ c, t, L, provider, category, label, href, card, home = false }) {
+function Catalog({ c, t, L, provider, category, label, href, card }) {
   const [filter, setFilter] = useState(provider || ""),
-    [search, setSearch] = useState(""),
-    [page, setPage] = useState(0);
+    [search, setSearch] = useState("");
   const games = c.games.filter(
     (g) =>
       (!filter || g.provider === filter) &&
       (!category || g.category === category) &&
-      [L(g.title), L(c.providers.find(p => p.id === g.provider)?.title)].join(" ").toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+      L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
   );
-  const pageSize = 15,
-    pages = Math.max(1, Math.ceil(games.length / pageSize)),
-    visibleGames = games.slice(page * pageSize, (page + 1) * pageSize);
-  useEffect(() => setPage(0), [filter, search, provider, category]);
   return (
-    <section className="catalog" data-home-games={home || undefined}>
-      <div className="catalog-tabs">
-        <span className="provider-view-all active">{label}</span>
-        <a className="provider-view-all" href={href("providers")}>{t.providers}<ChevronRight size={16} /></a>
-      </div>
-      {!home && <CategoryLinks c={c} L={L} href={href} />}
+    <section className="catalog">
+      <CategoryLinks c={c} L={L} href={href} />
       <div className="catalog-controls">
         <span className="catalog-label">
           {label}
@@ -917,20 +912,24 @@ function Catalog({ c, t, L, provider, category, label, href, card, home = false 
         <label className="search">
           <Search size={18} />
           <input
-            aria-label={t.searchCatalog}
-            placeholder={t.searchCatalog}
+            aria-label={t.search}
+            placeholder={t.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
       </div>
-      {pages > 1 && <div className="catalog-pagination">
-        <button className="icon-button" disabled={page === 0} aria-label={t.previousGames} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={17}/></button>
-        <span>{page + 1} / {pages}</span>
-        <button className="icon-button" disabled={page === pages - 1} aria-label={t.nextGames} onClick={() => setPage((value) => Math.min(pages - 1, value + 1))}><ChevronRight size={17}/></button>
-      </div>}
+      {!provider && (
+        <ProviderRail
+          providers={c.providers}
+          L={L}
+          t={t}
+          selected={filter}
+          onSelect={setFilter}
+        />
+      )}
       <div className="catalog-games-grid" aria-label={label}>
-        {visibleGames.map((game) => card(game))}
+        {games.map((game) => card(game))}
       </div>
       {!games.length && <p className="empty">{t.empty}</p>}
     </section>
@@ -1441,7 +1440,7 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
             <span className="provider-caption">{t.allProviders}</span>
           </button>
         ) : (
-          <a className="provider-all" href={href("providers")}>
+          <a className="provider-all" href={href("slots")}>
             <span className="provider-tile">
               <img
                 src="/images/providers-all.png"

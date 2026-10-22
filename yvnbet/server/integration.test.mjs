@@ -174,7 +174,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /class="bottom-nav"/);
     const publicHome = homeHtml.split('id="site-data"')[0];
     assert.doesNotMatch(publicHome, /class="category-links"/);
-    assert.match(publicHome, /href="\/hy\/providers"/);
+    assert.match(publicHome, /class="provider-all" href="\/hy\/slots"/);
+    assert.doesNotMatch(publicHome, /class="search home-game-search"|class="catalog-tabs"/);
     assert.match(publicHome, /Provider Test Game/);
     for (const route of ["/hy/lottery", "/hy/categories/lottery"]) {
       const response = await call(route);
@@ -200,6 +201,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(providerHtml, /class="page-heading"|class="banner-copy"/);
     assert.doesNotMatch(slotsHtml, /class="page-heading"/);
     assert.match(slotsHtml, /class="catalog-games-grid"/);
+    assert.match(slotsHtml, /class="provider-rail"/);
+    assert.doesNotMatch(slotsHtml, /class="catalog-pagination"|class="catalog-tabs"/);
     assert.doesNotMatch(slotsHtml, /class="horizontal-games"/);
     assert.match(providerHtml, /class="catalog-games-grid"/);
     assert.equal((slotsHtml.match(/<h1 /g) || []).length, 1);
