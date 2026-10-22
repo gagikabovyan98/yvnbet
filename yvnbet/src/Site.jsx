@@ -18,6 +18,7 @@ import {
   Dices,
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
+import { mixGames, orderProviders, seededRandom, visitSeed } from "./catalog.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
 import RegionInput from "./components/RegionInput.jsx";
 import InstallInstructions from "./components/InstallInstructions.jsx";
@@ -31,7 +32,11 @@ const icons = {
   promotions: Gift,
   help: Headphones,
 };
-export default function Site({ content: c, path }) {
+export default function Site({ content, path }) {
+  const [c] = useState(() => {
+    const random = seededRandom(visitSeed());
+    return { ...content, games: mixGames(content.games, random), providers: orderProviders(content.providers, random) };
+  });
   const route = routeFor(path, c),
     { lang, section, item, valid } = route,
     t = c.interface[lang],
@@ -59,9 +64,7 @@ export default function Site({ content: c, path }) {
           c.settings.loginUrl,
         title: gamePage ? L(item.title) : t.login,
       }
-    : modal?.type === "frame"
-      ? modal
-      : null;
+    : null;
   useEffect(() => {
     try {
       setAge(localStorage.getItem("yvn-age") !== "18");
@@ -76,7 +79,14 @@ export default function Site({ content: c, path }) {
   const launch = (url, mode, title) => {
     if (!url) return;
     if (mode === "external") window.open(url, "_blank", "noopener,noreferrer");
-    else setModal({ type: "frame", url, title });
+    else setModal({ type: "game", url, title });
+  };
+  const gameClick = (event, game) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = game.url || c.providers.find(p => p.id === game.provider)?.url || "";
+    if (game.mode === "external" && url) return;
+    event.preventDefault();
+    setModal({ type: "game", url, title: L(game.title) });
   };
   const telegram = telegramContact(
     c.settings,
@@ -129,7 +139,8 @@ export default function Site({ content: c, path }) {
     <a className={options.className || "game-card"} key={g.id}
       href={opensExternal ? externalUrl : href("games/" + g.slug)}
       target={opensExternal ? "_blank" : undefined}
-      rel={opensExternal ? "noopener noreferrer" : undefined}>
+      rel={opensExternal ? "noopener noreferrer" : undefined}
+      onClick={(event) => gameClick(event, g)}>
       <div className="game-art">
         <img
           src={g.image}
@@ -290,33 +301,14 @@ export default function Site({ content: c, path }) {
                             {t.login}
                           </a>
                         </div>
-                        <CategoryLinks c={c} L={L} href={href} />
-                        <ProviderRail
-                          providers={c.providers}
-                          L={L}
-                          t={t}
-                          href={href}
-                        />
                         <FeaturedGames
                           games={orderedFeaturedGames(c.games).slice(0, 15)}
                           card={card}
                           label={t.featured}
                           t={t}
                         />
-                        {c.providers.map((provider) => (
-                          <ProviderGames
-                            key={provider.id}
-                            provider={provider}
-                            games={c.games.filter(
-                              (g) => g.provider === provider.id,
-                            )}
-                            card={card}
-                            L={L}
-                            t={t}
-                            href={href}
-                          />
-                        ))}
-                        <Random c={c} t={t} L={L} href={href} />
+                        <Catalog c={c} t={t} L={L} href={href} card={card} label={t.all} home />
+                        <Random c={c} t={t} L={L} href={href} onGameClick={gameClick} />
                         {c.promotions.length > 0 && (
                           <section className="section">
                             <div className="section-heading">
@@ -353,11 +345,14 @@ export default function Site({ content: c, path }) {
                         )}
                       </section>
                     )}
-                    {(section === "slots" || section === "providers" || section === "categories") && (
+                    {(section === "slots" || (section === "providers" && item) || section === "categories") && (
                       <Slider slides={catalogSlides(c, section)} L={L} t={t}
                         seconds={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? c.settings.slotSliderSeconds : c.settings.sliderSeconds}
                         localizedUrl={localizedUrl} headingTag="h2" hideCopy
                         onOpen={section === "slots" && c.settings.catalogSliderSource === "independent" && c.slotSlides.length ? (url, title) => launch(url, "iframe", title) : undefined} />
+                    )}
+                    {section === "providers" && !item && (
+                      <ProviderDirectory c={c} L={L} t={t} href={href} />
                     )}
                     {section === "games" && item && item.mode === "external" && (
                       <article className="detail">
@@ -374,7 +369,7 @@ export default function Site({ content: c, path }) {
                         </div>
                       </article>
                     )}
-                    {(section === "slots" || section === "providers" || section === "categories") && (
+                    {(section === "slots" || (section === "providers" && item) || section === "categories") && (
                       <>
                         <h1 className="visually-hidden">{item ? L(item.title) : t.slots}</h1>
                         <Catalog
@@ -595,6 +590,17 @@ export default function Site({ content: c, path }) {
               </>
             )}
           </div>
+        </Modal>
+      )}
+      {!ageBlocked && modal?.type === "game" && (
+        <Modal title={modal.title} closeLabel={t.close} onClose={() => setModal(null)} wide>
+          {modal.url ? <>
+            <iframe className="game-dialog-frame" title={modal.title} src={modal.url}
+              referrerPolicy="strict-origin-when-cross-origin"
+              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads"
+              allow="fullscreen; clipboard-read; clipboard-write; payment" />
+            <a className="text-link" href={modal.url} target="_blank" rel="noopener noreferrer">{t.external}<ArrowUpRight size={17} /></a>
+          </> : <p className="notice">{t.unavailable}</p>}
         </Modal>
       )}
       {!ageBlocked && modal?.type === "register" && (
@@ -844,6 +850,23 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
     </section>
   );
 }
+function ProviderDirectory({ c, L, t, href }) {
+  const [search, setSearch] = useState("");
+  const query = search.trim().toLocaleLowerCase();
+  const providers = c.providers.filter(p => L(p.title).toLocaleLowerCase().includes(query));
+  return <section className="provider-directory">
+    <div className="section-heading"><h1>{t.providers}</h1><a className="text-link" href={href("home")}>{t.all}</a></div>
+    <label className="search"><Search size={18} /><input aria-label={t.providers} placeholder={t.providers} value={search} onChange={e => setSearch(e.target.value)} /></label>
+    <div className="provider-directory-grid">
+      {providers.map(provider => <a className="provider-directory-card" key={provider.id} href={href("providers/" + provider.slug)}>
+        <span className="provider-tile">{provider.logo ? <img src={provider.logo} alt="" loading="lazy" /> : <Gamepad2 size={32} />}</span>
+        <span>{L(provider.title)}</span>
+        <span className="count">{c.games.filter(game => game.provider === provider.id).length}</span>
+      </a>)}
+    </div>
+    {!providers.length && <p className="empty">{t.empty}</p>}
+  </section>;
+}
 function CategoryLinks({ c, L, href }) {
   if (!c.categories.length || (c.categories.length === 1 && c.categories[0].slug === "slots")) return null;
   return <nav className="category-links">
@@ -851,7 +874,7 @@ function CategoryLinks({ c, L, href }) {
       href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}>{L(category.title)}</a>)}
   </nav>;
 }
-function Catalog({ c, t, L, provider, category, label, href, card }) {
+function Catalog({ c, t, L, provider, category, label, href, card, home = false }) {
   const [filter, setFilter] = useState(provider || ""),
     [search, setSearch] = useState(""),
     [page, setPage] = useState(0);
@@ -859,15 +882,19 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
     (g) =>
       (!filter || g.provider === filter) &&
       (!category || g.category === category) &&
-      L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
+      [L(g.title), L(c.providers.find(p => p.id === g.provider)?.title)].join(" ").toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
   const pageSize = 15,
     pages = Math.max(1, Math.ceil(games.length / pageSize)),
     visibleGames = games.slice(page * pageSize, (page + 1) * pageSize);
   useEffect(() => setPage(0), [filter, search, provider, category]);
   return (
-    <section className="catalog">
-      <CategoryLinks c={c} L={L} href={href} />
+    <section className="catalog" data-home-games={home || undefined}>
+      <div className="catalog-tabs">
+        <span className="provider-view-all active">{label}</span>
+        <a className="provider-view-all" href={href("providers")}>{t.providers}<ChevronRight size={16} /></a>
+      </div>
+      {!home && <CategoryLinks c={c} L={L} href={href} />}
       <div className="catalog-controls">
         <span className="catalog-label">
           {label}
@@ -876,22 +903,13 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
         <label className="search">
           <Search size={18} />
           <input
-            aria-label={t.search}
-            placeholder={t.search}
+            aria-label={t.searchCatalog}
+            placeholder={t.searchCatalog}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
       </div>
-      {!provider && (
-        <ProviderRail
-          providers={c.providers}
-          L={L}
-          t={t}
-          selected={filter}
-          onSelect={setFilter}
-        />
-      )}
       {pages > 1 && <div className="catalog-pagination">
         <button className="icon-button" disabled={page === 0} aria-label={t.previousGames} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={17}/></button>
         <span>{page + 1} / {pages}</span>
@@ -904,7 +922,7 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
     </section>
   );
 }
-function Random({ c, t, L, href }) {
+function Random({ c, t, L, href, onGameClick }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -1178,7 +1196,10 @@ function Random({ c, t, L, href }) {
                   {L(c.providers.find((p) => p.id === result.provider)?.title)}
                 </p>
                 <h3>{L(result.title)}</h3>
-                <a className="button gold" href={href("games/" + result.slug)}>
+                <a className="button gold" href={href("games/" + result.slug)} onClick={(event) => {
+                  onGameClick(event, result);
+                  if (event.defaultPrevented) setShowResult(false);
+                }}>
                   <Play size={19} fill="currentColor" />
                   {t.play}
                 </a>

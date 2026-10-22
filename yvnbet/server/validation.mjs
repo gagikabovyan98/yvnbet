@@ -135,7 +135,7 @@ export const contentSchema = z.strictObject({
       app: seo,
     },
   ),
-  providers: list({ logo: image, url: external, mode, indexable: z.boolean() }),
+  providers: list({ logo: image, url: external, mode, indexable: z.boolean(), pinned: z.boolean().default(false), pinnedOrder: z.number().int().min(1).max(5).default(1) }),
   categories: list({}),
   games: list({
     provider: slug,
@@ -172,6 +172,8 @@ export function validateContent(input) {
         .join("; "),
     );
   const c = parsed.data;
+  if (c.providers.filter(p => p.pinned).length > 5)
+    throw new Error("Можно закрепить не больше 5 провайдеров");
   const reservedPages = new Set([
     "home",
     "login",

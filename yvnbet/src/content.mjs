@@ -28,6 +28,7 @@ export const ui = {
     featured: "Топ игры",
     collection: "Ваша следующая любимая игра",
     search: "Найти игру",
+    searchCatalog: "Найти игру или провайдера",
     empty: "Ничего не найдено. Попробуйте другой фильтр.",
     play: "Играть",
     details: "Подробнее",
@@ -95,6 +96,7 @@ export const ui = {
     pending: "Сохраняем…",
   },
   en: {
+    searchCatalog: "Find a game or provider",
     countrySearch: "Country or calling code",
     partners: "Partner programme",
     contactOperator: "Contact the operator",
@@ -184,6 +186,7 @@ export const ui = {
     pending: "Saving…",
   },
   hy: {
+    searchCatalog: "Գտնել խաղ կամ մատակարար",
     countrySearch: "Երկիր կամ հեռախոսային կոդ",
     partners: "Գործընկերային ծրագիր",
     contactOperator: "Կապվել օպերատորի հետ",
@@ -876,4 +879,18 @@ export function telegramContact(settings, purpose, text) {
   url.searchParams.set("text", text);
   url.search = url.search.replace(/\+/g, "%20");
   return url.href;
+}
+
+export function upgradeProviderOrdering(input) {
+  const c = structuredClone(input);
+  for (const provider of c.providers) {
+    provider.pinned ??= false;
+    provider.pinnedOrder ??= 1;
+  }
+  for (const lang of languages) c.interface[lang].searchCatalog ??= ui[lang].searchCatalog;
+  return c;
+}
+for (const provider of initialContent.providers) {
+  provider.pinned = false;
+  provider.pinnedOrder = 1;
 }

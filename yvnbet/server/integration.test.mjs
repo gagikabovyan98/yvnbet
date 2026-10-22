@@ -173,7 +173,8 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     const homeHtml = await (await call("/hy")).text();
     assert.match(homeHtml, /class="bottom-nav"/);
     const publicHome = homeHtml.split('id="site-data"')[0];
-    assert.match(publicHome, /href="\/hy\/categories\/lottery"/);
+    assert.doesNotMatch(publicHome, /class="category-links"/);
+    assert.match(publicHome, /href="\/hy\/providers"/);
     assert.match(publicHome, /Provider Test Game/);
     for (const route of ["/hy/lottery", "/hy/categories/lottery"]) {
       const response = await call(route);
@@ -221,9 +222,13 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /class="banner-arrow banner-arrow-next"/);
     assert.match(homeHtml, /class="banner-progress"/);
     assert.match(homeHtml, /class="slots-nav-icon"/);
-    assert.match(homeHtml, /\/images\/providers-all.png/);
+    const directoryResponse = await call("/hy/providers");
+    assert.equal(directoryResponse.status, 200);
+    const directoryHtml = (await directoryResponse.text()).split('id="site-data"')[0];
+    assert.match(directoryHtml, /class="provider-directory-grid"/);
+    assert.match(directoryHtml, /href="\/hy\/providers\/new-provider"/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
-    assert.match(homeHtml, /class="provider-rail"/);
+    assert.doesNotMatch(publicHome, /class="provider-rail"|class="section provider-games"/);
     assert.match(homeHtml, /href="https:\/\/provider\.example\/game\/external" target="_blank"/);
     assert.match(homeHtml, /Provider Test Game/);
     assert.match(homeHtml, /class="language-flag"/);

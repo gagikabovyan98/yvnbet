@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { X } from "lucide-react";
 export default function Modal({
   title,
@@ -8,14 +8,19 @@ export default function Modal({
   wide = false,
 }) {
   const ref = useRef(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const d = ref.current;
+    const x = window.scrollX, y = window.scrollY;
+    const active = document.activeElement;
+    const keys = ["overflow", "position", "top", "left", "right", "width"];
+    const previous = Object.fromEntries(keys.map(key => [key, document.body.style[key]]));
+    Object.assign(document.body.style, { overflow: "hidden", position: "fixed", top: `-${y}px`, left: `-${x}px`, right: "0", width: "100%" });
     d.showModal();
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     return () => {
       d.close();
-      document.body.style.overflow = prev;
+      Object.assign(document.body.style, previous);
+      if (active?.isConnected) active.focus?.({ preventScroll: true });
+      window.scrollTo({ left: x, top: y, behavior: "instant" });
     };
   }, []);
   return (

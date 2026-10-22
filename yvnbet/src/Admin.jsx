@@ -65,6 +65,8 @@ const labels = {
   lion: "Изображение льва",
   image: "Изображение",
   url: "Ссылка",
+  pinned: "Показывать провайдера в начале списка",
+  pinnedOrder: "Порядок закреплённого провайдера (1–5)",
   mode: "Открывать",
   provider: "Провайдер",
   category: "Категория",
@@ -264,7 +266,11 @@ export default function Admin() {
     }
     if (["providers", "categories"].includes(section)) {
       template.title = sharedGameTitle("");
-      if (section === "providers") automaticProviders.current.add(template.id);
+      if (section === "providers") {
+        automaticProviders.current.add(template.id);
+        template.pinned = false;
+        template.pinnedOrder = Math.min(5, draft.providers.filter(p => p.pinned).length + 1);
+      }
     }
     template.enabled = false;
     change([section], [...draft[section], template]);
@@ -731,7 +737,7 @@ export default function Admin() {
                         HTTPS-ссылка откроется внутри сайта во встроенном окне; внутренний путь
                         (например /promotions) откроет страницу сайта. Внешний сайт должен разрешать iframe.
                       </p>}
-                      {section === "providers" && <p className="cms-banner-help">Введите название один раз — оно сохранится одинаково для RU, HY и EN. Адрес нового провайдера создаётся автоматически строчными латинскими буквами, например PRAGMATIC PLAY → pragmatic-play. Адрес существующего провайдера при смене названия сохраняется.</p>}
+                      {section === "providers" && <p className="cms-banner-help">Можно закрепить до 5 провайдеров и задать их порядок числами 1–5. Остальные перемешиваются автоматически. Введите название один раз — оно сохранится одинаково для RU, HY и EN. Адрес нового провайдера создаётся автоматически строчными латинскими буквами, например PRAGMATIC PLAY → pragmatic-play. Адрес существующего провайдера при смене названия сохраняется.</p>}
                       {section === "categories" && <p className="cms-banner-help">Название категории вводится один раз и сохраняется одинаково для RU, HY и EN.</p>}
                       {section === "games" && <p className="cms-banner-help">
                         Числовой адрес создаётся автоматически и не требует редактирования.

@@ -34,7 +34,7 @@ export function routeFor(path, c) {
       "terms",
     ].includes(section) &&
       !item) ||
-    (["games", "providers", "categories"].includes(section) && !item)
+    (["games", "categories"].includes(section) && !item)
   )
     valid = false;
   if (["about", "privacy", "terms", "app"].includes(section) && !item)
@@ -52,6 +52,7 @@ export function paths(c) {
   return [...new Set([
     "",
     "/slots",
+    "/providers",
     "/promotions",
     "/help",
     ...c.pages.map((x) => "/" + x.slug),

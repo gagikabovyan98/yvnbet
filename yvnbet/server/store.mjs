@@ -24,6 +24,7 @@ import {
   upgradeFeaturedIcons,
   upgradeAgeGate,
   upgradeAndroidAppCopy,
+  upgradeProviderOrdering,
 } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
 export function passwordHash(password) {
@@ -67,6 +68,7 @@ export async function openStore(dir) {
     ["2026-10-featured-game-icons", upgradeFeaturedIcons],
     ["2026-10-age-gate-toggle", upgradeAgeGate],
     ["2026-10-android-app-copy", upgradeAndroidAppCopy],
+    ["2026-10-provider-ordering", upgradeProviderOrdering],
   ]) {
     if (db.prepare("SELECT name FROM migrations WHERE name=?").get(name))
       continue;
