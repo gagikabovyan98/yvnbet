@@ -260,6 +260,7 @@ export default function Admin() {
       template.featuredIcon = "⭐";
       template.indexable = true;
       template.mode = "external";
+      template.url = "https://ggplus.pro/hy";
     }
     if (["providers", "categories"].includes(section)) {
       template.title = sharedGameTitle("");
