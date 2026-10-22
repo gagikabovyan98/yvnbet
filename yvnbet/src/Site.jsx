@@ -301,13 +301,14 @@ export default function Site({ content, path }) {
                             {t.login}
                           </a>
                         </div>
+                        <ProviderRail providers={c.providers} L={L} t={t} href={href} />
                         <FeaturedGames
                           games={orderedFeaturedGames(c.games).slice(0, 15)}
                           card={card}
                           label={t.featured}
                           t={t}
                         />
-                        <Catalog c={c} t={t} L={L} href={href} card={card} label={t.all} home />
+                        <HomeProviderGames c={c} t={t} L={L} href={href} card={card} />
                         <Random c={c} t={t} L={L} href={href} onGameClick={gameClick} />
                         {c.promotions.length > 0 && (
                           <section className="section">
@@ -849,6 +850,19 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
       )}
     </section>
   );
+}
+function HomeProviderGames({ c, t, L, href, card }) {
+  const [search, setSearch] = useState("");
+  const query = search.trim().toLocaleLowerCase();
+  const games = c.games.filter(game => [L(game.title), L(c.providers.find(p => p.id === game.provider)?.title)].join(" ").toLocaleLowerCase().includes(query));
+  return <>
+    <label className="search home-game-search"><Search size={18} />
+      <input aria-label={t.searchCatalog} placeholder={t.searchCatalog} value={search} onChange={event => setSearch(event.target.value)} />
+    </label>
+    {c.providers.map(provider => <ProviderGames key={provider.id} provider={provider}
+      games={games.filter(game => game.provider === provider.id)} card={card} L={L} t={t} href={href} />)}
+    {!games.length && <p className="empty">{t.empty}</p>}
+  </>;
 }
 function ProviderDirectory({ c, L, t, href }) {
   const [search, setSearch] = useState("");
@@ -1427,7 +1441,7 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
             <span className="provider-caption">{t.allProviders}</span>
           </button>
         ) : (
-          <a className="provider-all" href={href("slots")}>
+          <a className="provider-all" href={href("providers")}>
             <span className="provider-tile">
               <img
                 src="/images/providers-all.png"

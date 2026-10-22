@@ -228,7 +228,9 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(directoryHtml, /class="provider-directory-grid"/);
     assert.match(directoryHtml, /href="\/hy\/providers\/new-provider"/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
-    assert.doesNotMatch(publicHome, /class="provider-rail"|class="section provider-games"/);
+    assert.match(publicHome, /class="provider-rail"/);
+    assert.match(publicHome, /class="section provider-games"/);
+    assert.doesNotMatch(publicHome, /class="catalog-pagination"|class="catalog-games-grid"/);
     assert.match(homeHtml, /href="https:\/\/provider\.example\/game\/external" target="_blank"/);
     assert.match(homeHtml, /Provider Test Game/);
     assert.match(homeHtml, /class="language-flag"/);
