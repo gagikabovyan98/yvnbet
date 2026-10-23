@@ -3,6 +3,7 @@ export const tr = (ru, hy, en) => ({ ru, hy, en });
 const same = (s) => tr(s, s, s);
 export const ui = {
   ru: {
+    sections: "Разделы",
     countrySearch: "Страна или код телефона",
     partners: "Партнёрская программа",
     contactOperator: "Связаться с оператором",
@@ -96,6 +97,7 @@ export const ui = {
     pending: "Сохраняем…",
   },
   en: {
+    sections: "Sections",
     searchCatalog: "Find a game or provider",
     countrySearch: "Country or calling code",
     partners: "Partner programme",
@@ -186,6 +188,7 @@ export const ui = {
     pending: "Saving…",
   },
   hy: {
+    sections: "Բաժիններ",
     searchCatalog: "Գտնել խաղ կամ մատակարար",
     countrySearch: "Երկիր կամ հեռախոսային կոդ",
     partners: "Գործընկերային ծրագիր",
@@ -893,4 +896,10 @@ export function upgradeProviderOrdering(input) {
 for (const provider of initialContent.providers) {
   provider.pinned = false;
   provider.pinnedOrder = 1;
+}
+
+export function upgradeCatalogSections(input) {
+  const c = structuredClone(input);
+  for (const lang of languages) c.interface[lang].sections ??= ui[lang].sections;
+  return c;
 }

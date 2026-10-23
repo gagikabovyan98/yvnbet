@@ -8,6 +8,8 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Layers,
   Search,
   Play,
   Smartphone,
@@ -885,12 +887,25 @@ function ProviderDirectory({ c, L, t, href }) {
     {!providers.length && <p className="empty">{t.empty}</p>}
   </section>;
 }
-function CategoryLinks({ c, L, href }) {
-  if (!c.categories.length || (c.categories.length === 1 && c.categories[0].slug === "slots")) return null;
-  return <nav className="category-links">
-    {c.categories.map((category) => <a className="provider-view-all" key={category.id}
-      href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}>{L(category.title)}</a>)}
-  </nav>;
+function CategoryMenu({ c, L, t, href, selected }) {
+  const menu = useRef(null);
+  return <details className="category-menu" ref={menu} onKeyDown={event => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      menu.current.open = false;
+      menu.current.querySelector("summary").focus();
+    }
+  }}>
+    <summary><Layers size={23} aria-hidden="true" /><span>{t.sections}</span><ChevronDown className="category-chevron" size={24} aria-hidden="true" /></summary>
+    <nav className="category-menu-options" aria-label={t.sections}>
+      {c.categories.map(category => <a key={category.id}
+        href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}
+        aria-current={category.id === selected ? "page" : undefined}>
+        <span>{L(category.title)}</span>
+        {category.id === selected ? <CheckCircle2 size={19} aria-hidden="true" /> : <ChevronRight size={19} aria-hidden="true" />}
+      </a>)}
+    </nav>
+  </details>;
 }
 function Catalog({ c, t, L, provider, category, label, href, card }) {
   const [filter, setFilter] = useState(provider || ""),
@@ -903,21 +918,24 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
   );
   return (
     <section className="catalog">
-      <CategoryLinks c={c} L={L} href={href} />
       <div className="catalog-controls">
         <span className="catalog-label">
           {label}
           <span className="count">{games.length}</span>
         </span>
-        <label className="search">
-          <Search size={18} />
+      </div>
+      <div className="catalog-discovery">
+        <label className="catalog-search">
           <input
+            type="search"
             aria-label={t.search}
             placeholder={t.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <Search size={25} aria-hidden="true" />
         </label>
+        <CategoryMenu c={c} L={L} t={t} href={href} selected={category} />
       </div>
       {!provider && (
         <ProviderRail
