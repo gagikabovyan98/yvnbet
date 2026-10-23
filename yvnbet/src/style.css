@@ -4430,7 +4430,7 @@ footer {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 50px;
+  min-height: 46px;
   padding: 0 16px;
   background: linear-gradient(110deg, #65405d99, #42263eaa);
   color: #d3bad2;
@@ -4440,7 +4440,7 @@ footer {
   min-width: 0;
   border: 0;
   outline: none;
-  padding: 12px 0;
+  padding: 9px 0;
   background: transparent;
   color: #fff2ff;
   font: inherit;
@@ -4454,8 +4454,8 @@ footer {
   display: flex;
   align-items: center;
   gap: 11px;
-  min-height: 50px;
-  padding: 11px 16px;
+  min-height: 44px;
+  padding: 8px 16px;
   list-style: none;
   cursor: pointer;
   color: #fbf2fb;
@@ -4471,8 +4471,8 @@ footer {
 .category-menu-options a:hover, .category-menu-options a[aria-current="page"] { color: #fff; background: #77527155; }
 .category-menu-options a > svg { flex-shrink: 0; color: #d99acb; }
 @media (max-width: 700px) {
-  .catalog-search { min-height: 48px; padding-inline: 16px; }
-  .category-menu summary { min-height: 48px; padding-inline: 16px; }
+  .catalog-search { min-height: 46px; padding-inline: 16px; }
+  .category-menu summary { min-height: 44px; padding-inline: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .category-chevron { transition: none; } }
 
