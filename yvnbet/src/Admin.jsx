@@ -322,9 +322,9 @@ export default function Admin() {
               <span>{label}</span>
               <input
                 value={value.ru || value.hy || value.en}
-                onChange={(e) => change(path, sharedGameTitle(path[0] === "providers" ? e.target.value.toLowerCase() : e.target.value))}
+                onChange={(e) => change(path, sharedGameTitle(e.target.value))}
               />
-              <small>Название автоматически используется для RU, HY и EN. {path[0] === "providers" && "Буквы автоматически становятся строчными."}</small>
+              <small>Название автоматически используется для RU, HY и EN. Заглавные и строчные буквы сохраняются как введены.</small>
             </label>
           );
         }
