@@ -174,7 +174,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.match(homeHtml, /class="bottom-nav"/);
     const publicHome = homeHtml.split('id="site-data"')[0];
     assert.doesNotMatch(publicHome, /class="category-links"/);
-    assert.match(publicHome, /class="provider-all" href="\/hy\/slots"/);
+    assert.match(publicHome, /class="provider-all" href="\/hy\/slots#catalog"/);
     assert.doesNotMatch(publicHome, /class="search home-game-search"|class="catalog-tabs"/);
     assert.match(publicHome, /Provider Test Game/);
     for (const route of ["/hy/lottery", "/hy/categories/lottery"]) {
@@ -205,6 +205,14 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.doesNotMatch(slotsHtml, /class="catalog-pagination"|class="catalog-tabs"/);
     assert.doesNotMatch(slotsHtml, /class="horizontal-games"/);
     assert.match(providerHtml, /class="catalog-games-grid"/);
+    assert.match(providerHtml, /id="catalog"/);
+    assert.match(providerHtml, /aria-current="page" href="\/hy\/providers\/amusnet#catalog"/);
+    const isolatedProvider = (await (await call("/hy/providers/new-provider")).text()).split('id="site-data"')[0];
+    const providerGrid = isolatedProvider.match(/<div class="catalog-games-grid"[\s\S]*?<\/section>/)[0];
+    assert.match(providerGrid, /Provider Test Game/);
+    assert.doesNotMatch(providerGrid, /golden-eclipse|Crystal Path|midnight-star/);
+    assert.match(providerGrid, /https:\/\/provider\.example\/game\/82739/);
+
     assert.equal((slotsHtml.match(/<h1 /g) || []).length, 1);
     assert.match(homeHtml, /<link rel="icon" href="\/images\/wordmark.webp">/);
     assert.match(homeHtml, /<source media="\(max-width: 700px\)" srcSet="\/images\/hero.webp"/);
@@ -229,7 +237,7 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.equal(directoryResponse.status, 200);
     const directoryHtml = (await directoryResponse.text()).split('id="site-data"')[0];
     assert.match(directoryHtml, /class="provider-directory-grid"/);
-    assert.match(directoryHtml, /href="\/hy\/providers\/new-provider"/);
+    assert.match(directoryHtml, /href="\/hy\/providers\/new-provider#catalog"/);
     assert.ok(homeHtml.includes("https://t.me/support_test?text="));
     assert.match(publicHome, /class="provider-rail"/);
     assert.match(publicHome, /class="section provider-games"/);

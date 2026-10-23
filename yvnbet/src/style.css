@@ -4474,3 +4474,6 @@ footer {
   .category-menu summary { min-height: 48px; padding-inline: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .category-chevron { transition: none; } }
+
+#catalog { scroll-margin-top: 90px; }
+.catalog-return { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }

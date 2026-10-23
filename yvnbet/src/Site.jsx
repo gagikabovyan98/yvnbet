@@ -1,11 +1,12 @@
 import useEmblaCarousel from "embla-carousel-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Home,
   Gift,
   Headphones,
   ArrowUpRight,
   ArrowRight,
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -44,6 +45,11 @@ export default function Site({ content, path }) {
     t = c.interface[lang],
     L = (v) => v?.[lang] || "",
     href = (s) => `/${lang}${s === "home" ? "" : "/" + s}`;
+  useLayoutEffect(() => {
+    const returning = performance.getEntriesByType("navigation")[0]?.type === "back_forward";
+    if (location.hash === "#catalog" && !returning)
+      document.getElementById("catalog")?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [path]);
   const loginExternal =
       c.settings.loginMode === "external" && Boolean(c.settings.loginUrl),
     loginHref = loginExternal ? c.settings.loginUrl : href("login"),
@@ -878,7 +884,7 @@ function ProviderDirectory({ c, L, t, href }) {
     <div className="section-heading"><h1>{t.providers}</h1><a className="text-link" href={href("home")}>{t.all}</a></div>
     <label className="search"><Search size={18} /><input aria-label={t.providers} placeholder={t.providers} value={search} onChange={e => setSearch(e.target.value)} /></label>
     <div className="provider-directory-grid">
-      {providers.map(provider => <a className="provider-directory-card" key={provider.id} href={href("providers/" + provider.slug)}>
+      {providers.map(provider => <a className="provider-directory-card" key={provider.id} href={href("providers/" + provider.slug) + "#catalog"}>
         <span className="provider-tile">{provider.logo ? <img src={provider.logo} alt="" loading="lazy" /> : <Gamepad2 size={32} />}</span>
         <span>{L(provider.title)}</span>
         <span className="count">{c.games.filter(game => game.provider === provider.id).length}</span>
@@ -899,7 +905,7 @@ function CategoryMenu({ c, L, t, href, selected }) {
     <summary><Layers size={21} aria-hidden="true" /><span>{t.sections}</span><ChevronDown className="category-chevron" size={21} aria-hidden="true" /></summary>
     <nav className="category-menu-options" aria-label={t.sections}>
       {c.categories.map(category => <a key={category.id}
-        href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}
+        href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug) + "#catalog"}
         aria-current={category.id === selected ? "page" : undefined}>
         <span>{L(category.title)}</span>
         {category.id === selected ? <CheckCircle2 size={19} aria-hidden="true" /> : <ChevronRight size={19} aria-hidden="true" />}
@@ -908,16 +914,25 @@ function CategoryMenu({ c, L, t, href, selected }) {
   </details>;
 }
 function Catalog({ c, t, L, provider, category, label, href, card }) {
-  const [filter, setFilter] = useState(provider || ""),
-    [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
   const games = c.games.filter(
     (g) =>
-      (!filter || g.provider === filter) &&
+      (!provider || g.provider === provider) &&
       (!category || g.category === category) &&
       L(g.title).toLocaleLowerCase().includes(search.toLocaleLowerCase()),
   );
   return (
-    <section className="catalog">
+    <section className="catalog" id="catalog">
+      {provider && <div className="catalog-return">
+        <a className="text-link" href={href("home")} onClick={event => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
+            event.preventDefault();
+            history.back();
+          }
+        }}><ArrowLeft size={17} />{t.back}</a>
+        <a className="text-link" href={href("providers")}>{t.providers}<ChevronRight size={17} /></a>
+      </div>}
       <div className="catalog-controls">
         <span className="catalog-label">
           {label}
@@ -937,15 +952,7 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
         </label>
         <CategoryMenu c={c} L={L} t={t} href={href} selected={category} />
       </div>
-      {!provider && (
-        <ProviderRail
-          providers={c.providers}
-          L={L}
-          t={t}
-          selected={filter}
-          onSelect={setFilter}
-        />
-      )}
+      <ProviderRail providers={c.providers} L={L} t={t} href={href} selected={provider} />
       <div className="catalog-games-grid" aria-label={label}>
         {games.map((game) => card(game))}
       </div>
@@ -1458,7 +1465,7 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
             <span className="provider-caption">{t.allProviders}</span>
           </button>
         ) : (
-          <a className="provider-all" href={href("slots")}>
+          <a className="provider-all" href={href("slots") + "#catalog"}>
             <span className="provider-tile">
               <img
                 src="/images/providers-all.png"
@@ -1493,8 +1500,9 @@ function ProviderRail({ providers, L, t, href, selected, onSelect }) {
           ) : (
             <a
               key={p.id}
-              className="provider-logo"
-              href={href("providers/" + p.slug)}
+              className={"provider-logo" + (selected === p.id ? " active" : "")}
+              aria-current={selected === p.id ? "page" : undefined}
+              href={href("providers/" + p.slug) + "#catalog"}
               title={label}
               aria-label={label}
               draggable="false"
@@ -1607,7 +1615,7 @@ function ProviderGames({ provider, games, card, L, t, href }) {
         <div className="game-row-actions">
           <a
             className="provider-view-all"
-            href={href("providers/" + provider.slug)}
+            href={href("providers/" + provider.slug) + "#catalog"}
           >
             {t.allProviders}
             <ChevronRight size={16} />
