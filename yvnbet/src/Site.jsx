@@ -896,7 +896,7 @@ function CategoryMenu({ c, L, t, href, selected }) {
       menu.current.querySelector("summary").focus();
     }
   }}>
-    <summary><Layers size={23} aria-hidden="true" /><span>{t.sections}</span><ChevronDown className="category-chevron" size={24} aria-hidden="true" /></summary>
+    <summary><Layers size={21} aria-hidden="true" /><span>{t.sections}</span><ChevronDown className="category-chevron" size={21} aria-hidden="true" /></summary>
     <nav className="category-menu-options" aria-label={t.sections}>
       {c.categories.map(category => <a key={category.id}
         href={href(category.slug === "slots" ? "slots" : "categories/" + category.slug)}
@@ -933,7 +933,7 @@ function Catalog({ c, t, L, provider, category, label, href, card }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Search size={25} aria-hidden="true" />
+          <Search size={22} aria-hidden="true" />
         </label>
         <CategoryMenu c={c} L={L} t={t} href={href} selected={category} />
       </div>
