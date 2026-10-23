@@ -125,6 +125,7 @@ export default function Admin() {
     [dirty, setDirty] = useState(false),
     [section, setSection] = useState("overview"),
     [selected, setSelected] = useState(""),
+    [openProvider, setOpenProvider] = useState(""),
     [lang, setLang] = useState("ru"),
     [message, setMessage] = useState(""),
     [error, setError] = useState(""),
@@ -139,6 +140,10 @@ export default function Admin() {
     window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
     editor.querySelector("input:not([type=checkbox]), textarea")?.focus({ preventScroll: true });
   }, [selected]);
+  const selectedGameProvider = section === "games" ? draft?.games.find(game => game.id === selected)?.provider : undefined;
+  useEffect(() => {
+    if (selectedGameProvider) setOpenProvider(selectedGameProvider);
+  }, [selectedGameProvider]);
   async function api(url, options = {}) {
     const r = await fetch("/api" + url, {
       ...options,
@@ -266,12 +271,12 @@ export default function Admin() {
       template.id = id;
       template.slug = id;
       template.title = sharedGameTitle("Новая игра");
-      template.provider = draft.providers[0]?.id || "";
+      template.provider = draft.providers.find(provider => provider.id === openProvider)?.id || draft.providers[0]?.id || "";
       template.category = draft.categories[0]?.id || "";
       template.featured = false;
       template.featuredOrder = draft.games.length + 1;
       template.featuredIcon = "⭐";
-      template.indexable = true;
+      template.indexable = false;
       template.mode = "external";
       template.url = "https://ggplus.pro/hy";
     }
@@ -297,7 +302,11 @@ export default function Admin() {
   }
   function reorder(index, delta) {
     const list = [...draft[section]];
-    [list[index], list[index + delta]] = [list[index + delta], list[index]];
+    const positions = list.map((item, i) => ({ item, i }))
+      .filter(({ item }) => section !== "games" || item.provider === list[index].provider).map(({ i }) => i);
+    const target = positions[positions.indexOf(index) + delta];
+    if (target === undefined) return;
+    [list[index], list[target]] = [list[target], list[index]];
     change([section], list);
   }
   async function upload(file, path) {
@@ -526,6 +535,53 @@ export default function Admin() {
   const list = draft && Array.isArray(draft[section]) ? draft[section] : null;
   const index = list?.findIndex((x) => x.id === selected),
     current = index >= 0 ? list[index] : null;
+  const record = (x, i, position, count) => (
+    <div
+      className={
+        "cms-record " + (selected === x.id ? "active" : "")
+      }
+      key={x.id}
+    >
+      <button onClick={() => { focusNewRecord.current = selected !== x.id; setSelected(x.id); }}>
+        {x.image ? (
+          <img src={x.image} alt="" />
+        ) : (
+          <span className="record-number">
+            {String(i + 1).padStart(2, "0")}
+          </span>
+        )}
+        <span>
+          <strong>{x.title[lang] || x.id}</strong>
+          <small>
+            {x.enabled ? "Опубликовано" : "Черновик"} · /
+            {section === "categories" && x.slug !== "slots" ? "categories/" : ""}{x.slug}
+          </small>
+        </span>
+      </button>
+      <div className="record-actions">
+        <button
+          aria-label="Выше"
+          disabled={position === 0}
+          onClick={() => reorder(i, -1)}
+        >
+          <ArrowUp size={14} />
+        </button>
+        <button
+          aria-label="Ниже"
+          disabled={position === count - 1}
+          onClick={() => reorder(i, 1)}
+        >
+          <ArrowDown size={14} />
+        </button>
+        <button
+          aria-label="Удалить запись"
+          onClick={() => remove(i)}
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+    </div>
+  );
   return (
     <div className="cms">
       <aside className="cms-sidebar">
@@ -669,59 +725,29 @@ export default function Admin() {
             <>
               <div className="cms-section-tools">
                 <span>
-                  {list.length} записей · порядок на сайте совпадает со списком
+                  {list.length} записей · {section === "games" ? "нажмите на провайдера, чтобы открыть его игры" : "порядок на сайте совпадает со списком"}
                 </span>
 
               </div>
               <div className="cms-editor-layout">
-                <div className="cms-records">
-                  {list.map((x, i) => (
-                    <div
-                      className={
-                        "cms-record " + (selected === x.id ? "active" : "")
-                      }
-                      key={x.id}
-                    >
-                      <button onClick={() => setSelected(x.id)}>
-                        {x.image ? (
-                          <img src={x.image} alt="" />
-                        ) : (
-                          <span className="record-number">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                        )}
-                        <span>
-                          <strong>{x.title[lang] || x.id}</strong>
-                          <small>
-                            {x.enabled ? "Опубликовано" : "Черновик"} · /
-                            {section === "categories" && x.slug !== "slots" ? "categories/" : ""}{x.slug}
-                          </small>
-                        </span>
+                <div className={"cms-records" + (section === "games" ? " cms-grouped-records" : "")}>
+                  {section === "games" ? draft.providers.map(provider => {
+                    const games = list.map((game, i) => ({ game, i })).filter(({ game }) => game.provider === provider.id);
+                    const expanded = openProvider === provider.id;
+                    return <div className="cms-provider-group" key={provider.id}>
+                      <button className="cms-provider-toggle" aria-expanded={expanded}
+                        aria-controls={`provider-games-${provider.id}`} onClick={() => setOpenProvider(expanded ? "" : provider.id)}>
+                        {provider.logo ? <img src={provider.logo} alt="" /> : <Gamepad2 size={23} />}
+                        <span>{provider.title[lang] || provider.id}</span>
+                        <span className="cms-provider-count">{games.length}</span>
+                        <ChevronRight size={18} />
                       </button>
-                      <div className="record-actions">
-                        <button
-                          aria-label="Выше"
-                          disabled={i === 0}
-                          onClick={() => reorder(i, -1)}
-                        >
-                          <ArrowUp size={14} />
-                        </button>
-                        <button
-                          aria-label="Ниже"
-                          disabled={i === list.length - 1}
-                          onClick={() => reorder(i, 1)}
-                        >
-                          <ArrowDown size={14} />
-                        </button>
-                        <button
-                          aria-label="Удалить запись"
-                          onClick={() => remove(i)}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <div id={`provider-games-${provider.id}`} hidden={!expanded} className="cms-provider-games">
+                        {expanded && games.map(({ game, i }, position) => record(game, i, position, games.length))}
+                        {!games.length && <p>У этого провайдера пока нет игр. Нажмите «Добавить».</p>}
                       </div>
-                    </div>
-                  ))}
+                    </div>;
+                  }) : list.map((x, i) => record(x, i, i, list.length))}
                   {!list.length && <p>Пока нет записей. Добавьте первую.</p>}
                 </div>
                 <div className="cms-card cms-editor">

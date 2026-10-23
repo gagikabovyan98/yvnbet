@@ -4484,3 +4484,15 @@ footer {
   .cms-toolbar .cms-open-site { padding-inline: 12px; }
   .cms-toolbar > div:last-child { align-items: center; gap: 8px; }
 }
+
+.cms-grouped-records { display: flex; flex-direction: column; }
+.cms-provider-group { background: #fff; border: 1px solid #e5deeb; border-radius: 10px; overflow: hidden; }
+.cms-provider-toggle { display: flex; width: 100%; align-items: center; gap: 10px; padding: 15px; background: #fff; color: #4c3b59; text-align: left; }
+.cms-provider-toggle > img { width: 48px; height: 32px; object-fit: contain; border-radius: 5px; background: #24182f; }
+.cms-provider-toggle > span:first-of-type { flex: 1; overflow-wrap: anywhere; min-width: 0; font-weight: 600; }
+.cms-provider-toggle > svg { flex-shrink: 0; }
+.cms-provider-count { background: #f2edf6; color: #9679a5; padding: 4px 7px; border-radius: 6px; font-size: 11px; }
+.cms-provider-toggle[aria-expanded="true"] { background: #f7f1fa; }
+.cms-provider-toggle[aria-expanded="true"] > svg:last-child { transform: rotate(90deg); }
+.cms-provider-games:not([hidden]) { display: grid; gap: 8px; padding: 10px; border-top: 1px solid #e5deeb; }
+.cms-provider-games > p { padding: 8px; color: #8c799a; font-size: 12px; line-height: 1.6; }
