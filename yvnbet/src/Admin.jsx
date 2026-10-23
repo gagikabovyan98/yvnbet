@@ -117,6 +117,7 @@ const labels = {
 };
 export default function Admin() {
   const automaticProviders = useRef(new Set());
+  const focusNewRecord = useRef(false);
   const [user, setUser] = useState(null),
     [ready, setReady] = useState(false),
     [draft, setDraft] = useState(null),
@@ -128,6 +129,16 @@ export default function Admin() {
     [message, setMessage] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!focusNewRecord.current) return;
+    focusNewRecord.current = false;
+    const editor = document.querySelector(".cms-editor");
+    const toolbar = document.querySelector(".cms-toolbar");
+    if (!editor) return;
+    const top = editor.getBoundingClientRect().top + window.scrollY - (toolbar?.getBoundingClientRect().height || 0) - 12;
+    window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
+    editor.querySelector("input:not([type=checkbox]), textarea")?.focus({ preventScroll: true });
+  }, [selected]);
   async function api(url, options = {}) {
     const r = await fetch("/api" + url, {
       ...options,
@@ -274,6 +285,7 @@ export default function Admin() {
     }
     template.enabled = false;
     change([section], [...draft[section], template]);
+    focusNewRecord.current = true;
     setSelected(template.id);
   }
   function remove(index) {
@@ -570,14 +582,19 @@ export default function Admin() {
           </div>
           <div>
             <a
-              className="cms-secondary"
+              className={"cms-secondary" + (list ? " cms-open-site" : "")}
+              aria-label="Открыть сайт"
+              title="Открыть сайт"
               href="/ru"
               target="_blank"
               rel="noreferrer"
             >
-              Открыть сайт
+              <span>Открыть сайт</span>
               <ExternalLink size={15} />
             </a>
+            {list && <button className="cms-secondary" onClick={add} disabled={busy}>
+              <Plus size={17} />Добавить
+            </button>}
             {draft && (
               <button
                 className="cms-primary"
@@ -654,10 +671,7 @@ export default function Admin() {
                 <span>
                   {list.length} записей · порядок на сайте совпадает со списком
                 </span>
-                <button className="cms-primary" onClick={add}>
-                  <Plus size={17} />
-                  Добавить
-                </button>
+
               </div>
               <div className="cms-editor-layout">
                 <div className="cms-records">

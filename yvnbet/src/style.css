@@ -4478,3 +4478,9 @@ footer {
 
 #catalog { scroll-margin-top: 90px; }
 .catalog-return { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+
+@media (max-width: 700px) {
+  .cms-toolbar .cms-open-site span { display: none; }
+  .cms-toolbar .cms-open-site { padding-inline: 12px; }
+  .cms-toolbar > div:last-child { align-items: center; gap: 8px; }
+}
