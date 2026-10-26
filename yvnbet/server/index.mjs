@@ -165,8 +165,8 @@ app.put("/api/content", edit, (req, res) => {
 });
 app.post("/api/upload", edit, async (req, res) => {
   try {
-    if (!rate("upload:" + req.user.id, 60, 3600_000))
-      return res.status(429).json({ error: "Слишком много загрузок" });
+    if (!rate("upload-minute:" + req.user.id, 120, 60_000))
+      return res.set("Retry-After", "60").status(429).json({ error: "Слишком частые загрузки. Подождите минуту и повторите загрузку фото." });
     const { bytes, ext } = await parseImage(req.body?.data);
     const name = randomUUID() + "." + ext;
     await writeFile(path.join(dataDir, "uploads", name), bytes, {

@@ -51,3 +51,13 @@ export function visitSeed() {
     return seed;
   } catch { return Date.now() >>> 0; }
 }
+
+export function orderGames(games, random = Math.random) {
+  return [
+    ...games.filter(game => game.priority).sort((a, b) => a.priorityOrder - b.priorityOrder),
+    ...mixGames(games.filter(game => !game.priority), random),
+  ];
+}
+export function homeGames(games) {
+  return games.filter(game => game.showOnHome);
+}

@@ -21,7 +21,7 @@ import {
   Dices,
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
-import { mixGames, orderProviders, seededRandom, visitSeed } from "./catalog.mjs";
+import { orderGames, homeGames, orderProviders, seededRandom, visitSeed } from "./catalog.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
 import RegionInput from "./components/RegionInput.jsx";
 import InstallInstructions from "./components/InstallInstructions.jsx";
@@ -38,8 +38,9 @@ const icons = {
 export default function Site({ content, path }) {
   const [c] = useState(() => {
     const random = seededRandom(visitSeed());
-    return { ...content, games: mixGames(content.games, random), providers: orderProviders(content.providers, random) };
+    return { ...content, games: orderGames(content.games, random), providers: orderProviders(content.providers, random) };
   });
+  const home = { ...c, games: homeGames(c.games) };
   const route = routeFor(path, c),
     { lang, section, item, valid } = route,
     t = c.interface[lang],
@@ -316,7 +317,7 @@ export default function Site({ content, path }) {
                           href={href}
                         />
                         <FeaturedGames
-                          games={orderedFeaturedGames(c.games).slice(0, 15)}
+                          games={orderedFeaturedGames(home.games).slice(0, 15)}
                           card={card}
                           label={t.featured}
                           t={t}
@@ -325,7 +326,7 @@ export default function Site({ content, path }) {
                           <ProviderGames
                             key={provider.id}
                             provider={provider}
-                            games={c.games.filter(
+                            games={home.games.filter(
                               (g) => g.provider === provider.id,
                             )}
                             card={card}
@@ -334,7 +335,7 @@ export default function Site({ content, path }) {
                             href={href}
                           />
                         ))}
-                        <Random c={c} t={t} L={L} href={href} onGameClick={gameClick} />
+                        <Random c={home} t={t} L={L} href={href} onGameClick={gameClick} />
                         {c.promotions.length > 0 && (
                           <section className="section">
                             <div className="section-heading">
@@ -842,27 +843,6 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
           >
             <ChevronRight size={22} />
           </button>
-          <div className="banner-pagination">
-            {slides.map((slide, i) => (
-              <button
-                type="button"
-                key={slide.id}
-                className={i === index % slides.length ? "active" : ""}
-                aria-label={`${t.slide} ${i + 1}`}
-                aria-current={i === index % slides.length ? "true" : undefined}
-                onClick={() => select(i)}
-              >
-                {i === index % slides.length && (
-                  <span
-                    key={cycle}
-                    ref={progress}
-                    className="banner-progress"
-                    style={{ "--slide-progress": 0 }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
           <button
             type="button"
             className="banner-pause"
@@ -873,6 +853,27 @@ function Slider({ slides, L, t, seconds, localizedUrl, onOpen, hideCopy = false,
           </button>
         </>
       )}
+      <div className="banner-pagination">
+        {slides.map((slide, i) => (
+          <button
+            type="button"
+            key={slide.id}
+            className={i === index % slides.length ? "active" : ""}
+            aria-label={`${t.slide} ${i + 1}`}
+            aria-current={i === index % slides.length ? "true" : undefined}
+            onClick={() => select(i)}
+          >
+            {i === index % slides.length && (
+              <span
+                key={cycle}
+                ref={progress}
+                className="banner-progress"
+                style={{ "--slide-progress": 0 }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
     </section>
   );
 }

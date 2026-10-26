@@ -103,6 +103,24 @@ test("production HTTP: auth, RBAC, CSRF, concurrent editing, encrypted leads, SS
     assert.equal((await call("/data/cms.sqlite")).status, 404);
     await login("admin", "Isolated-Test-Password-2026");
     const adminAuth = { cookie, csrf };
+    // A previously exhausted hourly quota must not block catalog work after upgrade.
+    const quotaDb = new DatabaseSync(path.join(dir, "cms.sqlite"));
+    const adminId = quotaDb.prepare("SELECT id FROM users WHERE username='admin'").get().id;
+    quotaDb.prepare("INSERT OR REPLACE INTO limits VALUES(?,?,?)").run("upload:" + adminId, 60, Date.now() + 3600_000);
+    const sharp = (await import("sharp")).default;
+    const imageBytes = await sharp({create:{width:8,height:8,channels:3,background:'#8844aa'}}).png().toBuffer();
+    const imageBody = {data: 'data:image/png;base64,' + imageBytes.toString('base64')};
+    const uploaded = await call("/api/upload", "POST", imageBody);
+    assert.equal(uploaded.status, 200);
+    assert.match((await uploaded.json()).url, /^\/uploads\//);
+    quotaDb.prepare("UPDATE limits SET count=120 WHERE key=?").run("upload-minute:" + adminId);
+    const throttled = await call("/api/upload", "POST", imageBody);
+    assert.equal(throttled.status, 429);
+    assert.equal(throttled.headers.get("retry-after"), "60");
+    assert.match((await throttled.json()).error, /минуту/);
+    quotaDb.prepare("UPDATE limits SET expires=? WHERE key=?").run(Date.now() - 1, "upload-minute:" + adminId);
+    assert.equal((await call("/api/upload", "POST", imageBody)).status, 200);
+    quotaDb.close();
     let state = await (await call("/api/admin/content")).json();
     assert.equal(
       (await call("/api/content", "PUT", state, { "X-CSRF-Token": "" })).status,

@@ -903,3 +903,19 @@ export function upgradeCatalogSections(input) {
   for (const lang of languages) c.interface[lang].sections ??= ui[lang].sections;
   return c;
 }
+
+// Existing home selections survive the upgrade; new games opt in from the editor.
+export function upgradeGamePlacement(input) {
+  const c = structuredClone(input);
+  for (const game of c.games) {
+    game.showOnHome ??= true;
+    game.priority ??= false;
+    game.priorityOrder ??= 1;
+  }
+  return c;
+}
+for (const game of initialContent.games) {
+  game.showOnHome = true;
+  game.priority = false;
+  game.priorityOrder = 1;
+}

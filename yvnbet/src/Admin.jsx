@@ -70,6 +70,9 @@ const labels = {
   mode: "Открывать",
   provider: "Провайдер",
   category: "Категория",
+  showOnHome: "Показывать на главной",
+  priority: "Показывать первыми",
+  priorityOrder: "Порядок среди первых (1 — первым)",
   featured: "Показывать в «Топ играх»",
   featuredOrder: "Порядок в топе (1 — первым)",
   featuredIcon: "Эмодзи в «Топ играх»",
@@ -270,7 +273,10 @@ export default function Admin() {
       const id = nextGameIdentifier(draft.games);
       template.id = id;
       template.slug = id;
-      template.title = sharedGameTitle("Новая игра");
+      template.title = sharedGameTitle("");
+      template.showOnHome = false;
+      template.priority = false;
+      template.priorityOrder = 1;
       template.provider = draft.providers.find(provider => provider.id === openProvider)?.id || draft.providers[0]?.id || "";
       template.category = draft.categories[0]?.id || "";
       template.featured = false;
@@ -342,6 +348,7 @@ export default function Admin() {
             <label className="cms-field" key={path.join(".")}>
               <span>{label}</span>
               <input
+                placeholder={section === "games" ? "Название игры" : undefined}
                 value={value.ru || value.hy || value.en}
                 onChange={(e) => change(path, sharedGameTitle(e.target.value))}
               />
@@ -782,10 +789,17 @@ export default function Admin() {
                       {section === "games" && <p className="cms-banner-help">
                         Числовой адрес создаётся автоматически и не требует редактирования.
                         Для провайдеров, запрещающих iframe, выберите «Новая вкладка».
-                        Галочка «Показывать в „Топ играх“» добавляет игру в топ, а поле порядка
+                        «Показывать на главной» добавляет игру на главную; без отметки она остаётся в каталоге и у своего провайдера.
+                        «Показывать первыми» закрепляет игру в начале списков, меньший номер — выше.
+                        Галочка «Показывать в „Топ играх“» добавляет выбранную для главной игру в топ, а поле порядка
                         определяет её позицию. Эмодзи рядом с названием можно заменить или удалить.
                       </p>}
                       {Object.entries(current)
+                        .sort(([a], [b]) => {
+                          if (section !== "games") return 0;
+                          const order = ["title", "image", "provider", "category", "enabled", "showOnHome", "priority", "priorityOrder", "featured", "featuredOrder", "featuredIcon", "url", "mode", "indexable", "description", "seo", "id"];
+                          return order.indexOf(a) - order.indexOf(b);
+                        })
                         .filter(
                           ([k]) =>
                             !(section === "games" && k === "slug") &&

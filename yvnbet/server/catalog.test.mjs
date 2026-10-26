@@ -44,3 +44,34 @@ test("up to five manually ranked providers precede a shuffled remainder; migrati
   upgraded.providers = Array.from({length: 6}, (_, i) => ({...upgraded.providers[0], id: 'provider-' + i, slug: 'provider-' + i, pinned: true}));
   assert.throws(() => validateContent(upgraded), /не больше 5/);
 });
+
+test("game placement preserves existing homepage choices and prioritizes games without hiding catalog entries", async () => {
+  const { upgradeGamePlacement, publicContent } = await import('../src/content.mjs');
+  const { orderGames, homeGames } = await import('../src/catalog.mjs');
+  const old = structuredClone(initialContent);
+  delete old.games[0].showOnHome;
+  delete old.games[0].priority;
+  delete old.games[0].priorityOrder;
+  old.games[1].showOnHome = false;
+  const c = upgradeGamePlacement(old);
+  assert.equal(c.games[0].showOnHome, true);
+  assert.equal(c.games[1].showOnHome, false);
+  assert.deepEqual(upgradeGamePlacement(c), c);
+  c.games[2].priority = true;
+  c.games[2].priorityOrder = 2;
+  c.games[4].priority = true;
+  c.games[4].priorityOrder = 1;
+  const ordered = orderGames(c.games, seededRandom(1));
+  assert.deepEqual(ordered.slice(0, 2).map(g => g.id), [c.games[4].id, c.games[2].id]);
+  assert.deepEqual(orderGames(c.games, seededRandom(2)).slice(0, 2), ordered.slice(0, 2));
+  assert.equal(new Set(ordered.map(g => g.id)).size, c.games.length);
+  assert.equal(homeGames(ordered).some(g => g.id === c.games[1].id), false);
+  assert.equal(publicContent(c).games.some(g => g.id === c.games[1].id), true);
+  assert.doesNotThrow(() => validateContent(c));
+  const added = structuredClone(c.games[0]);
+  delete added.showOnHome; delete added.priority; delete added.priorityOrder;
+  c.games = [added];
+  assert.equal(validateContent(c).games[0].showOnHome, false);
+  c.games[0].priorityOrder = 0;
+  assert.throws(() => validateContent(c));
+});
