@@ -196,6 +196,26 @@ export default function Site({ content, path }) {
       ))}
     </div>
   );
+  const homeRows = (() => {
+    const pragmatic = c.providers.find((provider) => provider.id === "pragmatic-play");
+    const amatic = c.providers.find((provider) => provider.id === "amatic");
+    const remaining = c.providers.filter(
+      (provider) => !["pragmatic-play", "amatic"].includes(provider.id),
+    );
+    const anchor = pragmatic
+      ? c.providers.indexOf(pragmatic)
+      : amatic
+        ? c.providers.indexOf(amatic)
+        : remaining.length;
+    const position = Math.min(anchor, remaining.length);
+    return [
+      ...remaining.slice(0, position),
+      ...(pragmatic ? [pragmatic] : []),
+      "random-game-selector",
+      ...(amatic ? [amatic] : []),
+      ...remaining.slice(position),
+    ];
+  })();
   return (
     <>
       <a className="skip" href="#main">
@@ -322,20 +342,30 @@ export default function Site({ content, path }) {
                           label={t.featured}
                           t={t}
                         />
-                        {c.providers.map((provider) => (
-                          <ProviderGames
-                            key={provider.id}
-                            provider={provider}
-                            games={home.games.filter(
-                              (g) => g.provider === provider.id,
-                            )}
-                            card={card}
-                            L={L}
-                            t={t}
-                            href={href}
-                          />
-                        ))}
-                        <Random c={home} t={t} L={L} href={href} onGameClick={gameClick} />
+                        {homeRows.map((row) =>
+                          row === "random-game-selector" ? (
+                            <Random
+                              key={row}
+                              c={home}
+                              t={t}
+                              L={L}
+                              href={href}
+                              onGameClick={gameClick}
+                            />
+                          ) : (
+                            <ProviderGames
+                              key={row.id}
+                              provider={row}
+                              games={home.games.filter(
+                                (game) => game.provider === row.id,
+                              )}
+                              card={card}
+                              L={L}
+                              t={t}
+                              href={href}
+                            />
+                          ),
+                        )}
                         {c.promotions.length > 0 && (
                           <section className="section">
                             <div className="section-heading">

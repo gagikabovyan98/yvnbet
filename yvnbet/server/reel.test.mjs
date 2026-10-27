@@ -5,6 +5,7 @@ import {
   initialContent,
   upgradePresentation,
   upgradeLionPresentation,
+  upgradeRandomPlacementCopy,
 } from "../src/content.mjs";
 
 test("reel centers the selected game and preserves the previous result for repeat spins", () => {
@@ -52,4 +53,16 @@ test("lion presentation migrates defaults once and preserves custom CMS art and 
   old.interface.hy.random = "Custom heading";
   old.interface.hy.randomText = "Custom copy";
   assert.deepEqual(upgradeLionPresentation(old), old);
+});
+
+test("Armenian random-game default copy gains final punctuation while custom copy survives", () => {
+  const old = structuredClone(initialContent);
+  old.interface.hy.random = "Չգիտե՞ս՝ ինչ խաղալ";
+  const updated = upgradeRandomPlacementCopy(old);
+  assert.equal(updated.interface.hy.random, "Չգիտե՞ս՝ ինչ խաղալ։");
+  assert.equal(updated.interface.hy.randomText, "Առյուծը կօգնի քեզ։");
+  assert.deepEqual(upgradeRandomPlacementCopy(updated), updated);
+  old.interface.hy.random = "Իմ վերնագիրը";
+  old.interface.hy.randomText = "Իմ նկարագրությունը";
+  assert.deepEqual(upgradeRandomPlacementCopy(old), old);
 });

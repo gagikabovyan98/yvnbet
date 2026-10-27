@@ -4127,7 +4127,7 @@ footer {
   width: min(800px, calc(100% - 40px));
   margin: 0 auto;
   padding: 0;
-  text-align: left;
+  text-align: center;
 }
 .random-reel-section .lion-heading h2 {
   margin: 0 0 7px;

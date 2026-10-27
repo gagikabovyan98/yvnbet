@@ -218,7 +218,7 @@ export const ui = {
     empty: "Արդյունքներ չկան։ Փորձեք այլ զտիչ։",
     play: "Խաղալ",
     details: "Մանրամասն",
-    random: "Չգիտե՞ս՝ ինչ խաղալ",
+    random: "Չգիտե՞ս՝ ինչ խաղալ։",
     randomText: "Առյուծը կօգնի քեզ։",
     spin: "Պտտել",
     spinning: "Առյուծն ընտրում է…",
@@ -901,6 +901,19 @@ for (const provider of initialContent.providers) {
 export function upgradeCatalogSections(input) {
   const c = structuredClone(input);
   for (const lang of languages) c.interface[lang].sections ??= ui[lang].sections;
+  return c;
+}
+
+export function upgradeRandomPlacementCopy(input) {
+  const c = structuredClone(input);
+  if (
+    ["Չգիտե՞ս՝ ինչ խաղալ", "Չգիտե՞ք՝ ինչ խաղալ", "գիտես ինչ խաղալ?"].includes(
+      c.interface.hy.random,
+    )
+  )
+    c.interface.hy.random = ui.hy.random;
+  if (["Առյուծը կօգնի քեզ։", "Առյուծը կոգնի քեզ"].includes(c.interface.hy.randomText))
+    c.interface.hy.randomText = ui.hy.randomText;
   return c;
 }
 

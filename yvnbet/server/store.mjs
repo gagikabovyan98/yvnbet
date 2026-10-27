@@ -26,6 +26,7 @@ import {
   upgradeAndroidAppCopy,
   upgradeProviderOrdering,
   upgradeCatalogSections,
+  upgradeRandomPlacementCopy,
   upgradeGamePlacement,
 } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
@@ -72,6 +73,7 @@ export async function openStore(dir) {
     ["2026-10-android-app-copy", upgradeAndroidAppCopy],
     ["2026-10-provider-ordering", upgradeProviderOrdering],
     ["2026-10-catalog-sections", upgradeCatalogSections],
+    ["2026-10-random-placement-copy", upgradeRandomPlacementCopy],
     ["2026-10-game-placement", upgradeGamePlacement],
   ]) {
     if (db.prepare("SELECT name FROM migrations WHERE name=?").get(name))
