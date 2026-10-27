@@ -21,7 +21,7 @@ import {
   Dices,
 } from "lucide-react";
 import { createReel } from "./reel.mjs";
-import { orderGames, homeGames, orderProviders, seededRandom, visitSeed } from "./catalog.mjs";
+import { orderGames, orderProviders, seededRandom, visitSeed } from "./catalog.mjs";
 import PhoneInput from "./components/PhoneInput.jsx";
 import RegionInput from "./components/RegionInput.jsx";
 import InstallInstructions from "./components/InstallInstructions.jsx";
@@ -40,7 +40,6 @@ export default function Site({ content, path }) {
     const random = seededRandom(visitSeed());
     return { ...content, games: orderGames(content.games, random), providers: orderProviders(content.providers, random) };
   });
-  const home = { ...c, games: homeGames(c.games) };
   const route = routeFor(path, c),
     { lang, section, item, valid } = route,
     t = c.interface[lang],
@@ -337,7 +336,7 @@ export default function Site({ content, path }) {
                           href={href}
                         />
                         <FeaturedGames
-                          games={orderedFeaturedGames(home.games).slice(0, 15)}
+                          games={orderedFeaturedGames(c.games).slice(0, 15)}
                           card={card}
                           label={t.featured}
                           t={t}
@@ -346,7 +345,7 @@ export default function Site({ content, path }) {
                           row === "random-game-selector" ? (
                             <Random
                               key={row}
-                              c={home}
+                              c={c}
                               t={t}
                               L={L}
                               href={href}
@@ -356,7 +355,7 @@ export default function Site({ content, path }) {
                             <ProviderGames
                               key={row.id}
                               provider={row}
-                              games={home.games.filter(
+                              games={c.games.filter(
                                 (game) => game.provider === row.id,
                               )}
                               card={card}
@@ -366,7 +365,7 @@ export default function Site({ content, path }) {
                             />
                           ),
                         )}
-                        {c.promotions.length > 0 && (
+                        {c.promotions.some((promotion) => promotion.showOnHome) && (
                           <section className="section">
                             <div className="section-heading">
                               <h2>{t.offers}</h2>
@@ -378,7 +377,7 @@ export default function Site({ content, path }) {
                                 <ArrowRight size={17} />
                               </a>
                             </div>
-                            {offers(c.promotions.slice(0, 3))}
+                            {offers(c.promotions.filter((promotion) => promotion.showOnHome).slice(0, 3))}
                           </section>
                         )}
                       </>

@@ -66,7 +66,7 @@ const labels = {
   image: "Изображение",
   url: "Ссылка",
   pinned: "Показывать провайдера в начале списка",
-  pinnedOrder: "Порядок закреплённого провайдера (1–5)",
+  pinnedOrder: "Порядок закреплённого провайдера (1 — первым)",
   mode: "Открывать",
   provider: "Провайдер",
   category: "Категория",
@@ -274,7 +274,6 @@ export default function Admin() {
       template.id = id;
       template.slug = id;
       template.title = sharedGameTitle("");
-      template.showOnHome = false;
       template.priority = false;
       template.priorityOrder = 1;
       template.provider = draft.providers.find(provider => provider.id === openProvider)?.id || draft.providers[0]?.id || "";
@@ -291,9 +290,10 @@ export default function Admin() {
       if (section === "providers") {
         automaticProviders.current.add(template.id);
         template.pinned = false;
-        template.pinnedOrder = Math.min(5, draft.providers.filter(p => p.pinned).length + 1);
+        template.pinnedOrder = draft.providers.filter(p => p.pinned).length + 1;
       }
     }
+    if (section === "promotions") template.showOnHome = false;
     template.enabled = false;
     change([section], [...draft[section], template]);
     focusNewRecord.current = true;
@@ -784,24 +784,27 @@ export default function Admin() {
                         HTTPS-ссылка откроется внутри сайта во встроенном окне; внутренний путь
                         (например /promotions) откроет страницу сайта. Внешний сайт должен разрешать iframe.
                       </p>}
-                      {section === "providers" && <p className="cms-banner-help">Можно закрепить до 5 провайдеров и задать их порядок числами 1–5. Остальные перемешиваются автоматически. Введите название один раз — оно сохранится одинаково для RU, HY и EN. Адрес нового провайдера создаётся автоматически строчными латинскими буквами, например PRAGMATIC PLAY → pragmatic-play. Адрес существующего провайдера при смене названия сохраняется.</p>}
+                      {section === "providers" && <p className="cms-banner-help">Можно закрепить любое количество провайдеров и задать их порядок числами: 1 — первым. Незакреплённые провайдеры сохраняют порядок списка и больше не перемешиваются. Введите название один раз — оно сохранится одинаково для RU, HY и EN. Адрес нового провайдера создаётся автоматически строчными латинскими буквами, например PRAGMATIC PLAY → pragmatic-play. Адрес существующего провайдера при смене названия сохраняется.</p>}
                       {section === "categories" && <p className="cms-banner-help">Название категории вводится один раз и сохраняется одинаково для RU, HY и EN.</p>}
                       {section === "promotions" && <p className="cms-banner-help">
-                        Опубликованные акции с действующими датами автоматически появляются на главной странице и в разделе «Акции».
+                        Опубликованные акции всегда доступны в разделе «Акции». Чтобы показать карточку ещё и на главной, включите «Показывать на главной».
                         Нажмите «Добавить», загрузите изображение, заполните название и описание, затем нажмите «Опубликовать».
                       </p>}
                       {section === "games" && <p className="cms-banner-help">
                         Числовой адрес создаётся автоматически и не требует редактирования.
                         Для провайдеров, запрещающих iframe, выберите «Новая вкладка».
-                        «Показывать на главной» добавляет игру на главную; без отметки она остаётся в каталоге и у своего провайдера.
                         «Показывать первыми» закрепляет игру в начале списков, меньший номер — выше.
-                        Галочка «Показывать в „Топ играх“» добавляет выбранную для главной игру в топ, а поле порядка
+                        Галочка «Показывать в „Топ играх“» добавляет игру в топ, а поле порядка
                         определяет её позицию. Эмодзи рядом с названием можно заменить или удалить.
                       </p>}
                       {Object.entries(current)
                         .sort(([a], [b]) => {
-                          if (section !== "games") return 0;
-                          const order = ["title", "image", "provider", "category", "enabled", "showOnHome", "priority", "priorityOrder", "featured", "featuredOrder", "featuredIcon", "url", "mode", "indexable", "description", "seo", "id"];
+                          const order = section === "games"
+                            ? ["title", "image", "provider", "category", "enabled", "priority", "priorityOrder", "featured", "featuredOrder", "featuredIcon", "url", "mode", "indexable", "description", "seo", "id"]
+                            : section === "promotions"
+                              ? ["title", "image", "description", "kind", "enabled", "showOnHome", "start", "end", "button", "url", "indexable", "seo", "id", "slug"]
+                              : [];
+                          if (!order.length) return 0;
                           return order.indexOf(a) - order.indexOf(b);
                         })
                         .filter(

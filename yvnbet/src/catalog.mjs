@@ -35,10 +35,10 @@ export function mixGames(games, random = Math.random) {
   }
   return result;
 }
-export function orderProviders(providers, random = Math.random) {
+export function orderProviders(providers) {
   return [
     ...providers.filter(p => p.pinned).sort((a, b) => a.pinnedOrder - b.pinnedOrder),
-    ...shuffle(providers.filter(p => !p.pinned), random),
+    ...providers.filter(p => !p.pinned),
   ];
 }
 export function visitSeed() {
@@ -57,7 +57,4 @@ export function orderGames(games, random = Math.random) {
     ...games.filter(game => game.priority).sort((a, b) => a.priorityOrder - b.priorityOrder),
     ...mixGames(games.filter(game => !game.priority), random),
   ];
-}
-export function homeGames(games) {
-  return games.filter(game => game.showOnHome);
 }

@@ -513,6 +513,7 @@ export const initialContent = {
       ),
       {
         kind: "news",
+        showOnHome: true,
         image: "/images/hero.webp",
         start: "",
         end: "",
@@ -921,14 +922,20 @@ export function upgradeRandomPlacementCopy(input) {
 export function upgradeGamePlacement(input) {
   const c = structuredClone(input);
   for (const game of c.games) {
-    game.showOnHome ??= true;
+    delete game.showOnHome;
     game.priority ??= false;
     game.priorityOrder ??= 1;
   }
   return c;
 }
 for (const game of initialContent.games) {
-  game.showOnHome = true;
   game.priority = false;
   game.priorityOrder = 1;
+}
+
+export function upgradePromotionPlacement(input) {
+  const c = structuredClone(input);
+  for (const game of c.games) delete game.showOnHome;
+  for (const promotion of c.promotions) promotion.showOnHome ??= true;
+  return c;
 }

@@ -28,6 +28,7 @@ import {
   upgradeCatalogSections,
   upgradeRandomPlacementCopy,
   upgradeGamePlacement,
+  upgradePromotionPlacement,
 } from "../src/content.mjs";
 export const hashToken = (t) => createHash("sha256").update(t).digest("hex");
 export function passwordHash(password) {
@@ -75,6 +76,7 @@ export async function openStore(dir) {
     ["2026-10-catalog-sections", upgradeCatalogSections],
     ["2026-10-random-placement-copy", upgradeRandomPlacementCopy],
     ["2026-10-game-placement", upgradeGamePlacement],
+    ["2026-10-promotion-placement", upgradePromotionPlacement],
   ]) {
     if (db.prepare("SELECT name FROM migrations WHERE name=?").get(name))
       continue;

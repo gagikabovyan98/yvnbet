@@ -135,7 +135,7 @@ export const contentSchema = z.strictObject({
       app: seo,
     },
   ),
-  providers: list({ logo: image, url: external, mode, indexable: z.boolean(), pinned: z.boolean().default(false), pinnedOrder: z.number().int().min(1).max(5).default(1) }),
+  providers: list({ logo: image, url: external, mode, indexable: z.boolean(), pinned: z.boolean().default(false), pinnedOrder: z.number().int().min(1).max(10000).default(1) }),
   categories: list({}),
   games: list({
     provider: slug,
@@ -143,7 +143,6 @@ export const contentSchema = z.strictObject({
     image,
     url: external,
     mode,
-    showOnHome: z.boolean().default(false),
     priority: z.boolean().default(false),
     priorityOrder: z.number().int().min(1).max(10000).default(1),
     featured: z.boolean(),
@@ -155,6 +154,7 @@ export const contentSchema = z.strictObject({
   slotSlides: list({ mobileImage: image, mobileImageRu: image, mobileImageHy: image, mobileImageEn: image, image, imageRu: image, imageHy: image, imageEn: image, showText: z.boolean(), label: local, button: local, url }),
   promotions: list({
     kind: z.enum(["promotion", "bonus", "news", "offer"]),
+    showOnHome: z.boolean().default(false),
     image,
     start: date,
     end: date,
@@ -175,8 +175,6 @@ export function validateContent(input) {
         .join("; "),
     );
   const c = parsed.data;
-  if (c.providers.filter(p => p.pinned).length > 5)
-    throw new Error("Можно закрепить не больше 5 провайдеров");
   const reservedPages = new Set([
     "home",
     "login",
