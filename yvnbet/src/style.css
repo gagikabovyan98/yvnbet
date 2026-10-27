@@ -3044,20 +3044,23 @@ footer {
   right: 12px;
 }
 .banner-pagination {
-  position: relative;
+  position: absolute;
   z-index: 2;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
   padding: 0;
-  height: 24px;
+  height: 18px;
 }
 
 .banner-pagination button {
   position: relative;
   width: 5px;
-  height: 24px;
+  height: 18px;
   padding: 0;
   background: transparent;
   border: 0;
@@ -3066,23 +3069,23 @@ footer {
   content: "";
   position: absolute;
   left: 0;
-  top: 10px;
+  top: 7px;
   width: 100%;
-  height: 4px;
+  height: 3px;
   border-radius: 8px;
-  background: #ffffff66;
+  background: rgb(255 255 255 / 42%);
 }
-.banner-pagination .active::before { background: #d5ad48; }
+.banner-pagination .active::before { background: rgb(255 255 255 / 72%); }
 .banner-pagination .active {
-  width: 70px;
+  width: 36px;
 }
 .banner-progress {
   position: absolute;
-  top: 10px;
+  top: 7px;
   left: 0;
-  width: 70px;
-  height: 4px;
-  background: #ffe079;
+  width: 36px;
+  height: 3px;
+  background: rgb(255 255 255 / 88%);
   border-radius: 8px;
   transform: scaleX(var(--slide-progress));
   transform-origin: left;
